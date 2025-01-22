@@ -1,26 +1,23 @@
-## 项目启动
+# WhiskerRAG-toolkit
+petercat、whisker 项目使用的 rag 工具包，提供 rag 相关类型定义和方法
 
-全局安装 poetry
+## 使用方式
+```
+from whisker_rag_util.github.fileLoader import GithubFileLoader
+...
+```
+
+## 项目启动
+安装 poetry 进行依赖管理
 
 ```bash
 pip install poetry
 ```
 
-然后在项目根目录下执行以下命令管理依赖
+项目根目录下安装依赖
 
 ```bash
-# 安装所有依赖
 poetry install
-
-# 添加新依赖
-poetry add requests
-poetry add pytest --group dev
-
-# 更新依赖
-poetry update
-
-# 移除依赖
-poetry remove requests
 ```
 
 ## 本地测试
@@ -41,8 +38,7 @@ open htmlcov/index.html
 # 构建并发布
 
 ```bash
-poetry run build
+poetry build
 
 poetry publish
 ```
-# WhiskerRAG-toolkit
