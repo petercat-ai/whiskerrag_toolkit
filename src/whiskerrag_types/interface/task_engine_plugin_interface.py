@@ -1,15 +1,22 @@
 from abc import ABC, abstractmethod
+from typing import List
 
-from .settings_interface import SettingsInterface
-from .logger_interface import LoggerManagerInterface
-from whisker_rag_type.model import Knowledge
+from whiskerrag_types.interface import (
+    SettingsInterface,
+    LoggerManagerInterface,
+)
+from whiskerrag_types.model import Knowledge, Task
 
 
 class TaskEnginPluginInterface(ABC):
     settings: SettingsInterface
     logger: LoggerManagerInterface
 
-    def __init__(self, logger: LoggerManagerInterface, settings: SettingsInterface):
+    def __init__(
+        self,
+        logger: LoggerManagerInterface,
+        settings: SettingsInterface,
+    ):
         try:
             logger.info("TaskEngine plugin is initializing...")
             self.settings = settings
@@ -24,11 +31,11 @@ class TaskEnginPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def embed_knowledge_list(
-        self, user_id: str, knowledge_list: Knowledge
-    ) -> dict:
+    async def execute_task(self, task_id: str) -> List[Task]:
         pass
 
     @abstractmethod
-    async def test(self, **kwargs) -> dict:
+    async def batch_execute_task(
+        self, task_list: List[Task], knowledge_list: List[Knowledge]
+    ) -> List[Task]:
         pass

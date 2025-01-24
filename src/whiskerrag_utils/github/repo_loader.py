@@ -1,6 +1,8 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 from github import Github
 from pydantic import BaseModel
+
+from whiskerrag_types.model.knowledge import Knowledge
 
 
 class GitFileElementType(BaseModel):
@@ -9,8 +11,8 @@ class GitFileElementType(BaseModel):
     url: str
     branch: str
     repo_name: str
-    file_size: int
-    file_sha: str
+    size: int
+    sha: str
 
 
 class GithubRepoLoader:
@@ -44,7 +46,7 @@ class GithubRepoLoader:
 
     def get_file_list(
         self,
-    ) -> list[GitFileElementType]:
+    ) -> List[GitFileElementType]:
         file_tree = self.repo.get_git_tree(self.branch_name, recursive=True)  # type: ignore
         file_list = []
         for item in file_tree.tree:
@@ -53,11 +55,11 @@ class GithubRepoLoader:
             else:
                 file_list.append(
                     GitFileElementType(
-                        file_sha=item.sha,
+                        sha=item.sha,
                         path=item.path,
                         url=item.url,
                         mode=item.mode,
-                        file_size=item.size,
+                        size=item.size,
                         branch=self.branch_name,  # type: ignore[arg-type]
                         repo_name=self.repo_name,
                     )

@@ -5,20 +5,14 @@ from typing import Optional
 from pydantic import BaseModel, field_serializer, Field
 
 
-class TaskStatus(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
-
-
-class Task(BaseModel):
-    task_id: str = Field(None, description="task id")
-    status: TaskStatus = Field(None, description="task status")
+class Chunk(BaseModel):
+    chunk_id: str = Field(None, description="chunk id")
+    embedding: Optional[list[float]] = Field(None, description="chunk embedding")
+    context: str = Field(..., description="chunk content")
     knowledge_id: str = Field(None, description="file source info")
+    model_name: str = Field(..., description="model name")
     space_id: str = Field(..., description="space id")
-    user_id: Optional[str] = Field(None, description="user id")
-    tenant_id: str = Field(..., description="tenant id")
+    metadata: Optional[dict] = Field(None, description="metadata")
     created_at: Optional[datetime] = Field(
         default_factory=lambda: datetime.now().isoformat(), description="creation time"
     )
@@ -38,6 +32,5 @@ class Task(BaseModel):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        # 设置更新时间
         self.updated_at = datetime.now().isoformat()
         return self

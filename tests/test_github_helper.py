@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from whisker_rag_util.github.repo_loader import GithubRepoLoader
+from whiskerrag_utils.github.repo_loader import GithubRepoLoader
 
 
 @pytest.fixture
@@ -19,7 +19,9 @@ def test_get_file_tree(mock_github):
     mock_github.return_value.get_repo.return_value = mock_repo
     mock_github._load_repo.return_value = None
 
-    loader = GithubRepoLoader(repo_name="test_repo", branch_name="main", token="fake_token")
+    loader = GithubRepoLoader(
+        repo_name="test_repo", branch_name="main", token="fake_token"
+    )
 
     # Act
     file_tree = loader.get_file_list()
