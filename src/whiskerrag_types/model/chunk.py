@@ -1,8 +1,9 @@
 from dataclasses import Field
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, field_serializer, Field
+
+from .knowledge import EmbeddingModelEnum
 
 
 class Chunk(BaseModel):
@@ -10,7 +11,9 @@ class Chunk(BaseModel):
     embedding: Optional[list[float]] = Field(None, description="chunk embedding")
     context: str = Field(..., description="chunk content")
     knowledge_id: str = Field(None, description="file source info")
-    model_name: str = Field(..., description="model name")
+    embedding_model_name: Optional[EmbeddingModelEnum] = Field(
+        EmbeddingModelEnum.OPENAI, description="name of the embedding model"
+    )
     space_id: str = Field(..., description="space id")
     metadata: Optional[dict] = Field(None, description="metadata")
     created_at: Optional[datetime] = Field(
@@ -27,6 +30,12 @@ class Chunk(BaseModel):
     @field_serializer("updated_at")
     def serialize_updated_at(self, updated_at: Optional[datetime]):
         return updated_at.isoformat() if updated_at else None
+
+    @field_serializer("embedding_model_name")
+    def serialize_embedding_model_name(self, embedding_model_name):
+        if isinstance(embedding_model_name, EmbeddingModelEnum):
+            return embedding_model_name.value
+        return str(embedding_model_name)
 
     def update(self, **kwargs):
         for key, value in kwargs.items():

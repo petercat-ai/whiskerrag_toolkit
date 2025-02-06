@@ -1,24 +1,54 @@
 from dataclasses import Field
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+import hashlib
+from typing import List, Optional
+
 from pydantic import BaseModel, field_serializer, Field
 
 
-class ResourceType(str, Enum):
-    GITHUB_REPO = ("github_repo",)
-    GITHUB_FILE = ("github_file",)
+def calculate_sha256(text):
+    # 将文本转换为 UTF-8 编码的字节
+    text_bytes = text.encode("utf-8")
+
+    # 创建 SHA-256 哈希对象
+    sha256_hash = hashlib.sha256()
+
+    # 更新哈希对象
+    sha256_hash.update(text_bytes)
+
+    # 返回十六进制形式的哈希值
+    return sha256_hash.hexdigest()
+
+
+class KnowledgeSourceType(str, Enum):
+    GITHUB_REPO = "github_repo"
+    S3 = "S3"
+    TEXT = "text"
+
+
+class KnowledgeType(str, Enum):
     TEXT = "text"
     MARKDOWN = "markdown"
+    HTML = "html"
+    JSON = "json"
     PDF = "pdf"
+    CSV = "csv"
     DOCX = "docx"
+    PPTX = "pptx"
     IMAGE = "image"
 
 
+class EmbeddingModelEnum(str, Enum):
+    OPENAI = "openai"
+    qwen = "qwen"
+
+
 class KnowledgeSplitConfig(BaseModel):
+    separators: List[str] = Field(None, description="separators")
     split_regex: str = Field(description="split regex")
-    chunk_size: int = Field(description="chunk size")
-    chunk_overlap: int = Field(description="chunk overlap")
+    chunk_size: int = Field(2000, description="chunk size")
+    chunk_overlap: int = Field(200, description="chunk overlap")
 
 
 class KnowledgeCreate(BaseModel):
@@ -38,7 +68,10 @@ class KnowledgeCreate(BaseModel):
         metadata (Optional[dict]): Additional metadata.
     """
 
-    knowledge_type: ResourceType = Field(None, description="type of knowledge resource")
+    source_type: KnowledgeSourceType = Field(description="source type")
+    knowledge_type: KnowledgeType = Field(
+        None, description="type of knowledge resource"
+    )
     space_id: str = Field(None, description="space id, example: petercat bot id")
     knowledge_name: str = Field(None, description="name of the knowledge resource")
     file_sha: Optional[str] = Field(None, description="SHA of the file")
@@ -53,16 +86,28 @@ class KnowledgeCreate(BaseModel):
         pattern=r"^(https?|ftp)://[^\s/$.?#].[^\s]*$",
     )
     auth_info: Optional[str] = Field(None, description="authentication information")
-    embedding_model_name: Optional[str] = Field(
-        None, description="name of the embedding model"
+    embedding_model_name: Optional[EmbeddingModelEnum] = Field(
+        EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
     metadata: Optional[dict] = Field(None, description="additional metadata")
 
     @field_serializer("knowledge_type")
     def serialize_knowledge_type(self, knowledge_type):
-        if isinstance(knowledge_type, ResourceType):
+        if isinstance(knowledge_type, KnowledgeType):
             return knowledge_type.value
         return str(knowledge_type)
+
+    @field_serializer("source_type")
+    def serialize_source_type(self, source_type):
+        if isinstance(source_type, KnowledgeSourceType):
+            return source_type.value
+        return str(source_type)
+
+    @field_serializer("embedding_model_name")
+    def serialize_embedding_model_name(self, embedding_model_name):
+        if isinstance(embedding_model_name, EmbeddingModelEnum):
+            return embedding_model_name.value
+        return str(embedding_model_name)
 
 
 class KnowledgeResponse(BaseModel):
@@ -102,6 +147,16 @@ class Knowledge(KnowledgeCreate):
         default_factory=lambda: datetime.now(), description="update time"
     )
     tenant_id: str = Field(..., description="tenant id")
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if (
+            self.source_data is not None
+            and self.file_sha == None
+            and self.source_type == KnowledgeSourceType.TEXT
+        ):
+            self.file_sha = calculate_sha256(self.source_data)
+            self.file_size = len(self.source_data.encode("utf-8"))
 
     @field_serializer("created_at")
     def serialize_created_at(self, created_at: Optional[datetime]):

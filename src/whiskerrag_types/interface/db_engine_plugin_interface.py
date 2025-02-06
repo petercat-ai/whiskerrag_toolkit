@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Type, Dict, List
+from typing import TypeVar, Type, List
 from pydantic import BaseModel
 
 from .settings_interface import SettingsInterface

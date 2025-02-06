@@ -32,10 +32,10 @@ class Task(BaseModel):
         update(**kwargs) -> Task:
             Updates the task attributes with provided keyword arguments and sets updated_at to current time.
     """
-    
+
     task_id: str = Field(None, description="task id")
     status: TaskStatus = Field(None, description="task status")
-    knowledge_id: str = Field(None, description="file source info")
+    knowledge_id: str = Field(..., description="file source info")
     space_id: str = Field(..., description="space id")
     user_id: Optional[str] = Field(None, description="user id")
     tenant_id: str = Field(..., description="tenant id")
@@ -45,7 +45,7 @@ class Task(BaseModel):
     updated_at: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(), description="update time"
     )
-    
+
     @field_serializer("status")
     def serialize_status(self, status: TaskStatus):
         return status.value if isinstance(status, TaskStatus) else str(status)
@@ -64,3 +64,6 @@ class Task(BaseModel):
 
         self.updated_at = datetime.now().isoformat()
         return self
+
+    class Config:
+        extra = "ignore"

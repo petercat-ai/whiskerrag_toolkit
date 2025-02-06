@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from whiskerrag_utils.github.repo_loader import GithubRepoLoader
+from whiskerrag_utils.loader.github.repo_loader import GithubRepoLoader
 
 
 @pytest.fixture

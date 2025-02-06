@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from whiskerrag_types.interface import (
+from ..interface import (
     SettingsInterface,
     LoggerManagerInterface,
 )
-from whiskerrag_types.model import Knowledge, Task
+from ..model import Tenant, KnowledgeCreate, Knowledge, Task
 
 
 class TaskEnginPluginInterface(ABC):
@@ -28,6 +28,18 @@ class TaskEnginPluginInterface(ABC):
 
     @abstractmethod
     def init(self):
+        pass
+
+    @abstractmethod
+    async def gen_knowledge_list(
+        self, user_input: List[KnowledgeCreate], tenant: Tenant
+    ) -> List[Task]:
+        pass
+
+    @abstractmethod
+    async def init_task_from_knowledge(
+        self, knowledge_list: List[Knowledge], tenant: Tenant
+    ) -> List[Task]:
         pass
 
     @abstractmethod
