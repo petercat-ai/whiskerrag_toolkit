@@ -36,6 +36,7 @@ class Task(BaseModel):
     task_id: str = Field(None, description="task id")
     status: TaskStatus = Field(None, description="task status")
     knowledge_id: str = Field(..., description="file source info")
+    error_message: Optional[str] = Field(None, description="error message")
     space_id: str = Field(..., description="space id")
     user_id: Optional[str] = Field(None, description="user id")
     tenant_id: str = Field(..., description="tenant id")
