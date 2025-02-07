@@ -1,10 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ..interface import (
-    SettingsInterface,
-    LoggerManagerInterface,
-)
+from ..interface import SettingsInterface, LoggerManagerInterface, DBPluginInterface
 from ..model import Tenant, KnowledgeCreate, Knowledge, Task
 
 
@@ -68,7 +65,7 @@ class TaskEnginPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def on_task_execute(self, *args, **kwargs):
+    async def on_task_execute(self, db: DBPluginInterface):
         """
         Listen to the task execution status with no parameter restrictions.
         """
