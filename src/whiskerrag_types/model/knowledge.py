@@ -12,7 +12,7 @@ class MetadataSerializer:
     def deep_sort_dict(data: Union[Dict, List, Any]) -> Union[Dict, List, Any]:
         if isinstance(data, dict):
             return {
-                k: MetadataSerializer.deep_sort_dict(v) for k in sorted(data.keys())
+                k: MetadataSerializer.deep_sort_dict(data[k]) for k in sorted(data.keys())
             }
         elif isinstance(data, list):
             return [MetadataSerializer.deep_sort_dict(item) for item in data]
