@@ -28,26 +28,48 @@ class TaskEnginPluginInterface(ABC):
 
     @abstractmethod
     def init(self):
+        """
+        Initialize the task engine plugin, such as loading middleware, establishing contact with the task execution engine, etc.
+        """
         pass
 
     @abstractmethod
     async def gen_knowledge_list(
         self, user_input: List[KnowledgeCreate], tenant: Tenant
-    ) -> List[Task]:
+    ) -> List[Knowledge]:
+        """
+        Generate a list of tasks from the user input.
+        """
         pass
 
     @abstractmethod
     async def init_task_from_knowledge(
         self, knowledge_list: List[Knowledge], tenant: Tenant
     ) -> List[Task]:
+        """
+        Initialize a list of tasks from the knowledge list.
+        """
         pass
 
     @abstractmethod
     async def execute_task(self, task_id: str) -> List[Task]:
+        """
+        Execute a task.
+        """
         pass
 
     @abstractmethod
     async def batch_execute_task(
         self, task_list: List[Task], knowledge_list: List[Knowledge]
     ) -> List[Task]:
+        """
+        Execute a list of tasks.
+        """
+        pass
+
+    @abstractmethod
+    async def on_task_execute(self, *args, **kwargs):
+        """
+        Listen to the task execution status with no parameter restrictions.
+        """
         pass

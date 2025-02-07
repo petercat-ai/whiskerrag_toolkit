@@ -2,9 +2,28 @@ from dataclasses import Field
 from datetime import datetime
 from enum import Enum
 import hashlib
-from typing import List, Optional
-
+from typing import Any, Dict, List, Optional, Union
+from functools import lru_cache
 from pydantic import BaseModel, field_serializer, Field
+
+
+class MetadataSerializer:
+    @staticmethod
+    def deep_sort_dict(data: Union[Dict, List, Any]) -> Union[Dict, List, Any]:
+        if isinstance(data, dict):
+            return {
+                k: MetadataSerializer.deep_sort_dict(v) for k in sorted(data.keys())
+            }
+        elif isinstance(data, list):
+            return [MetadataSerializer.deep_sort_dict(item) for item in data]
+        return data
+
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def serialize(metadata: Optional[Dict]) -> Optional[Dict]:
+        if metadata is None:
+            return None
+        return MetadataSerializer.deep_sort_dict(metadata)
 
 
 def calculate_sha256(text):
@@ -91,6 +110,12 @@ class KnowledgeCreate(BaseModel):
     )
     metadata: Optional[dict] = Field(None, description="additional metadata")
 
+    @field_serializer("metadata")
+    def serialize_metadata(self, metadata: Optional[dict]):
+        if metadata is None:
+            return None
+        return MetadataSerializer.deep_sort_dict(metadata)
+
     @field_serializer("knowledge_type")
     def serialize_knowledge_type(self, knowledge_type):
         if isinstance(knowledge_type, KnowledgeType):
@@ -108,18 +133,6 @@ class KnowledgeCreate(BaseModel):
         if isinstance(embedding_model_name, EmbeddingModelEnum):
             return embedding_model_name.value
         return str(embedding_model_name)
-
-
-class KnowledgeResponse(BaseModel):
-    knowledge_id: Optional[str] = None
-    space_id: str = None
-    knowledge_name: str
-    sha: Optional[str] = None
-    source_url: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    space_id: str
-    tenant_id: str
 
 
 class Knowledge(KnowledgeCreate):
