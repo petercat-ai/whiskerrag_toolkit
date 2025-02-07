@@ -38,7 +38,7 @@ class OpenAIEmbedding(BaseEmbedding):
         embeddings = OpenAIEmbeddings()
         for doc in docs:
             print(f"doc: {doc.page_content}")
-            embedding = embeddings.embed_documents(doc.page_content)
+            embedding = embeddings.embed_query(doc.page_content)
             print(f"embedding result: {embedding}")
             chunk = Chunk(
                 context=doc.page_content,
@@ -50,6 +50,5 @@ class OpenAIEmbedding(BaseEmbedding):
                 embedding_model_name=knowledge.embedding_model_name,
                 space_id=knowledge.space_id,
             )
-            chunk.embedding = embedding
             chunks.append(chunk)
         return chunks
