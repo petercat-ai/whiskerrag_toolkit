@@ -70,3 +70,10 @@ class TaskEnginPluginInterface(ABC):
         Listen to the task execution status with no parameter restrictions.
         """
         pass
+
+    @abstractmethod
+    async def stop_on_task_execute(self):
+        """
+        Stop listening to the task execution status.
+        """
+        pass
