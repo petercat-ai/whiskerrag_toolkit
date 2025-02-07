@@ -12,10 +12,10 @@ class Tenant(BaseModel):
     secret_key: str = Field(..., description="secret_key")
     is_active: bool = Field(True, description="is active")
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now().isoformat(), description="creation time"
+        default_factory=lambda: datetime.now(), description="creation time"
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now().isoformat(), description="update time"
+        default_factory=lambda: datetime.now(), description="update time"
     )
 
     @field_serializer("created_at")

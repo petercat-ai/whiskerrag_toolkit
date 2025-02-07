@@ -32,10 +32,10 @@ class Chunk(BaseModel):
         return updated_at.isoformat() if updated_at else None
 
     @field_serializer("embedding_model_name")
-    def serialize_embedding_model_name(self, embedding_model_name):
-        if isinstance(embedding_model_name, EmbeddingModelEnum):
-            return embedding_model_name.value
-        return str(embedding_model_name)
+    def serialize_embedding_model_name(
+        self, embedding_model_name: Optional[EmbeddingModelEnum]
+    ):
+        return embedding_model_name.value if embedding_model_name else None
 
     def update(self, **kwargs):
         for key, value in kwargs.items():

@@ -38,17 +38,16 @@ class OpenAIEmbedding(BaseEmbedding):
         embeddings = OpenAIEmbeddings()
         for doc in docs:
             print(f"doc: {doc.page_content}")
-            embedding = await embeddings.embed_documents(doc.page_content)
-            print(f"embedding: {embedding}")
+            embedding = embeddings.embed_documents(doc.page_content)
+            print(f"embedding result: {embedding}")
             chunk = Chunk(
                 context=doc.page_content,
                 metadata={
-                    "source": doc.metadata.get("source"),
-                    "page": doc.metadata.get("page"),
-                    "chunk_id": doc.metadata.get("chunk_id"),
+                    **doc.metadata,
                 },
                 embedding=embedding,
-                model_name=knowledge.embedding_model_name,
+                knowledge_id=knowledge.knowledge_id,
+                embedding_model_name=knowledge.embedding_model_name,
                 space_id=knowledge.space_id,
             )
             chunk.embedding = embedding
