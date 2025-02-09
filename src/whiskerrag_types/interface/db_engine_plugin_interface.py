@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Type, List
 from pydantic import BaseModel
+from whiskerrag_types.model.chunk import Chunk
 
 from .settings_interface import SettingsInterface
 from .logger_interface import LoggerManagerInterface
@@ -53,7 +54,19 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
+    async def save_chunk_list(self, chunks: List[Chunk]):
+        pass
+
+    @abstractmethod
+    async def get_chunk_by_knowledge_id(self, chunk_id: str) -> Chunk:
+        pass
+
+    @abstractmethod
     async def save_task_list(self, task_list: List[Task]):
+        pass
+
+    @abstractmethod
+    async def update_task_list(self, task_list: List[Task]):
         pass
 
     @abstractmethod

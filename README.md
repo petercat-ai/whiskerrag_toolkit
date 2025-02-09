@@ -1,14 +1,28 @@
 # WhiskerRAG-toolkit
 
-petercat、whisker 项目使用的 rag 工具包，提供 rag 相关类型定义和方法
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Python Version](https://img.shields.io/pypi/pyversions/whiskerRAG)](https://pypi.org/project/whiskerRAG/)
+[![PyPI version](https://badge.fury.io/py/whiskerRAG.svg)](https://badge.fury.io/py/whiskerRAG)
 
-## 使用方式
+WhiskerRAG-toolkit 是为 PeterCat 和 Whisker 项目开发的 RAG（Retrieval-Augmented Generation）工具包，提供完整的 RAG 相关类型定义和方法实现。
 
-```
+## 特性
+- 领域建模类型
+- 插件接口描述
+- Github、S3 数据源加载器
+- OpenAI Emedding
+
+## 安装
+
+使用 pip 安装：
+
+```bash
 pip install whiskerRAG
 ```
 
-提供两个模块，分别是 whiskerrag_utils 和 whiskerrag_types
+## 快速开始
+
+该工具包提供两个核心模块：whiskerrag_utils 和 whiskerrag_types
 
 ```
 from whiskerrag_utils.github.fileLoader import GithubFileLoader
@@ -18,31 +32,40 @@ from whiskerrag_types.model import Knowledge, Task, Tenant, PageParams, PageResp
 
 ## 开发指南
 
-安装 poetry 进行依赖管理
+环境配置
+本项目使用 Poetry 进行依赖管理。首先安装 Poetry：
 
-```bash
+```
 pip install poetry
 ```
 
-## 本地测试
-
-```bash
-# 运行测试
-poetry run pytest
-
-# 带覆盖率报告
-poetry run pytest --cov
-
-# 查看HTML格式的覆盖率报告
-poetry run pytest --cov --cov-report=html
-open htmlcov/index.html
+安装依赖
 
 ```
+poetry install
+```
 
-# 构建并发布
+运行测试
 
-```bash
+```
+# 运行单元测试
+poetry run pytest
+
+
+# 生成测试覆盖率报告
+poetry run pytest --cov
+
+# 生成 HTML 格式的覆盖率报告
+poetry run pytest --cov --cov-report=html
+open htmlcov/index.html
+```
+
+## 构建与发布
+
+```
+# 构建项目
 poetry build
 
+# 发布到 PyPI
 poetry publish
 ```

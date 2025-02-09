@@ -1,4 +1,8 @@
 from typing import List
+from langchain_text_splitters import CharacterTextSplitter, MarkdownTextSplitter
+from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import (
@@ -7,10 +11,6 @@ from whiskerrag_types.model.knowledge import (
     KnowledgeType,
 )
 from whiskerrag_utils.registry import register
-
-from langchain_text_splitters import CharacterTextSplitter, MarkdownTextSplitter
-from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
 
 
 @register(EmbeddingModelEnum.OPENAI)
