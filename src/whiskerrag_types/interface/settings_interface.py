@@ -18,3 +18,7 @@ class SettingsInterface(ABC):
     @abstractmethod
     def load_plugin_dir_env(self) -> None:
         pass
+
+    @abstractmethod
+    def get_env(self, name, defaultValue) -> None:
+        pass
