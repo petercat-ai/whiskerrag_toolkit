@@ -5,6 +5,7 @@ import hashlib
 from typing import Any, Dict, List, Optional, Union
 from functools import lru_cache
 from pydantic import BaseModel, field_serializer, Field
+from typing_extensions import TypedDict
 
 
 class MetadataSerializer:
@@ -12,7 +13,8 @@ class MetadataSerializer:
     def deep_sort_dict(data: Union[Dict, List, Any]) -> Union[Dict, List, Any]:
         if isinstance(data, dict):
             return {
-                k: MetadataSerializer.deep_sort_dict(data[k]) for k in sorted(data.keys())
+                k: MetadataSerializer.deep_sort_dict(data[k])
+                for k in sorted(data.keys())
             }
         elif isinstance(data, list):
             return [MetadataSerializer.deep_sort_dict(item) for item in data]
@@ -40,13 +42,13 @@ def calculate_sha256(text):
     return sha256_hash.hexdigest()
 
 
-class KnowledgeSourceType(str, Enum):
+class KnowledgeSourceEnum(str, Enum):
     GITHUB_REPO = "github_repo"
     S3 = "S3"
     TEXT = "text"
 
 
-class KnowledgeType(str, Enum):
+class KnowledgeTypeEnum(str, Enum):
     TEXT = "text"
     MARKDOWN = "markdown"
     HTML = "html"
@@ -55,7 +57,9 @@ class KnowledgeType(str, Enum):
     CSV = "csv"
     DOCX = "docx"
     PPTX = "pptx"
-    IMAGE = "image"
+    VISUAL = "visual"
+    AURAL = "aural"
+    FOLDER = "folder"
 
 
 class EmbeddingModelEnum(str, Enum):
@@ -63,9 +67,9 @@ class EmbeddingModelEnum(str, Enum):
     qwen = "qwen"
 
 
-class KnowledgeSplitConfig(BaseModel):
+class KnowledgeSplitConfig(TypedDict):
     separators: List[str] = Field(None, description="separators")
-    split_regex: str = Field(description="split regex")
+    split_regex: str = Field(None, description="split regex")
     chunk_size: int = Field(2000, description="chunk size")
     chunk_overlap: int = Field(200, description="chunk overlap")
 
@@ -87,15 +91,15 @@ class KnowledgeCreate(BaseModel):
         metadata (Optional[dict]): Additional metadata.
     """
 
-    source_type: KnowledgeSourceType = Field(description="source type")
-    knowledge_type: KnowledgeType = Field(
+    source_type: KnowledgeSourceEnum = Field(description="source type")
+    knowledge_type: KnowledgeTypeEnum = Field(
         None, description="type of knowledge resource"
     )
     space_id: str = Field(None, description="space id, example: petercat bot id")
     knowledge_name: str = Field(None, description="name of the knowledge resource")
     file_sha: Optional[str] = Field(None, description="SHA of the file")
     file_size: Optional[int] = Field(None, description="size of the file")
-    split_config: Optional[dict] = Field(
+    split_config: Optional[KnowledgeSplitConfig] = Field(
         None, description="configuration for splitting the knowledge"
     )
     source_data: Optional[str] = Field(None, description="source data of the knowledge")
@@ -118,13 +122,13 @@ class KnowledgeCreate(BaseModel):
 
     @field_serializer("knowledge_type")
     def serialize_knowledge_type(self, knowledge_type):
-        if isinstance(knowledge_type, KnowledgeType):
+        if isinstance(knowledge_type, KnowledgeTypeEnum):
             return knowledge_type.value
         return str(knowledge_type)
 
     @field_serializer("source_type")
     def serialize_source_type(self, source_type):
-        if isinstance(source_type, KnowledgeSourceType):
+        if isinstance(source_type, KnowledgeSourceEnum):
             return source_type.value
         return str(source_type)
 
@@ -166,7 +170,7 @@ class Knowledge(KnowledgeCreate):
         if (
             self.source_data is not None
             and self.file_sha == None
-            and self.source_type == KnowledgeSourceType.TEXT
+            and self.source_type == KnowledgeSourceEnum.TEXT
         ):
             self.file_sha = calculate_sha256(self.source_data)
             self.file_size = len(self.source_data.encode("utf-8"))

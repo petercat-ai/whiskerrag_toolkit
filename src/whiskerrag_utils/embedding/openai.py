@@ -8,24 +8,24 @@ from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,
     Knowledge,
-    KnowledgeType,
+    KnowledgeTypeEnum,
 )
-from whiskerrag_utils.registry import register
+from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(EmbeddingModelEnum.OPENAI)
+@register(RegisterTypeEnum.EMBEDDING, EmbeddingModelEnum.OPENAI)
 class OpenAIEmbedding(BaseEmbedding):
     async def embed(
         self, knowledge: Knowledge, documents: List[Document]
     ) -> List[Chunk]:
         print(f"start embed knowledge: {knowledge}")
         splitter = None
-        if knowledge.knowledge_type == KnowledgeType.TEXT:
+        if knowledge.knowledge_type == KnowledgeTypeEnum.TEXT:
             splitter = CharacterTextSplitter(
                 chunk_size=knowledge.split_config.get("chunk_size"),
                 chunk_overlap=knowledge.split_config.get("chunk_overlap"),
             )
-        if knowledge.knowledge_type == KnowledgeType.MARKDOWN:
+        if knowledge.knowledge_type == KnowledgeTypeEnum.MARKDOWN:
             splitter = MarkdownTextSplitter(
                 chunk_size=knowledge.split_config.get("chunk_size"),
                 chunk_overlap=knowledge.split_config.get("chunk_overlap"),

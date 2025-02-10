@@ -3,3 +3,4 @@ from .knowledge import *
 from .task import *
 from .tenant import *
 from .page import *
+from .retrieval import *

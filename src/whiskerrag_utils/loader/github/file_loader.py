@@ -4,11 +4,11 @@ from github import Github
 from langchain_core.documents import Document
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
-from whiskerrag_types.model.knowledge import Knowledge, KnowledgeSourceType
-from whiskerrag_utils.registry import register
+from whiskerrag_types.model.knowledge import Knowledge, KnowledgeSourceEnum
+from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(KnowledgeSourceType.GITHUB_REPO)
+@register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_REPO)
 class GithubFileLoader(BaseLoader):
     knowledge: Knowledge
     path: str

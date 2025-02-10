@@ -1,27 +1,57 @@
+from enum import Enum
 import importlib
 import os
 from pathlib import Path
-from typing import Type, Union
+from typing import Dict, Union, overload
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
-from whiskerrag_types.model.knowledge import KnowledgeSourceType, KnowledgeType
+from whiskerrag_types.interface.retriever_interface import BaseRetriever
+from whiskerrag_types.model.knowledge import (
+    EmbeddingModelEnum,
+    KnowledgeSourceEnum,
+    KnowledgeTypeEnum,
+)
 
-RegisterType = Union[KnowledgeSourceType, KnowledgeType]
-RegisterItem = Union[BaseLoader, BaseEmbedding]
+RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
+RegisterInstanceType = Union[BaseLoader, BaseEmbedding, BaseRetriever]
+RegisterDict = Dict[RegisterKeyType, RegisterInstanceType]
 
-_registry = {}
+
+class RegisterTypeEnum(str, Enum):
+    EMBEDDING = "embedding"
+    KNOWLEDGE_LOADER = "knowledge_loader"
+    RETRIEVER = "retriever"
+
+
+_registry: Dict[RegisterTypeEnum, RegisterDict] = {}
 _loaded_packages = set()
 
 
-def register(register_type: Union[KnowledgeSourceType, KnowledgeType]):
+def register(
+    register_type: RegisterTypeEnum,
+    register_key: RegisterKeyType,
+):
     def decorator(cls):
         cls._is_register_item = True
-        if not issubclass(cls, (BaseLoader, BaseEmbedding)):
+        _registry.setdefault(register_type, {})
+        if register_type == RegisterTypeEnum.EMBEDDING:
+            expected_base = BaseEmbedding
+        elif register_type == RegisterTypeEnum.KNOWLEDGE_LOADER:
+            expected_base = BaseLoader
+        elif register_type == RegisterTypeEnum.RETRIEVER:
+            expected_base = BaseRetriever
+        else:
+            raise ValueError(f"Unknown register type: {register_type}")
+
+        if not issubclass(cls, expected_base):
             raise TypeError(
-                f"Class {cls.__name__} must inherit from BaseLoader or BaseEmbedding"
+                f"Class {cls.__name__} must inherit from {expected_base.__name__}"
             )
-        _registry[register_type] = cls
+        cls._register_type = register_type
+        cls._register_key = register_key
+        print(f"Registering {cls.__name__} as {register_type} with key {register_key}")
+        _registry[register_type][register_key] = cls
         return cls
 
     return decorator
@@ -36,10 +66,8 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
         current_file = Path(__file__).name
         for root, _, files in os.walk(package_path):
             for file in files:
-                # 跳过当前文件和非 Python 文件
                 if file == current_file or not file.endswith(".py"):
                     continue
-                # 构建模块路径
                 module_name = (
                     Path(root, file)
                     .relative_to(package_path)
@@ -51,23 +79,37 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
                 if module_name == "__init__":
                     continue
                 try:
-                    module = importlib.import_module(f"{package_name}.{module_name}")
-                    for attr_name in dir(module):
-                        attr = getattr(module, attr_name)
-                        if getattr(attr, "_is_register_item", False):
-                            _registry[attr_name] = attr
-
+                    importlib.import_module(f"{package_name}.{module_name}")
                 except ImportError as e:
                     print(f"Error importing module {module_name}: {e}")
-
         _loaded_packages.add(package_name)
 
     except ImportError as e:
         print(f"Error importing package {package_name}: {e}")
 
 
-def get_register(loader_type: RegisterType) -> Type[RegisterItem]:
-    loader = _registry.get(loader_type)
-    if loader is None:
-        raise KeyError(f"No loader registered for type: {loader_type}")
-    return loader
+@overload
+def get_register(
+    register_type: RegisterTypeEnum.EMBEDDING, register_key: RegisterKeyType
+) -> BaseEmbedding: ...
+
+
+@overload
+def get_register(
+    register_type: RegisterTypeEnum.RETRIEVER, register_key: RegisterKeyType
+) -> BaseRetriever: ...
+
+
+@overload
+def get_register(
+    register_type: RegisterTypeEnum.KNOWLEDGE_LOADER, register_key: RegisterKeyType
+) -> BaseLoader: ...
+
+
+def get_register(
+    register_type: RegisterTypeEnum, register_key: RegisterKeyType
+) -> RegisterInstanceType:
+    register_instance = _registry.get(register_type, {}).get(register_key)
+    if register_instance is None:
+        raise KeyError(f"No loader registered for type: {register_type}.{register_key}")
+    return register_instance
