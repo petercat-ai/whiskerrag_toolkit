@@ -1,11 +1,11 @@
-from typing import List, Dict
+from typing import Dict, List
 
 from whiskerrag_types.interface.retriever_interface import BaseRetriever
-from whiskerrag_types.model.retrieval import RetrievalChunk
+from whiskerrag_types.model.retrieval import RetrievalChunk, RetrievalEnum
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.RETRIEVER, "simple")
+@register(RegisterTypeEnum.RETRIEVER, RetrievalEnum.SIMILARITY)
 class SimpleRetriever(BaseRetriever):
     chunk_list: List[RetrievalChunk]
     chunk_index: Dict[str, RetrievalChunk]

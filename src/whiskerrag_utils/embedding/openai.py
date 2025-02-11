@@ -1,7 +1,8 @@
 from typing import List
-from langchain_text_splitters import CharacterTextSplitter, MarkdownTextSplitter
+
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
+from langchain_text_splitters import CharacterTextSplitter, MarkdownTextSplitter
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.model.chunk import Chunk
@@ -10,12 +11,12 @@ from whiskerrag_types.model.knowledge import (
     Knowledge,
     KnowledgeTypeEnum,
 )
-from whiskerrag_utils.registry import RegisterTypeEnum, register
+from whiskerrag_utils import RegisterTypeEnum, register
 
 
 @register(RegisterTypeEnum.EMBEDDING, EmbeddingModelEnum.OPENAI)
 class OpenAIEmbedding(BaseEmbedding):
-    async def embed(
+    async def embed_documents(
         self, knowledge: Knowledge, documents: List[Document]
     ) -> List[Chunk]:
         print(f"start embed knowledge: {knowledge}")
@@ -52,3 +53,7 @@ class OpenAIEmbedding(BaseEmbedding):
             )
             chunks.append(chunk)
         return chunks
+
+    async def embed_text(self, text: str) -> List[float]:
+        embeddings = OpenAIEmbeddings()
+        return embeddings.embed_query(text)

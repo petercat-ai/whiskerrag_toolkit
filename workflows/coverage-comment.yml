@@ -1,0 +1,22 @@
+name: Coverage Comment
+
+on:
+  workflow_run:
+    workflows: ["Main Workflow"]
+    types:
+      - completed
+
+jobs:
+  coverage_comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create Coverage Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            ## Coverage Report
+            Total coverage: ${{ env.TOTAL_COVERAGE }}%
+            Required minimum: ${{ vars.MIN_COVERAGE }}%
+            
+            ${{ env.TOTAL_COVERAGE < vars.MIN_COVERAGE && '❌ Coverage is below the required threshold!' || '✅ Coverage meets the requirement.' }}

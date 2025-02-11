@@ -1,13 +1,18 @@
 from abc import ABC, abstractmethod
-from typing import Optional, TypeVar, Type, List
-from pydantic import BaseModel
-from whiskerrag_types.model.chunk import Chunk
-from whiskerrag_types.model.knowledge import EmbeddingModelEnum
-from whiskerrag_types.model.retrieval import RetrievalChunk
+from typing import List, Type, TypeVar
 
-from .settings_interface import SettingsInterface
+from pydantic import BaseModel
+
+from whiskerrag_types.model.chunk import Chunk
+from whiskerrag_types.model.retrieval import (
+    RetrievalByKnowledgeRequest,
+    RetrievalBySpaceRequest,
+    RetrievalChunk,
+)
+
+from ..model import Knowledge, PageParams, PageResponse, Task, Tenant
 from .logger_interface import LoggerManagerInterface
-from ..model import Task, Knowledge, Tenant, PageParams, PageResponse
+from .settings_interface import SettingsInterface
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -50,20 +55,14 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def search_space_chunk_list(
         self,
-        space_id_list: List[str],
-        query_embedding: List[float],
-        query_embedding_model_name: EmbeddingModelEnum,
-        metadata_filter: Optional[dict],
+        params: RetrievalBySpaceRequest,
     ) -> List[RetrievalChunk]:
         pass
 
     @abstractmethod
     async def search_knowledge_chunk_list(
         self,
-        knowledge_id_list: List[str],
-        query_embedding: List[float],
-        query_embedding_model_name: EmbeddingModelEnum,
-        metadata_filter: Optional[dict],
+        params: RetrievalByKnowledgeRequest,
     ) -> List[RetrievalChunk]:
         pass
 

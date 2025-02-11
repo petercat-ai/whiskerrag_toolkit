@@ -1,10 +1,10 @@
-from dataclasses import Field
+import hashlib
 from datetime import datetime
 from enum import Enum
-import hashlib
-from typing import Any, Dict, List, Optional, Union
 from functools import lru_cache
-from pydantic import BaseModel, field_serializer, Field
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, Field, field_serializer
 from typing_extensions import TypedDict
 
 
@@ -109,7 +109,7 @@ class KnowledgeCreate(BaseModel):
         pattern=r"^(https?|ftp)://[^\s/$.?#].[^\s]*$",
     )
     auth_info: Optional[str] = Field(None, description="authentication information")
-    embedding_model_name: Optional[EmbeddingModelEnum] = Field(
+    embedding_model_name: EmbeddingModelEnum = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
     metadata: Optional[dict] = Field(None, description="additional metadata")
@@ -169,7 +169,7 @@ class Knowledge(KnowledgeCreate):
         super().__init__(**data)
         if (
             self.source_data is not None
-            and self.file_sha == None
+            and self.file_sha is None
             and self.source_type == KnowledgeSourceEnum.TEXT
         ):
             self.file_sha = calculate_sha256(self.source_data)

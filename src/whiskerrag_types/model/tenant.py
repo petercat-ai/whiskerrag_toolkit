@@ -1,7 +1,7 @@
-from dataclasses import Field
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, field_serializer, Field
+
+from pydantic import BaseModel, Field, field_serializer
 
 
 class Tenant(BaseModel):

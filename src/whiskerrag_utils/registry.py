@@ -1,6 +1,6 @@
-from enum import Enum
 import importlib
 import os
+from enum import Enum
 from pathlib import Path
 from typing import Dict, Union, overload
 
@@ -12,8 +12,11 @@ from whiskerrag_types.model.knowledge import (
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
 )
+from whiskerrag_types.model.retrieval import RetrievalEnum
 
-RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
+RegisterKeyType = Union[
+    KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, RetrievalEnum
+]
 RegisterInstanceType = Union[BaseLoader, BaseEmbedding, BaseRetriever]
 RegisterDict = Dict[RegisterKeyType, RegisterInstanceType]
 
@@ -90,20 +93,23 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
 
 @overload
 def get_register(
-    register_type: RegisterTypeEnum.EMBEDDING, register_key: RegisterKeyType
-) -> BaseEmbedding: ...
+    register_type: RegisterTypeEnum.KNOWLEDGE_LOADER, register_key: KnowledgeSourceEnum
+) -> BaseLoader:
+    ...
 
 
 @overload
 def get_register(
-    register_type: RegisterTypeEnum.RETRIEVER, register_key: RegisterKeyType
-) -> BaseRetriever: ...
+    register_type: RegisterTypeEnum.EMBEDDING, register_key: EmbeddingModelEnum
+) -> BaseEmbedding:
+    ...
 
 
 @overload
 def get_register(
-    register_type: RegisterTypeEnum.KNOWLEDGE_LOADER, register_key: RegisterKeyType
-) -> BaseLoader: ...
+    register_type: RegisterTypeEnum.RETRIEVER, register_key: RetrievalEnum
+) -> BaseRetriever:
+    ...
 
 
 def get_register(

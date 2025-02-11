@@ -1,8 +1,7 @@
 from typing import List, Optional, Union
+
 from github import Github
 from pydantic import BaseModel
-
-from whiskerrag_types.model.knowledge import Knowledge
 
 
 class GitFileElementType(BaseModel):

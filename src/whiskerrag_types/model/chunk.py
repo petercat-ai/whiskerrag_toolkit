@@ -1,7 +1,7 @@
-from dataclasses import Field
 from datetime import datetime
 from typing import List, Optional, Union
-from pydantic import BaseModel, field_serializer, Field, field_validator
+
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from .knowledge import EmbeddingModelEnum
 

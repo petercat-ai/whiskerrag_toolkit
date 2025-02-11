@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ..interface import SettingsInterface, LoggerManagerInterface, DBPluginInterface
-from ..model import Tenant, KnowledgeCreate, Knowledge, Task
+from ..interface import DBPluginInterface, LoggerManagerInterface, SettingsInterface
+from ..model import Knowledge, KnowledgeCreate, Task, Tenant
 
 
 class TaskEnginPluginInterface(ABC):
