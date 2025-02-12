@@ -3,6 +3,7 @@ from typing import Any, List, Optional, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
+
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 
 
