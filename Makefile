@@ -128,10 +128,7 @@ release:
 		exit 1; \
 	fi
 	@echo "Creating new release version $(new_version)..."
-	@python -c 'import re; \
-		content = open("setup.py").read(); \
-		content = re.sub(r"version=.*,", r"version=\"$(new_version)\",", content); \
-		open("setup.py", "w").write(content)'
+	@python scripts/update_version.py $(new_version)
 	git add setup.py
 	git commit -m "Release version $(new_version)"
 	git tag -a v$(new_version) -m "Version $(new_version)"

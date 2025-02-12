@@ -1,5 +1,6 @@
-from setuptools import setup, find_namespace_packages
 import pathlib
+
+from setuptools import find_namespace_packages, setup
 
 # 获取当前目录
 HERE = pathlib.Path(__file__).parent
@@ -9,7 +10,7 @@ README = (HERE / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="whiskerrag",
-    version="0.0.1a21",
+    version="0.0.1",
     description="A utility package for RAG operations",
     long_description=README,
     long_description_content_type="text/markdown",

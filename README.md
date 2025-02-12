@@ -46,12 +46,7 @@ cd whiskerRAG-toolkit
 
 ```bash
 make setup
-```
-
-3. 安装开发依赖
-
-```bash
-make dev-install
+source venv/bin/activate
 ```
 
 ### 开发工作流
