@@ -34,8 +34,8 @@ jobs:
       run: |
         make setup
 
-    - name: Run checks
-      run: make check
+    - name: Run lint check
+      run: make lint
 
     - name: Generate coverage report
       run: make coverage
