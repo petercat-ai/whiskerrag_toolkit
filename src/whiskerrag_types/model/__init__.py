@@ -1,18 +1,18 @@
 from .chunk import Chunk
 from .knowledge import (
-    KnowledgeSourceEnum,
-    KnowledgeTypeEnum,
     EmbeddingModelEnum,
-    KnowledgeSplitConfig,
-    KnowledgeCreate,
     Knowledge,
+    KnowledgeCreate,
+    KnowledgeSourceEnum,
+    KnowledgeSplitConfig,
+    KnowledgeTypeEnum,
 )
 from .page import PageParams, PageResponse
 from .retrieval import (
-    RetrievalEnum,
-    RetrievalBySpaceRequest,
     RetrievalByKnowledgeRequest,
+    RetrievalBySpaceRequest,
     RetrievalChunk,
+    RetrievalEnum,
 )
 from .task import Task, TaskStatus
 from .tenant import Tenant

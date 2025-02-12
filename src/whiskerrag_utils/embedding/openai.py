@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Optional, Union
+from uuid import uuid4
 
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
@@ -20,7 +21,7 @@ class OpenAIEmbedding(BaseEmbedding):
         self, knowledge: Knowledge, documents: List[Document]
     ) -> List[Chunk]:
         print(f"start embed knowledge: {knowledge}")
-        splitter = None
+        splitter: Optional[Union[CharacterTextSplitter, MarkdownTextSplitter]] = None
         if knowledge.knowledge_type == KnowledgeTypeEnum.TEXT:
             splitter = CharacterTextSplitter(
                 chunk_size=knowledge.split_config.get("chunk_size"),

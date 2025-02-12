@@ -27,21 +27,25 @@ class GithubFileLoader(BaseLoader):
         knowledge: Knowledge,
     ):
         self.knowledge = knowledge
-        if not all(
+        if not knowledge.metadata or not all(
             key in knowledge.metadata for key in ["repo_name", "path", "branch"]
         ):
             raise ValueError("metadata must contain 'repo_name', 'path', and 'branch'")
         if not knowledge.auth_info:
             raise ValueError("auth_info is required")
         self.github = Github(knowledge.auth_info)
-        self.repo_name = knowledge.metadata.get("repo_name")
+        self.repo_name = knowledge.metadata["repo_name"]
         self.repo = self.github.get_repo(self.repo_name)
-        self.path = knowledge.metadata.get("path")
-        self.branch = knowledge.metadata.get("branch")
-        self.commit_id = knowledge.metadata.get("commit_id")
+        if not self.repo:
+            raise ValueError(f"repo {self.repo_name} not found")
+        self.path = knowledge.metadata["path"]
+        self.branch = knowledge.metadata["branch"]
+        self.commit_id = knowledge.metadata.get(
+            "commit_id", self._get_commit_id_by_branch(self.branch)
+        )
 
     def _get_commit_id_by_branch(self, branch: str) -> str:
-        branch_info = self.github.get_branch(branch)
+        branch_info = self.repo.get_branch(branch)
         return branch_info.commit.sha
 
     def _get_file_content_by_path(

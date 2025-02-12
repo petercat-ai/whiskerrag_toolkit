@@ -1,16 +1,16 @@
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
+from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
-
-from .knowledge import EmbeddingModelEnum
+from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 
 
 class Chunk(BaseModel):
-    chunk_id: Optional[str] = Field(None, description="chunk id")
+    chunk_id: str = Field(default_factory=lambda: str(uuid4()), description="chunk id")
     embedding: Optional[list[float]] = Field(None, description="chunk embedding")
     context: str = Field(..., description="chunk content")
-    knowledge_id: str = Field(None, description="file source info")
+    knowledge_id: str = Field(..., description="file source info")
     embedding_model_name: Optional[EmbeddingModelEnum] = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
@@ -37,7 +37,11 @@ class Chunk(BaseModel):
             try:
                 import json
 
-                return json.loads(v)
+                return (
+                    [float(x) for x in json.loads(v)]
+                    if isinstance(json.loads(v), list)
+                    else None
+                )
             except json.JSONDecodeError:
                 try:
                     if v.startswith("[") and v.endswith("]"):
@@ -49,22 +53,22 @@ class Chunk(BaseModel):
         raise ValueError(f"Unsupported embedding type: {type(v)}")
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]):
+    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
         return created_at.isoformat() if created_at else None
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]):
+    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
         return updated_at.isoformat() if updated_at else None
 
     @field_serializer("embedding_model_name")
     def serialize_embedding_model_name(
         self, embedding_model_name: Optional[EmbeddingModelEnum]
-    ):
+    ) -> Optional[str]:
         return embedding_model_name.value if embedding_model_name else None
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: Any) -> "Chunk":
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.updated_at = datetime.now().isoformat()
+        self.updated_at = datetime.now()
         return self

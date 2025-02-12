@@ -18,7 +18,7 @@ class BaseEmbedding(ABC):
         pass
 
     @abstractmethod
-    async def embed_text(self, text: str) -> List[Chunk]:
+    async def embed_text(self, text: str) -> List[float]:
         """
         Embed a text.
         """

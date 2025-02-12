@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
+from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_serializer
 from typing_extensions import TypedDict
@@ -25,10 +26,11 @@ class MetadataSerializer:
     def serialize(metadata: Optional[Dict]) -> Optional[Dict]:
         if metadata is None:
             return None
-        return MetadataSerializer.deep_sort_dict(metadata)
+        sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
+        return sorted_metadata if isinstance(sorted_metadata, dict) else None
 
 
-def calculate_sha256(text):
+def calculate_sha256(text: str) -> str:
     # 将文本转换为 UTF-8 编码的字节
     text_bytes = text.encode("utf-8")
 
@@ -68,10 +70,10 @@ class EmbeddingModelEnum(str, Enum):
 
 
 class KnowledgeSplitConfig(TypedDict):
-    separators: List[str] = Field(None, description="separators")
-    split_regex: str = Field(None, description="split regex")
-    chunk_size: int = Field(2000, description="chunk size")
-    chunk_overlap: int = Field(200, description="chunk overlap")
+    separators: Optional[List[str]]
+    split_regex: Optional[str]
+    chunk_size: Optional[int]
+    chunk_overlap: Optional[int]
 
 
 class KnowledgeCreate(BaseModel):
@@ -91,16 +93,26 @@ class KnowledgeCreate(BaseModel):
         metadata (Optional[dict]): Additional metadata.
     """
 
-    source_type: KnowledgeSourceEnum = Field(description="source type")
-    knowledge_type: KnowledgeTypeEnum = Field(
-        None, description="type of knowledge resource"
+    source_type: KnowledgeSourceEnum = Field(
+        KnowledgeSourceEnum.TEXT, description="source type"
     )
-    space_id: str = Field(None, description="space id, example: petercat bot id")
-    knowledge_name: str = Field(None, description="name of the knowledge resource")
+    knowledge_type: KnowledgeTypeEnum = Field(
+        KnowledgeTypeEnum.TEXT, description="type of knowledge resource"
+    )
+    space_id: str = Field(..., description="space id, example: petercat bot id")
+    knowledge_name: str = Field(..., description="name of the knowledge resource")
     file_sha: Optional[str] = Field(None, description="SHA of the file")
     file_size: Optional[int] = Field(None, description="size of the file")
-    split_config: Optional[KnowledgeSplitConfig] = Field(
-        None, description="configuration for splitting the knowledge"
+    split_config: KnowledgeSplitConfig = Field(
+        default=KnowledgeSplitConfig(
+            {
+                "separators": None,
+                "split_regex": None,
+                "chunk_size": 1500,
+                "chunk_overlap": 150,
+            }
+        ),
+        description="configuration for splitting the knowledge",
     )
     source_data: Optional[str] = Field(None, description="source data of the knowledge")
     source_url: Optional[str] = Field(
@@ -112,28 +124,35 @@ class KnowledgeCreate(BaseModel):
     embedding_model_name: EmbeddingModelEnum = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
-    metadata: Optional[dict] = Field(None, description="additional metadata")
+    metadata: dict = Field({}, description="additional metadata")
 
     @field_serializer("metadata")
-    def serialize_metadata(self, metadata: Optional[dict]):
+    def serialize_metadata(self, metadata: dict) -> Optional[dict]:
         if metadata is None:
             return None
-        return MetadataSerializer.deep_sort_dict(metadata)
+        sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
+        return sorted_metadata if isinstance(sorted_metadata, dict) else None
 
     @field_serializer("knowledge_type")
-    def serialize_knowledge_type(self, knowledge_type):
+    def serialize_knowledge_type(
+        self, knowledge_type: Union[KnowledgeTypeEnum, str]
+    ) -> str:
         if isinstance(knowledge_type, KnowledgeTypeEnum):
             return knowledge_type.value
         return str(knowledge_type)
 
     @field_serializer("source_type")
-    def serialize_source_type(self, source_type):
+    def serialize_source_type(
+        self, source_type: Union[KnowledgeSourceEnum, str]
+    ) -> str:
         if isinstance(source_type, KnowledgeSourceEnum):
             return source_type.value
         return str(source_type)
 
     @field_serializer("embedding_model_name")
-    def serialize_embedding_model_name(self, embedding_model_name):
+    def serialize_embedding_model_name(
+        self, embedding_model_name: Union[EmbeddingModelEnum, str]
+    ) -> str:
         if isinstance(embedding_model_name, EmbeddingModelEnum):
             return embedding_model_name.value
         return str(embedding_model_name)
@@ -156,7 +175,9 @@ class Knowledge(KnowledgeCreate):
             Updates the attributes of the instance with the provided keyword arguments and sets updated_at to the current time.
     """
 
-    knowledge_id: str = Field(None, description="knowledge id")
+    knowledge_id: str = Field(
+        default_factory=lambda: str(uuid4()), description="knowledge id"
+    )
     created_at: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(), description="creation time"
     )
@@ -165,7 +186,7 @@ class Knowledge(KnowledgeCreate):
     )
     tenant_id: str = Field(..., description="tenant id")
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any) -> None:
         super().__init__(**data)
         if (
             self.source_data is not None
@@ -176,15 +197,15 @@ class Knowledge(KnowledgeCreate):
             self.file_size = len(self.source_data.encode("utf-8"))
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]):
+    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
         return created_at.isoformat() if created_at else None
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]):
+    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
         return updated_at.isoformat() if updated_at else None
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: Dict[str, Any]) -> "Knowledge":
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.updated_at = datetime.now().isoformat()
+        self.updated_at = datetime.now()
         return self

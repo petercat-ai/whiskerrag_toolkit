@@ -2,7 +2,7 @@ import importlib
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Union, overload
+from typing import Callable, Dict, Literal, Union, overload
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
@@ -34,10 +34,11 @@ _loaded_packages = set()
 def register(
     register_type: RegisterTypeEnum,
     register_key: RegisterKeyType,
-):
-    def decorator(cls):
-        cls._is_register_item = True
+) -> Callable[[type], type]:
+    def decorator(cls: type) -> type:
+        setattr(cls, "_is_register_item", True)
         _registry.setdefault(register_type, {})
+        expected_base: type
         if register_type == RegisterTypeEnum.EMBEDDING:
             expected_base = BaseEmbedding
         elif register_type == RegisterTypeEnum.KNOWLEDGE_LOADER:
@@ -51,10 +52,10 @@ def register(
             raise TypeError(
                 f"Class {cls.__name__} must inherit from {expected_base.__name__}"
             )
-        cls._register_type = register_type
-        cls._register_key = register_key
+        setattr(cls, "_register_type", register_type)
+        setattr(cls, "_register_key", register_key)
         print(f"Registering {cls.__name__} as {register_type} with key {register_key}")
-        _registry[register_type][register_key] = cls
+        _registry[register_type][register_key] = cls  # type: ignore
         return cls
 
     return decorator
@@ -65,6 +66,10 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
         return
     try:
         package = importlib.import_module(package_name)
+        if package.__file__ is None:
+            raise ValueError(
+                f"Package {package_name} does not have a __file__ attribute"
+            )
         package_path = Path(package.__file__).parent
         current_file = Path(__file__).name
         for root, _, files in os.walk(package_path):
@@ -93,23 +98,21 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
 
 @overload
 def get_register(
-    register_type: RegisterTypeEnum.KNOWLEDGE_LOADER, register_key: KnowledgeSourceEnum
-) -> BaseLoader:
-    ...
+    register_type: Literal[RegisterTypeEnum.KNOWLEDGE_LOADER],
+    register_key: KnowledgeSourceEnum,
+) -> BaseLoader: ...
 
 
 @overload
 def get_register(
-    register_type: RegisterTypeEnum.EMBEDDING, register_key: EmbeddingModelEnum
-) -> BaseEmbedding:
-    ...
+    register_type: Literal[RegisterTypeEnum.EMBEDDING], register_key: EmbeddingModelEnum
+) -> BaseEmbedding: ...
 
 
 @overload
 def get_register(
-    register_type: RegisterTypeEnum.RETRIEVER, register_key: RetrievalEnum
-) -> BaseRetriever:
-    ...
+    register_type: Literal[RegisterTypeEnum.RETRIEVER], register_key: RetrievalEnum
+) -> BaseRetriever: ...
 
 
 def get_register(

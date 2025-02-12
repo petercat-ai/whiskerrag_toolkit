@@ -20,5 +20,5 @@ class SettingsInterface(ABC):
         pass
 
     @abstractmethod
-    def get_env(self, name, defaultValue) -> None:
+    def get_env(self, name: str, defaultValue: str) -> None:
         pass

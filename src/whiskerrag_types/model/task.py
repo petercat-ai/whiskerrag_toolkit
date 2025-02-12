@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional
+from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_serializer
 
@@ -33,8 +34,8 @@ class Task(BaseModel):
             Updates the task attributes with provided keyword arguments and sets updated_at to current time.
     """
 
-    task_id: str = Field(None, description="task id")
-    status: TaskStatus = Field(None, description="task status")
+    task_id: str = Field(default_factory=lambda: str(uuid4()), description="task id")
+    status: TaskStatus = Field(TaskStatus.PENDING, description="task status")
     knowledge_id: str = Field(..., description="file source info")
     error_message: Optional[str] = Field(None, description="error message")
     space_id: str = Field(..., description="space id")
@@ -48,22 +49,22 @@ class Task(BaseModel):
     )
 
     @field_serializer("status")
-    def serialize_status(self, status: TaskStatus):
+    def serialize_status(self, status: TaskStatus) -> str:
         return status.value if isinstance(status, TaskStatus) else str(status)
 
     @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]):
+    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
         return created_at.isoformat() if created_at else None
 
     @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]):
+    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
         return updated_at.isoformat() if updated_at else None
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: dict) -> "Task":
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.updated_at = datetime.now().isoformat()
+        self.updated_at = datetime.now()
         return self
 
     class Config:

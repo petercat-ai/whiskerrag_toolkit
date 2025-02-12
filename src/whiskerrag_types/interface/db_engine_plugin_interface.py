@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Type, TypeVar
+from typing import Any, List, Type, TypeVar, Union
 
 from pydantic import BaseModel
 
@@ -21,7 +21,9 @@ class DBPluginInterface(ABC):
     settings: SettingsInterface
     logger: LoggerManagerInterface
 
-    def __init__(self, logger: LoggerManagerInterface, settings: SettingsInterface):
+    def __init__(
+        self, logger: LoggerManagerInterface, settings: SettingsInterface
+    ) -> None:
         logger.info("DB plugin is initializing...")
         self.settings = settings
         self.logger = logger
@@ -29,11 +31,11 @@ class DBPluginInterface(ABC):
         logger.info("DB plugin is initialized")
 
     @abstractmethod
-    async def init(self):
+    def init(self) -> None:
         pass
 
     @abstractmethod
-    async def get_db_client(self):
+    async def get_db_client(self) -> Any:
         pass
 
     @abstractmethod
@@ -67,15 +69,15 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_knowledge(self, knowledge: Knowledge):
+    async def update_knowledge(self, knowledge: Knowledge) -> None:
         pass
 
     @abstractmethod
-    async def delete_knowledge(self, knowledge_id_list: List[str]):
+    async def delete_knowledge(self, knowledge_id_list: List[str]) -> None:
         pass
 
     @abstractmethod
-    async def save_chunk_list(self, chunks: List[Chunk]):
+    async def save_chunk_list(self, chunks: List[Chunk]) -> List[Chunk]:
         pass
 
     @abstractmethod
@@ -83,15 +85,15 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def save_task_list(self, task_list: List[Task]):
+    async def save_task_list(self, task_list: List[Task]) -> List[Task]:
         pass
 
     @abstractmethod
-    async def update_task_list(self, task_list: List[Task]):
+    async def update_task_list(self, task_list: List[Task]) -> None:
         pass
 
     @abstractmethod
-    async def get_tenant_by_id(self, tenant_id: str):
+    async def get_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
         pass
 
     @abstractmethod
@@ -99,7 +101,7 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_tenant_by_sk(self, secret_key: str) -> Tenant | None:
+    async def get_tenant_by_sk(self, secret_key: str) -> Union[Tenant, None]:
         pass
 
     @abstractmethod

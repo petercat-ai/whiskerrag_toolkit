@@ -24,7 +24,7 @@ class TaskEnginPluginInterface(ABC):
             logger.error(f"TaskEngine plugin init error: {e}")
 
     @abstractmethod
-    def init(self):
+    def init(self) -> None:
         """
         Initialize the task engine plugin, such as loading middleware, establishing contact with the task execution engine, etc.
         """
@@ -65,14 +65,14 @@ class TaskEnginPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def on_task_execute(self, db: DBPluginInterface):
+    async def on_task_execute(self, db: DBPluginInterface) -> None:
         """
         Listen to the task execution status with no parameter restrictions.
         """
         pass
 
     @abstractmethod
-    async def stop_on_task_execute(self):
+    async def stop_on_task_execute(self) -> None:
         """
         Stop listening to the task execution status.
         """

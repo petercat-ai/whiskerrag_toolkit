@@ -6,10 +6,17 @@ docker/volumes/storage
 __pycache__/
 *.pyc
 **/*.pyc
+*.egg-info/
+build/
+.coverage
+coverage.xml
+htmlcov/
+
 # dependencies
 node_modules/
 
 server/temp/
+
 
 venv
 .venv/
