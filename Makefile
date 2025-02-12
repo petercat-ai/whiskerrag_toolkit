@@ -128,15 +128,17 @@ release:
 		exit 1; \
 	fi
 	@echo "Creating new release version $(new_version)..."
-	@# 更新版本号（根据你的版本管理方式调整）
-	@sed -i "s/version=\".*\"/version=\"$(new_version)\"/" setup.py
-	@# 创建 git tag
+	@python -c 'import re; \
+		content = open("setup.py").read(); \
+		content = re.sub(r"version=.*,", r"version=\"$(new_version)\",", content); \
+		open("setup.py", "w").write(content)'
 	git add setup.py
 	git commit -m "Release version $(new_version)"
 	git tag -a v$(new_version) -m "Version $(new_version)"
 	git push origin v$(new_version)
 	@echo "Version $(new_version) has been created and tagged"
 	@make build
+
 
 update-deps: $(VENV)
 	@echo "Updating frozen dependencies..."
