@@ -26,8 +26,7 @@ pip install whiskerrag
 该工具包提供两个核心模块：whiskerrag_utils 和 whiskerrag_types
 
 ```python
-from whiskerrag_utils.github.fileLoader import GithubFileLoader
-from whiskerrag_types.interface import DBPluginInterface
+from whiskerrag_types.interface import DBPluginInterface, TaskEngineInterface
 from whiskerrag_types.model import Knowledge, Task, Tenant, PageParams, PageResponse
 ```
 
@@ -123,7 +122,8 @@ make upload
 5. 创建新版本发布
 
 ```bash
-make release new_version=X.Y.Z
+# 本地发布
+make release-local new_version=X.Y.Z
 ```
 
 ### 其他命令

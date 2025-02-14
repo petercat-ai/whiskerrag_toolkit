@@ -5,8 +5,7 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_serializer
-from typing_extensions import TypedDict
+from pydantic import BaseModel, Field, field_serializer, model_validator
 
 
 class MetadataSerializer:
@@ -31,16 +30,9 @@ class MetadataSerializer:
 
 
 def calculate_sha256(text: str) -> str:
-    # 将文本转换为 UTF-8 编码的字节
     text_bytes = text.encode("utf-8")
-
-    # 创建 SHA-256 哈希对象
     sha256_hash = hashlib.sha256()
-
-    # 更新哈希对象
     sha256_hash.update(text_bytes)
-
-    # 返回十六进制形式的哈希值
     return sha256_hash.hexdigest()
 
 
@@ -69,11 +61,17 @@ class EmbeddingModelEnum(str, Enum):
     qwen = "qwen"
 
 
-class KnowledgeSplitConfig(TypedDict):
-    separators: Optional[List[str]]
-    split_regex: Optional[str]
-    chunk_size: Optional[int]
-    chunk_overlap: Optional[int]
+class KnowledgeSplitConfig(BaseModel):
+    separators: Optional[List[str]] = Field(default=None)
+    split_regex: Optional[str] = Field(default=None)
+    chunk_size: int = Field(default=1500, ge=1)
+    chunk_overlap: int = Field(default=150, ge=0)
+
+    @model_validator(mode="after")
+    def validate_overlap(self) -> "KnowledgeSplitConfig":
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("chunk_overlap must be less than chunk_size")
+        return self
 
 
 class KnowledgeCreate(BaseModel):
@@ -104,14 +102,7 @@ class KnowledgeCreate(BaseModel):
     file_sha: Optional[str] = Field(None, description="SHA of the file")
     file_size: Optional[int] = Field(None, description="size of the file")
     split_config: KnowledgeSplitConfig = Field(
-        default=KnowledgeSplitConfig(
-            {
-                "separators": None,
-                "split_regex": None,
-                "chunk_size": 1500,
-                "chunk_overlap": 150,
-            }
-        ),
+        ...,
         description="configuration for splitting the knowledge",
     )
     source_data: Optional[str] = Field(None, description="source data of the knowledge")

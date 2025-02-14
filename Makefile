@@ -20,6 +20,7 @@ PACKAGE_NAME := $(shell python setup.py --name)
 
 help:
 	@echo "Available commands:"
+	@echo "  make setup        - Initial setup (venv + deps)"
 	@echo "  make install      - Install production dependencies"
 	@echo "  make upload       - Upload package to PyPI"
 	@echo "  make dev-install  - Install development dependencies"
@@ -32,13 +33,15 @@ help:
 	@echo "  make build        - Build package distribution"
 	@echo "  make update-deps  - Update frozen dependencies"
 	@echo "  make pre-commit   - Run pre-commit hooks"
-	@echo "  make setup        - Initial setup (venv + deps)"
+	@echo "  make release-local- Create a local release"
 	@echo "  make test-file    - Run specific test file (usage: make test-file file=path/to/test.py)"
 	@echo "  make branch       - Create new git branch (usage: make branch name=feature/name)"
 
 define run_in_venv
 	bash -c 'source $(VENV_ACTIVATE) && $(1)'
 endef
+
+all: venv
 
 $(VENV):
 	@echo "Creating virtual environment..."
@@ -121,7 +124,6 @@ upload: check-build
 	@echo "Upload to PyPI complete. Check https://pypi.org/project/$(PACKAGE_NAME)"
 	@echo "To install: pip install $(PACKAGE_NAME)"
 
-# 创建新版本发布
 release:
 	@if [ "$(new_version)" = "" ]; then \
 		echo "Usage: make release new_version=X.Y.Z"; \
@@ -129,13 +131,22 @@ release:
 	fi
 	@echo "Creating new release version $(new_version)..."
 	@python scripts/update_version.py $(new_version)
+	@echo "Version $(new_version) has been created and tagged"
+	@make upload
+
+release-local:
+	@if [ "$(new_version)" = "" ]; then \
+		echo "Usage: make release new_version=X.Y.Z"; \
+		exit 1; \
+	fi
+	@echo "Creating new release version $(new_version)..."
+	@python scripts/update_version.py $(new_version)
 	git add setup.py
-	git commit -m "Release version $(new_version)"
+	git commit -am "Release version $(new_version)"
 	git tag -a v$(new_version) -m "Version $(new_version)"
 	git push origin v$(new_version)
 	@echo "Version $(new_version) has been created and tagged"
-	@make build
-
+	@make upload
 
 update-deps: $(VENV)
 	@echo "Updating frozen dependencies..."

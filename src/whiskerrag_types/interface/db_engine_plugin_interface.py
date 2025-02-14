@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Type, TypeVar, Union
+from typing import Any, List, TypeVar, Union
 
 from pydantic import BaseModel
 
@@ -35,9 +35,10 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_db_client(self) -> Any:
+    def get_db_client(self) -> Any:
         pass
 
+    # =================== knowledge ===================
     @abstractmethod
     async def save_knowledge_list(
         self, knowledge_list: List[Knowledge]
@@ -46,14 +47,34 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_knowledge_list(
-        self, space_id: str, page_params: PageParams
+        self, tenant_id: str, page_params: PageParams
     ) -> PageResponse[Knowledge]:
         pass
 
     @abstractmethod
-    async def get_knowledge(self, knowledge_id: str) -> Knowledge:
+    async def get_knowledge(self, tenant_id: str, knowledge_id: str) -> Knowledge:
         pass
 
+    @abstractmethod
+    async def update_knowledge(self, knowledge: Knowledge) -> None:
+        pass
+
+    @abstractmethod
+    async def delete_knowledge(
+        self, tenant_id: str, knowledge_id_list: List[str]
+    ) -> None:
+        pass
+
+    # =================== chunk ===================
+    @abstractmethod
+    async def save_chunk_list(self, chunks: List[Chunk]) -> List[Chunk]:
+        pass
+
+    @abstractmethod
+    async def get_chunk_by_knowledge_id(self, tenant_id: str, chunk_id: str) -> Chunk:
+        pass
+
+    # =================== retrieval ===================
     @abstractmethod
     async def search_space_chunk_list(
         self,
@@ -68,22 +89,7 @@ class DBPluginInterface(ABC):
     ) -> List[RetrievalChunk]:
         pass
 
-    @abstractmethod
-    async def update_knowledge(self, knowledge: Knowledge) -> None:
-        pass
-
-    @abstractmethod
-    async def delete_knowledge(self, knowledge_id_list: List[str]) -> None:
-        pass
-
-    @abstractmethod
-    async def save_chunk_list(self, chunks: List[Chunk]) -> List[Chunk]:
-        pass
-
-    @abstractmethod
-    async def get_chunk_by_knowledge_id(self, chunk_id: str) -> Chunk:
-        pass
-
+    # =================== task ===================
     @abstractmethod
     async def save_task_list(self, task_list: List[Task]) -> List[Task]:
         pass
@@ -92,6 +98,13 @@ class DBPluginInterface(ABC):
     async def update_task_list(self, task_list: List[Task]) -> None:
         pass
 
+    @abstractmethod
+    async def get_task_list(
+        self, tenant_id: str, page_params: PageParams
+    ) -> PageResponse[Task]:
+        pass
+
+    # =================== tenant ===================
     @abstractmethod
     async def get_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
         pass
@@ -102,13 +115,4 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_tenant_by_sk(self, secret_key: str) -> Union[Tenant, None]:
-        pass
-
-    @abstractmethod
-    def get_paginated_data(
-        self,
-        table_name: str,
-        model_class: Type[T],
-        page_params: PageParams,
-    ) -> PageResponse[T]:
         pass

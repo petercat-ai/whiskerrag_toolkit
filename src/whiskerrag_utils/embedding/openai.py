@@ -23,13 +23,17 @@ class OpenAIEmbedding(BaseEmbedding):
         splitter: Optional[Union[CharacterTextSplitter, MarkdownTextSplitter]] = None
         if knowledge.knowledge_type == KnowledgeTypeEnum.TEXT:
             splitter = CharacterTextSplitter(
-                chunk_size=knowledge.split_config.get("chunk_size"),
-                chunk_overlap=knowledge.split_config.get("chunk_overlap"),
+                chunk_size=knowledge.split_config.chunk_size,
+                chunk_overlap=knowledge.split_config.chunk_overlap,
+                separator=",".join(
+                    x for x in (knowledge.split_config.separators or [])
+                ),
             )
         if knowledge.knowledge_type == KnowledgeTypeEnum.MARKDOWN:
             splitter = MarkdownTextSplitter(
-                chunk_size=knowledge.split_config.get("chunk_size"),
-                chunk_overlap=knowledge.split_config.get("chunk_overlap"),
+                chunk_size=knowledge.split_config.chunk_size,
+                chunk_overlap=knowledge.split_config.chunk_overlap,
+                separators=knowledge.split_config.separators,
             )
         if splitter is None:
             raise Exception("not support knowledge type")
@@ -55,5 +59,6 @@ class OpenAIEmbedding(BaseEmbedding):
         return chunks
 
     async def embed_text(self, text: str) -> List[float]:
-        embeddings = OpenAIEmbeddings()
-        return embeddings.embed_query(text)
+        embedding_client = OpenAIEmbeddings()
+        embeddings = embedding_client.embed_query(text)  # type: ignore
+        return embeddings

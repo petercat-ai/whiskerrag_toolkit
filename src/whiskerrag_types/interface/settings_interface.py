@@ -16,7 +16,7 @@ class SettingsInterface(ABC):
     PLUGIN_ENV = dict
 
     @abstractmethod
-    def load_plugin_dir_env(self) -> None:
+    def load_plugin_dir_env(self, plugin_env_path: str) -> dict:
         pass
 
     @abstractmethod
