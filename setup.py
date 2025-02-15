@@ -2,10 +2,8 @@ import pathlib
 
 from setuptools import find_namespace_packages, setup
 
-# 获取当前目录
 HERE = pathlib.Path(__file__).parent
 
-# 读取 README.md 文件
 README = (HERE / "README.md").read_text(encoding="utf-8")
 
 setup(

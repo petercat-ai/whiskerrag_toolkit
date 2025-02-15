@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from ..interface import DBPluginInterface, LoggerManagerInterface, SettingsInterface
-from ..model import Knowledge, KnowledgeCreate, Task, Tenant
+from ..interface import LoggerManagerInterface, SettingsInterface
+from ..model import Knowledge, Task, Tenant
 
 
 class TaskEnginPluginInterface(ABC):
@@ -31,15 +31,6 @@ class TaskEnginPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def gen_knowledge_list(
-        self, user_input: List[KnowledgeCreate], tenant: Tenant
-    ) -> List[Knowledge]:
-        """
-        Generate a list of tasks from the user input.
-        """
-        pass
-
-    @abstractmethod
     async def init_task_from_knowledge(
         self, knowledge_list: List[Knowledge], tenant: Tenant
     ) -> List[Task]:
@@ -49,31 +40,10 @@ class TaskEnginPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def execute_task(self, task_id: str) -> List[Task]:
-        """
-        Execute a task.
-        """
-        pass
-
-    @abstractmethod
     async def batch_execute_task(
         self, task_list: List[Task], knowledge_list: List[Knowledge]
     ) -> List[Task]:
         """
         Execute a list of tasks.
-        """
-        pass
-
-    @abstractmethod
-    async def on_task_execute(self, db: DBPluginInterface) -> None:
-        """
-        Listen to the task execution status with no parameter restrictions.
-        """
-        pass
-
-    @abstractmethod
-    async def stop_on_task_execute(self) -> None:
-        """
-        Stop listening to the task execution status.
         """
         pass

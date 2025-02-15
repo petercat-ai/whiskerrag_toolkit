@@ -33,7 +33,6 @@ class OpenAIEmbedding(BaseEmbedding):
             splitter = MarkdownTextSplitter(
                 chunk_size=knowledge.split_config.chunk_size,
                 chunk_overlap=knowledge.split_config.chunk_overlap,
-                separators=knowledge.split_config.separators,
             )
         if splitter is None:
             raise Exception("not support knowledge type")
@@ -60,5 +59,5 @@ class OpenAIEmbedding(BaseEmbedding):
 
     async def embed_text(self, text: str) -> List[float]:
         embedding_client = OpenAIEmbeddings()
-        embeddings = embedding_client.embed_query(text)  # type: ignore
+        embeddings = embedding_client.embed_query(text)
         return embeddings
