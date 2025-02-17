@@ -36,6 +36,8 @@ help:
 	@echo "  make release-local- Create a local release"
 	@echo "  make test-file    - Run specific test file (usage: make test-file file=path/to/test.py)"
 	@echo "  make branch       - Create new git branch (usage: make branch name=feature/name)"
+	@echo "  make generate-client  - Generate client code (usage: make generate-client openapi_path=http://127.0.0.1:8000/openapi.json)"
+
 
 define run_in_venv
 	bash -c 'source $(VENV_ACTIVATE) && $(1)'
@@ -74,10 +76,15 @@ test: $(VENV)
 
 lint: $(VENV)
 	@echo "Running linting checks..."
+	@echo "Running flake8..."
 	@$(FLAKE8) src tests
+	@echo "Running black..."
 	@$(BLACK) --check src tests
+	@echo "Running isort..."
 	@$(ISORT) --check-only src tests
+	@echo "Running MYPY..."
 	@$(MYPY) src
+	@echo "Linting checks complete."
 
 lint-mypy: $(VENV)
 	@echo "Running mypy..."
@@ -101,13 +108,11 @@ build: clean
 	@echo "Build complete."
 
 
-# 检查构建的包
 check-build: build
 	@echo "Checking built distribution..."
 	@$(call run_in_venv, pip install --upgrade twine)
 	@$(call run_in_venv, twine check $(DIST_DIR)/*)
 
-# 上传到测试 PyPI
 upload-test: check-build
 	@echo "Preparing to upload $(PACKAGE_NAME) version $(VERSION) to TestPyPI..."
 	@read -p "Are you sure? [y/N] " confirm && [ $$confirm = "y" ]
@@ -115,7 +120,6 @@ upload-test: check-build
 	@echo "Upload to TestPyPI complete. Check https://test.pypi.org/project/$(PACKAGE_NAME)"
 	@echo "To install from TestPyPI: pip install --index-url https://test.pypi.org/simple/ $(PACKAGE_NAME)"
 
-# 上传到正式 PyPI
 upload: check-build
 	@echo "Preparing to upload $(PACKAGE_NAME) version $(VERSION) to PyPI..."
 	@echo "Warning: This will make the package publicly available!"
@@ -177,3 +181,13 @@ branch:
 	else \
 		git checkout -b $(name); \
 	fi
+
+generate-client:
+	@if [ "$(openapi_path)" = "" ]; then \
+		echo "Usage: make generate-client openapi_path=http://127.0.0.1:8000/openapi.json"; \
+		exit 1; \
+	fi
+	@echo "Creating client from openapi_path $(openapi_path)..."
+	@python scripts/generate_client.py $(openapi_path)
+	@echo "Client created."
+	@make install
