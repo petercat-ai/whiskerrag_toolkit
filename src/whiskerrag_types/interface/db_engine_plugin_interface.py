@@ -47,7 +47,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_knowledge_list(
-        self, tenant_id: str, page_params: PageParams
+        self, tenant_id: str, page_params: PageParams[Knowledge]
     ) -> PageResponse[Knowledge]:
         pass
 
@@ -108,8 +108,12 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_task_list(
-        self, tenant_id: str, page_params: PageParams
+        self, tenant_id: str, page_params: PageParams[Task]
     ) -> PageResponse[Task]:
+        pass
+
+    @abstractmethod
+    async def get_task_by_id(self, tenant_id: str, task_id: str) -> Chunk:
         pass
 
     # =================== tenant ===================
