@@ -71,7 +71,13 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_chunk_by_knowledge_id(self, tenant_id: str, chunk_id: str) -> Chunk:
+    async def get_chunk_list(
+        self, tenant_id: str, page_params: PageParams[Chunk]
+    ) -> List[Chunk]:
+        pass
+
+    @abstractmethod
+    async def get_chunk_by_id(self, tenant_id: str, chunk_id: str) -> Chunk:
         pass
 
     # =================== retrieval ===================

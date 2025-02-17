@@ -23,7 +23,33 @@ pip install whiskerrag
 
 ## 快速开始
 
-该工具包提供两个核心模块：whiskerrag_utils 和 whiskerrag_types
+### whiskerrag_utils
+
+```python
+from whiskerrag_utils import loader,embedding,retriever
+```
+
+### whiskerrag_client
+
+```python
+from whiskerrag_client import ApiClient, Configuration
+from whiskerrag_client.api import default_api
+configuration = Configuration(
+    host="http://localhost:8000"
+    api_key="your_api_key"
+)
+api_client = ApiClient(configuration)
+api_instance = default_api.DefaultApi(api_client)
+
+api_response = api_instance.whisker_rag_get(
+    tenant_id=tenant_id,
+    task_id=task_id,
+    page_params=page_params,
+)
+
+```
+
+### whiskerrag_types
 
 ```python
 from whiskerrag_types.interface import DBPluginInterface, TaskEngineInterface
@@ -153,6 +179,7 @@ whiskerRAG-toolkit/
 ├── src/
 │   ├── whiskerrag_utils/
 │   └── whiskerrag_types/
+│   └── whiskerrag_client.py
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── setup.py

@@ -1,6 +1,6 @@
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 T = TypeVar("T")
 
@@ -16,7 +16,7 @@ class BasePageParams(BaseModel):
     page_size: int = Field(default=10, ge=1, le=100, description="page size")
 
 
-class PageParams(BaseModel):
+class PageParams(BaseModel, Generic[T]):
     page: int = Field(default=1, ge=1, description="page number")
     page_size: int = Field(default=10, ge=1, le=100, description="page size")
     order_by: Optional[str] = Field(default=None, description="order by field")
@@ -33,6 +33,23 @@ class PageParams(BaseModel):
     @property
     def limit(self) -> int:
         return self.page_size
+
+    @model_validator(mode="after")
+    def validate_eq_conditions(self) -> "PageParams[T]":
+        if self.eq_conditions:
+            args = self.__class__.__pydantic_generic_metadata__["args"]
+            if not args:
+                return self
+
+            model_type = args[0]
+            if isinstance(model_type, TypeVar):
+                return self
+
+            model_fields = model_type.model_fields.keys()
+            invalid_keys = set(self.eq_conditions.keys()) - set(model_fields)
+            if invalid_keys:
+                raise ValueError(f"Invalid keys in eq_conditions: {invalid_keys}")
+        return self
 
 
 class PageResponse(BaseModel, Generic[T]):
