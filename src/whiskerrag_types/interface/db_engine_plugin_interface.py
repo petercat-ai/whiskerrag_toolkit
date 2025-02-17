@@ -84,6 +84,7 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def search_space_chunk_list(
         self,
+        tenant_id: str,
         params: RetrievalBySpaceRequest,
     ) -> List[RetrievalChunk]:
         pass
@@ -91,6 +92,7 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def search_knowledge_chunk_list(
         self,
+        tenant_id: str,
         params: RetrievalByKnowledgeRequest,
     ) -> List[RetrievalChunk]:
         pass
