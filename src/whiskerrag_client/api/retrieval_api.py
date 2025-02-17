@@ -47,7 +47,7 @@ class RetrievalApi:
         self.api_client = api_client
 
     @validate_call
-    def retrieve_knowledge_content_api_retrieval_knowledge_post(
+    def retrieve_knowledge_content(
         self,
         retrieval_by_knowledge_request: RetrievalByKnowledgeRequest,
         authorization: Optional[StrictStr] = None,
@@ -93,15 +93,13 @@ class RetrievalApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = (
-            self._retrieve_knowledge_content_api_retrieval_knowledge_post_serialize(
-                retrieval_by_knowledge_request=retrieval_by_knowledge_request,
-                authorization=authorization,
-                _request_auth=_request_auth,
-                _content_type=_content_type,
-                _headers=_headers,
-                _host_index=_host_index,
-            )
+        _param = self._retrieve_knowledge_content_serialize(
+            retrieval_by_knowledge_request=retrieval_by_knowledge_request,
+            authorization=authorization,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index,
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
@@ -119,7 +117,7 @@ class RetrievalApi:
         ).data
 
     @validate_call
-    def retrieve_knowledge_content_api_retrieval_knowledge_post_with_http_info(
+    def retrieve_knowledge_content_with_http_info(
         self,
         retrieval_by_knowledge_request: RetrievalByKnowledgeRequest,
         authorization: Optional[StrictStr] = None,
@@ -165,15 +163,13 @@ class RetrievalApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = (
-            self._retrieve_knowledge_content_api_retrieval_knowledge_post_serialize(
-                retrieval_by_knowledge_request=retrieval_by_knowledge_request,
-                authorization=authorization,
-                _request_auth=_request_auth,
-                _content_type=_content_type,
-                _headers=_headers,
-                _host_index=_host_index,
-            )
+        _param = self._retrieve_knowledge_content_serialize(
+            retrieval_by_knowledge_request=retrieval_by_knowledge_request,
+            authorization=authorization,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index,
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
@@ -191,7 +187,7 @@ class RetrievalApi:
         )
 
     @validate_call
-    def retrieve_knowledge_content_api_retrieval_knowledge_post_without_preload_content(
+    def retrieve_knowledge_content_without_preload_content(
         self,
         retrieval_by_knowledge_request: RetrievalByKnowledgeRequest,
         authorization: Optional[StrictStr] = None,
@@ -237,15 +233,13 @@ class RetrievalApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = (
-            self._retrieve_knowledge_content_api_retrieval_knowledge_post_serialize(
-                retrieval_by_knowledge_request=retrieval_by_knowledge_request,
-                authorization=authorization,
-                _request_auth=_request_auth,
-                _content_type=_content_type,
-                _headers=_headers,
-                _host_index=_host_index,
-            )
+        _param = self._retrieve_knowledge_content_serialize(
+            retrieval_by_knowledge_request=retrieval_by_knowledge_request,
+            authorization=authorization,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index,
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
@@ -258,7 +252,7 @@ class RetrievalApi:
         )
         return response_data.response
 
-    def _retrieve_knowledge_content_api_retrieval_knowledge_post_serialize(
+    def _retrieve_knowledge_content_serialize(
         self,
         retrieval_by_knowledge_request,
         authorization,
@@ -326,7 +320,7 @@ class RetrievalApi:
         )
 
     @validate_call
-    def retrieve_space_content_api_retrieval_space_post(
+    def retrieve_space_content(
         self,
         retrieval_by_space_request: RetrievalBySpaceRequest,
         authorization: Optional[StrictStr] = None,
@@ -372,7 +366,7 @@ class RetrievalApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._retrieve_space_content_api_retrieval_space_post_serialize(
+        _param = self._retrieve_space_content_serialize(
             retrieval_by_space_request=retrieval_by_space_request,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -396,7 +390,7 @@ class RetrievalApi:
         ).data
 
     @validate_call
-    def retrieve_space_content_api_retrieval_space_post_with_http_info(
+    def retrieve_space_content_with_http_info(
         self,
         retrieval_by_space_request: RetrievalBySpaceRequest,
         authorization: Optional[StrictStr] = None,
@@ -442,7 +436,7 @@ class RetrievalApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._retrieve_space_content_api_retrieval_space_post_serialize(
+        _param = self._retrieve_space_content_serialize(
             retrieval_by_space_request=retrieval_by_space_request,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -466,7 +460,7 @@ class RetrievalApi:
         )
 
     @validate_call
-    def retrieve_space_content_api_retrieval_space_post_without_preload_content(
+    def retrieve_space_content_without_preload_content(
         self,
         retrieval_by_space_request: RetrievalBySpaceRequest,
         authorization: Optional[StrictStr] = None,
@@ -512,7 +506,7 @@ class RetrievalApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._retrieve_space_content_api_retrieval_space_post_serialize(
+        _param = self._retrieve_space_content_serialize(
             retrieval_by_space_request=retrieval_by_space_request,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -531,7 +525,7 @@ class RetrievalApi:
         )
         return response_data.response
 
-    def _retrieve_space_content_api_retrieval_space_post_serialize(
+    def _retrieve_space_content_serialize(
         self,
         retrieval_by_space_request,
         authorization,

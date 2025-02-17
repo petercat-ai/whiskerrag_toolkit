@@ -40,17 +40,17 @@ class TestPageResponseRetrievalChunk(unittest.TestCase):
             return PageResponseRetrievalChunk(
                 items = [
                     whiskerrag_client.models.retrieval_chunk.RetrievalChunk(
-                        chunk_id = '',
+                        chunk_id = '', 
                         embedding = [
                             1.337
-                            ],
-                        context = '',
-                        knowledge_id = '',
-                        embedding_model_name = '',
-                        space_id = '',
-                        metadata = whiskerrag_client.models.metadata.metadata(),
-                        created_at = '',
-                        updated_at = '',
+                            ], 
+                        context = '', 
+                        knowledge_id = '', 
+                        embedding_model_name = '', 
+                        space_id = '', 
+                        metadata = whiskerrag_client.models.metadata.metadata(), 
+                        created_at = '', 
+                        updated_at = '', 
                         similarity = 1.337, )
                     ],
                 total = 56,
@@ -62,17 +62,17 @@ class TestPageResponseRetrievalChunk(unittest.TestCase):
             return PageResponseRetrievalChunk(
                 items = [
                     whiskerrag_client.models.retrieval_chunk.RetrievalChunk(
-                        chunk_id = '',
+                        chunk_id = '', 
                         embedding = [
                             1.337
-                            ],
-                        context = '',
-                        knowledge_id = '',
-                        embedding_model_name = '',
-                        space_id = '',
-                        metadata = whiskerrag_client.models.metadata.metadata(),
-                        created_at = '',
-                        updated_at = '',
+                            ], 
+                        context = '', 
+                        knowledge_id = '', 
+                        embedding_model_name = '', 
+                        space_id = '', 
+                        metadata = whiskerrag_client.models.metadata.metadata(), 
+                        created_at = '', 
+                        updated_at = '', 
                         similarity = 1.337, )
                     ],
                 total = 56,

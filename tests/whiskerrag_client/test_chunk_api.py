@@ -26,8 +26,8 @@ class TestChunkApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_get_chunk_list_api_chunk_list_post(self) -> None:
-        """Test case for get_chunk_list_api_chunk_list_post
+    def test_get_chunk_list(self) -> None:
+        """Test case for get_chunk_list
 
         Get Chunk List
         """

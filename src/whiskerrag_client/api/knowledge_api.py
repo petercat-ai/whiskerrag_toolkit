@@ -43,7 +43,7 @@ class KnowledgeApi:
         self.api_client = api_client
 
     @validate_call
-    def add_knowledge_api_knowledge_add_post(
+    def add_knowledge(
         self,
         knowledge_create: List[KnowledgeCreate],
         authorization: Optional[StrictStr] = None,
@@ -88,7 +88,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._add_knowledge_api_knowledge_add_post_serialize(
+        _param = self._add_knowledge_serialize(
             knowledge_create=knowledge_create,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -112,7 +112,7 @@ class KnowledgeApi:
         ).data
 
     @validate_call
-    def add_knowledge_api_knowledge_add_post_with_http_info(
+    def add_knowledge_with_http_info(
         self,
         knowledge_create: List[KnowledgeCreate],
         authorization: Optional[StrictStr] = None,
@@ -157,7 +157,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._add_knowledge_api_knowledge_add_post_serialize(
+        _param = self._add_knowledge_serialize(
             knowledge_create=knowledge_create,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -181,7 +181,7 @@ class KnowledgeApi:
         )
 
     @validate_call
-    def add_knowledge_api_knowledge_add_post_without_preload_content(
+    def add_knowledge_without_preload_content(
         self,
         knowledge_create: List[KnowledgeCreate],
         authorization: Optional[StrictStr] = None,
@@ -226,7 +226,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._add_knowledge_api_knowledge_add_post_serialize(
+        _param = self._add_knowledge_serialize(
             knowledge_create=knowledge_create,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -245,7 +245,7 @@ class KnowledgeApi:
         )
         return response_data.response
 
-    def _add_knowledge_api_knowledge_add_post_serialize(
+    def _add_knowledge_serialize(
         self,
         knowledge_create,
         authorization,
@@ -315,7 +315,7 @@ class KnowledgeApi:
         )
 
     @validate_call
-    def get_knowledge_by_id_api_knowledge_detail_get(
+    def get_knowledge_by_id(
         self,
         knowledge_id: StrictStr,
         authorization: Optional[StrictStr] = None,
@@ -360,7 +360,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_knowledge_by_id_api_knowledge_detail_get_serialize(
+        _param = self._get_knowledge_by_id_serialize(
             knowledge_id=knowledge_id,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -384,7 +384,7 @@ class KnowledgeApi:
         ).data
 
     @validate_call
-    def get_knowledge_by_id_api_knowledge_detail_get_with_http_info(
+    def get_knowledge_by_id_with_http_info(
         self,
         knowledge_id: StrictStr,
         authorization: Optional[StrictStr] = None,
@@ -429,7 +429,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_knowledge_by_id_api_knowledge_detail_get_serialize(
+        _param = self._get_knowledge_by_id_serialize(
             knowledge_id=knowledge_id,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -453,7 +453,7 @@ class KnowledgeApi:
         )
 
     @validate_call
-    def get_knowledge_by_id_api_knowledge_detail_get_without_preload_content(
+    def get_knowledge_by_id_without_preload_content(
         self,
         knowledge_id: StrictStr,
         authorization: Optional[StrictStr] = None,
@@ -498,7 +498,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_knowledge_by_id_api_knowledge_detail_get_serialize(
+        _param = self._get_knowledge_by_id_serialize(
             knowledge_id=knowledge_id,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -517,7 +517,7 @@ class KnowledgeApi:
         )
         return response_data.response
 
-    def _get_knowledge_by_id_api_knowledge_detail_get_serialize(
+    def _get_knowledge_by_id_serialize(
         self,
         knowledge_id,
         authorization,
@@ -577,7 +577,7 @@ class KnowledgeApi:
         )
 
     @validate_call
-    def get_knowledge_list_api_knowledge_list_post(
+    def get_knowledge_list(
         self,
         page_params_knowledge: PageParamsKnowledge,
         authorization: Optional[StrictStr] = None,
@@ -622,7 +622,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_knowledge_list_api_knowledge_list_post_serialize(
+        _param = self._get_knowledge_list_serialize(
             page_params_knowledge=page_params_knowledge,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -646,7 +646,7 @@ class KnowledgeApi:
         ).data
 
     @validate_call
-    def get_knowledge_list_api_knowledge_list_post_with_http_info(
+    def get_knowledge_list_with_http_info(
         self,
         page_params_knowledge: PageParamsKnowledge,
         authorization: Optional[StrictStr] = None,
@@ -691,7 +691,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_knowledge_list_api_knowledge_list_post_serialize(
+        _param = self._get_knowledge_list_serialize(
             page_params_knowledge=page_params_knowledge,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -715,7 +715,7 @@ class KnowledgeApi:
         )
 
     @validate_call
-    def get_knowledge_list_api_knowledge_list_post_without_preload_content(
+    def get_knowledge_list_without_preload_content(
         self,
         page_params_knowledge: PageParamsKnowledge,
         authorization: Optional[StrictStr] = None,
@@ -760,7 +760,7 @@ class KnowledgeApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_knowledge_list_api_knowledge_list_post_serialize(
+        _param = self._get_knowledge_list_serialize(
             page_params_knowledge=page_params_knowledge,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -779,7 +779,7 @@ class KnowledgeApi:
         )
         return response_data.response
 
-    def _get_knowledge_list_api_knowledge_list_post_serialize(
+    def _get_knowledge_list_serialize(
         self,
         page_params_knowledge,
         authorization,

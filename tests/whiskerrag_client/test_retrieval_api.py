@@ -26,15 +26,15 @@ class TestRetrievalApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_retrieve_knowledge_content_api_retrieval_knowledge_post(self) -> None:
-        """Test case for retrieve_knowledge_content_api_retrieval_knowledge_post
+    def test_retrieve_knowledge_content(self) -> None:
+        """Test case for retrieve_knowledge_content
 
         Retrieve Knowledge Content
         """
         pass
 
-    def test_retrieve_space_content_api_retrieval_space_post(self) -> None:
-        """Test case for retrieve_space_content_api_retrieval_space_post
+    def test_retrieve_space_content(self) -> None:
+        """Test case for retrieve_space_content
 
         Retrieve Space Content
         """

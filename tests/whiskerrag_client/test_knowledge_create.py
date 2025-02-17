@@ -45,9 +45,9 @@ class TestKnowledgeCreate(unittest.TestCase):
                 split_config = whiskerrag_client.models.knowledge_split_config.KnowledgeSplitConfig(
                     separators = [
                         ''
-                        ],
-                    split_regex = '',
-                    chunk_size = 1.0,
+                        ], 
+                    split_regex = '', 
+                    chunk_size = 1.0, 
                     chunk_overlap = 0.0, ),
                 source_data = '',
                 source_url = 'ftp://PUx!u\'K}qz^sEC)lJ*=-jQ+\'6`%cClu,k\'',
@@ -62,9 +62,9 @@ class TestKnowledgeCreate(unittest.TestCase):
                 split_config = whiskerrag_client.models.knowledge_split_config.KnowledgeSplitConfig(
                     separators = [
                         ''
-                        ],
-                    split_regex = '',
-                    chunk_size = 1.0,
+                        ], 
+                    split_regex = '', 
+                    chunk_size = 1.0, 
                     chunk_overlap = 0.0, ),
         )
         """

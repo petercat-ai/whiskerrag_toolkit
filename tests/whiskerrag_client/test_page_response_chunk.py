@@ -38,16 +38,16 @@ class TestPageResponseChunk(unittest.TestCase):
             return PageResponseChunk(
                 items = [
                     whiskerrag_client.models.chunk.Chunk(
-                        chunk_id = '',
+                        chunk_id = '', 
                         embedding = [
                             1.337
-                            ],
-                        context = '',
-                        knowledge_id = '',
-                        embedding_model_name = '',
-                        space_id = '',
-                        metadata = whiskerrag_client.models.metadata.metadata(),
-                        created_at = '',
+                            ], 
+                        context = '', 
+                        knowledge_id = '', 
+                        embedding_model_name = '', 
+                        space_id = '', 
+                        metadata = whiskerrag_client.models.metadata.metadata(), 
+                        created_at = '', 
                         updated_at = '', )
                     ],
                 total = 56,
@@ -59,16 +59,16 @@ class TestPageResponseChunk(unittest.TestCase):
             return PageResponseChunk(
                 items = [
                     whiskerrag_client.models.chunk.Chunk(
-                        chunk_id = '',
+                        chunk_id = '', 
                         embedding = [
                             1.337
-                            ],
-                        context = '',
-                        knowledge_id = '',
-                        embedding_model_name = '',
-                        space_id = '',
-                        metadata = whiskerrag_client.models.metadata.metadata(),
-                        created_at = '',
+                            ], 
+                        context = '', 
+                        knowledge_id = '', 
+                        embedding_model_name = '', 
+                        space_id = '', 
+                        metadata = whiskerrag_client.models.metadata.metadata(), 
+                        created_at = '', 
                         updated_at = '', )
                     ],
                 total = 56,

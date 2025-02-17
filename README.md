@@ -33,19 +33,24 @@ from whiskerrag_utils import loader,embedding,retriever
 
 ```python
 from whiskerrag_client import ApiClient, Configuration
-from whiskerrag_client.api import default_api
-configuration = Configuration(
-    host="http://localhost:8000"
-    api_key="your_api_key"
-)
-api_client = ApiClient(configuration)
-api_instance = default_api.DefaultApi(api_client)
+from whiskerrag_client.api import retrieval_api, knowledge_api, task_api
 
-api_response = api_instance.whisker_rag_get(
-    tenant_id=tenant_id,
-    task_id=task_id,
-    page_params=page_params,
-)
+configuration = Configuration(host="http://localhost:8000", api_key="your_api_key")
+
+api_client = ApiClient(configuration)
+
+# knowledge
+knowledge_instance = knowledge_api.KnowledgeApi(api_client)
+knowledge_instance.add_knowledge()
+knowledge_instance.get_knowledge_list()
+# task
+task_instance = task_api.TaskApi(api_client)
+task_instance.get_task_list()
+task_instance.get_task_detail()
+# retrieval
+retrieval_instance = retrieval_api.RetrievalApi(api_client)
+retrieval_instance.retrieve_space_content()
+retrieval_instance.retrieve_knowledge_content()
 
 ```
 

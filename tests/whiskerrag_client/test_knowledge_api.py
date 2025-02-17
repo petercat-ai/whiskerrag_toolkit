@@ -26,22 +26,22 @@ class TestKnowledgeApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_add_knowledge_api_knowledge_add_post(self) -> None:
-        """Test case for add_knowledge_api_knowledge_add_post
+    def test_add_knowledge(self) -> None:
+        """Test case for add_knowledge
 
         Add Knowledge
         """
         pass
 
-    def test_get_knowledge_by_id_api_knowledge_detail_get(self) -> None:
-        """Test case for get_knowledge_by_id_api_knowledge_detail_get
+    def test_get_knowledge_by_id(self) -> None:
+        """Test case for get_knowledge_by_id
 
         Get Knowledge By Id
         """
         pass
 
-    def test_get_knowledge_list_api_knowledge_list_post(self) -> None:
-        """Test case for get_knowledge_list_api_knowledge_list_post
+    def test_get_knowledge_list(self) -> None:
+        """Test case for get_knowledge_list
 
         Get Knowledge List
         """

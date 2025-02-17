@@ -41,7 +41,7 @@ class ChunkApi:
         self.api_client = api_client
 
     @validate_call
-    def get_chunk_list_api_chunk_list_post(
+    def get_chunk_list(
         self,
         page_params_chunk: PageParamsChunk,
         authorization: Optional[StrictStr] = None,
@@ -86,7 +86,7 @@ class ChunkApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_chunk_list_api_chunk_list_post_serialize(
+        _param = self._get_chunk_list_serialize(
             page_params_chunk=page_params_chunk,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -110,7 +110,7 @@ class ChunkApi:
         ).data
 
     @validate_call
-    def get_chunk_list_api_chunk_list_post_with_http_info(
+    def get_chunk_list_with_http_info(
         self,
         page_params_chunk: PageParamsChunk,
         authorization: Optional[StrictStr] = None,
@@ -155,7 +155,7 @@ class ChunkApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_chunk_list_api_chunk_list_post_serialize(
+        _param = self._get_chunk_list_serialize(
             page_params_chunk=page_params_chunk,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -179,7 +179,7 @@ class ChunkApi:
         )
 
     @validate_call
-    def get_chunk_list_api_chunk_list_post_without_preload_content(
+    def get_chunk_list_without_preload_content(
         self,
         page_params_chunk: PageParamsChunk,
         authorization: Optional[StrictStr] = None,
@@ -224,7 +224,7 @@ class ChunkApi:
         :return: Returns the result object.
         """  # noqa: E501
 
-        _param = self._get_chunk_list_api_chunk_list_post_serialize(
+        _param = self._get_chunk_list_serialize(
             page_params_chunk=page_params_chunk,
             authorization=authorization,
             _request_auth=_request_auth,
@@ -243,7 +243,7 @@ class ChunkApi:
         )
         return response_data.response
 
-    def _get_chunk_list_api_chunk_list_post_serialize(
+    def _get_chunk_list_serialize(
         self,
         page_params_chunk,
         authorization,

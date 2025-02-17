@@ -1,6 +1,7 @@
+from typing import Optional
+
 import pytest
 from pydantic import BaseModel, ValidationError
-from typing import Optional
 
 from whiskerrag_types.model.page import PageParams
 

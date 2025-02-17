@@ -26,15 +26,15 @@ class TestTaskApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_get_task_list_api_task_detail_get(self) -> None:
-        """Test case for get_task_list_api_task_detail_get
+    def test_get_task_detail(self) -> None:
+        """Test case for get_task_detail
 
         Get Task List
         """
         pass
 
-    def test_get_task_list_api_task_list_post(self) -> None:
-        """Test case for get_task_list_api_task_list_post
+    def test_get_task_list(self) -> None:
+        """Test case for get_task_list
 
         Get Task List
         """
