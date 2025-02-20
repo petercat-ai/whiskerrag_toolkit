@@ -11,6 +11,9 @@ class TaskStatus(str, Enum):
     RUNNING = "running"
     SUCCESS = "success"
     FAILED = "failed"
+    SKIPPED = "skipped"
+    CANCELED = "canceled"
+    PENDING_RETRY = "pending_retry"
 
 
 class Task(BaseModel):

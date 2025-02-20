@@ -36,7 +36,6 @@ help:
 	@echo "  make release-local- Create a local release"
 	@echo "  make test-file    - Run specific test file (usage: make test-file file=path/to/test.py)"
 	@echo "  make branch       - Create new git branch (usage: make branch name=feature/name)"
-	@echo "  make generate-client  - Generate client code (usage: make generate-client openapi_path=http://127.0.0.1:8000/openapi.json)"
 
 
 define run_in_venv
@@ -181,13 +180,3 @@ branch:
 	else \
 		git checkout -b $(name); \
 	fi
-
-generate-client:
-	@if [ "$(openapi_path)" = "" ]; then \
-		echo "Usage: make generate-client openapi_path=http://127.0.0.1:8000/openapi.json"; \
-		exit 1; \
-	fi
-	@echo "Creating client from openapi_path $(openapi_path)..."
-	@python scripts/generate_client.py $(openapi_path)
-	@echo "Client created."
-	@make install

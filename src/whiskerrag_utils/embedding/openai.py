@@ -19,7 +19,6 @@ class OpenAIEmbedding(BaseEmbedding):
     async def embed_documents(
         self, knowledge: Knowledge, documents: List[Document]
     ) -> List[Chunk]:
-        print(f"start embed knowledge: {knowledge}")
         splitter: Optional[Union[CharacterTextSplitter, MarkdownTextSplitter]] = None
         if knowledge.knowledge_type == KnowledgeTypeEnum.TEXT:
             splitter = CharacterTextSplitter(
@@ -40,10 +39,9 @@ class OpenAIEmbedding(BaseEmbedding):
         chunks: List[Chunk] = []
         docs = splitter.split_documents(documents)
         embeddings = OpenAIEmbeddings()
+        # TODO: rate limit
         for doc in docs:
-            print(f"doc: {doc.page_content}")
             embedding = embeddings.embed_query(doc.page_content)
-            print(f"embedding result: {embedding}")
             chunk = Chunk(
                 context=doc.page_content,
                 metadata={
