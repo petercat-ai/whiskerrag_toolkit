@@ -38,10 +38,10 @@ class OpenAIEmbedding(BaseEmbedding):
 
         chunks: List[Chunk] = []
         docs = splitter.split_documents(documents)
-        embeddings = OpenAIEmbeddings()
-        # TODO: rate limit
+        embedding_client = OpenAIEmbeddings()
+        # TODO: rate
         for doc in docs:
-            embedding = embeddings.embed_query(doc.page_content)
+            embedding = embedding_client.embed_query(doc.page_content)
             chunk = Chunk(
                 context=doc.page_content,
                 metadata={
@@ -51,11 +51,11 @@ class OpenAIEmbedding(BaseEmbedding):
                 knowledge_id=knowledge.knowledge_id,
                 embedding_model_name=knowledge.embedding_model_name,
                 space_id=knowledge.space_id,
+                tenant_id=knowledge.tenant_id,
             )
             chunks.append(chunk)
         return chunks
 
-    async def embed_text(self, text: str) -> List[float]:
-        embedding_client = OpenAIEmbeddings()
-        embeddings = embedding_client.embed_query(text)
-        return embeddings
+    async def embed_text(self, text: str, timeout: Optional[int]) -> List[float]:
+        embedding_client = OpenAIEmbeddings(timeout=timeout or 15)
+        return embedding_client.embed_query(text)

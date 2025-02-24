@@ -9,14 +9,17 @@ from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 
 class Chunk(BaseModel):
     chunk_id: str = Field(default_factory=lambda: str(uuid4()), description="chunk id")
+    space_id: str = Field(..., description="space id")
+    tenant_id: str = Field(..., description="tenant id")
     embedding: Optional[list[float]] = Field(None, description="chunk embedding")
     context: str = Field(..., description="chunk content")
     knowledge_id: str = Field(..., description="file source info")
     embedding_model_name: Optional[EmbeddingModelEnum] = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
-    space_id: str = Field(..., description="space id")
-    metadata: Optional[dict] = Field(None, description="metadata")
+    metadata: Optional[dict] = Field(
+        None, description="Arbitrary metadata associated with the content."
+    )
     created_at: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(), description="creation time"
     )

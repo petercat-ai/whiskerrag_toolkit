@@ -58,7 +58,7 @@ class KnowledgeTypeEnum(str, Enum):
 
 class EmbeddingModelEnum(str, Enum):
     OPENAI = "openai"
-    qwen = "qwen"
+    QWEN = "qwen"
 
 
 class KnowledgeSplitConfig(BaseModel):
@@ -115,7 +115,7 @@ class KnowledgeCreate(BaseModel):
     embedding_model_name: EmbeddingModelEnum = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
-    metadata: dict = Field({}, description="additional metadata")
+    metadata: dict = Field({}, description="additional metadata, user can change")
 
     @field_serializer("metadata")
     def serialize_metadata(self, metadata: dict) -> Optional[dict]:

@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
@@ -28,6 +28,12 @@ class RetrievalRequestBase(BaseModel):
     # aggs: bool = Field(True, description="是否进行聚合")
     # rerank_mdl: Optional[str] = Field(None, description="重排序模型名称")
     # highlight: bool = Field(False, description="是否高亮显示")
+
+    @field_serializer("embedding_model_name")
+    def serialize_embedding_model_name(
+        self, embedding_model_name: Optional[EmbeddingModelEnum]
+    ) -> Optional[str]:
+        return embedding_model_name.value if embedding_model_name else None
 
 
 class RetrievalBySpaceRequest(RetrievalRequestBase):

@@ -1,5 +1,3 @@
-exclude: ^(src/whiskerrag_client/|tests/whiskerrag_client/)
-
 repos:
 - repo: local
   hooks:

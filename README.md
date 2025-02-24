@@ -32,26 +32,33 @@ from whiskerrag_utils import loader,embedding,retriever
 ### whiskerrag_client
 
 ```python
-from whiskerrag_client import ApiClient, Configuration
-from whiskerrag_client.api import retrieval_api, knowledge_api, task_api
+from whiskerrag_client import APIClient
 
-configuration = Configuration(host="http://localhost:8000", api_key="your_api_key")
+api_client = APIClient(
+    base_url="https://api.example.com",
+    token="your_token_here"
+)
 
-api_client = ApiClient(configuration)
+knowledge_chunks = await api_client.retrieval.retrieve_knowledge_content(
+    RetrievalByKnowledgeRequest(knowledge_id="your knowledge uuid here")
+)
 
-# knowledge
-knowledge_instance = knowledge_api.KnowledgeApi(api_client)
-knowledge_instance.add_knowledge()
-knowledge_instance.get_knowledge_list()
-# task
-task_instance = task_api.TaskApi(api_client)
-task_instance.get_task_list()
-task_instance.get_task_detail()
-# retrieval
-retrieval_instance = retrieval_api.RetrievalApi(api_client)
-retrieval_instance.retrieve_space_content()
-retrieval_instance.retrieve_knowledge_content()
+space_chunks = await api_client.retrieval.retrieve_space_content(
+    RetrievalBySpaceRequest(space_id="your space id here ")
+)
 
+chunk_list = await api_client.chunk.get_chunk_list(
+    page=1,
+    size=10,
+    filters={"status": "active"}
+)
+
+task_list = await api_client.task.get_task_list(
+    page=1,
+    size=10
+)
+
+task_detail = await api_client.task.get_task_detail("task_id_here")
 ```
 
 ### whiskerrag_types
@@ -184,7 +191,7 @@ whiskerRAG-toolkit/
 ├── src/
 │   ├── whiskerrag_utils/
 │   └── whiskerrag_types/
-│   └── whiskerrag_client.py
+│   └── whiskerrag_client/
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── setup.py

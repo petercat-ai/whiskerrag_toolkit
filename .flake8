@@ -6,9 +6,5 @@ exclude =
     __pycache__,
     build,
     dist,
-    .venv,
-    src/whiskerrag_client,
-    src/whiskerrag_client/*,
-    tests/whiskerrag_client,
-    tests/whiskerrag_client/*
+    .venv
 ignore = D100,D101,D102,D103,D104,D105,D106,D107

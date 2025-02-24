@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from langchain_core.documents import Document
 
@@ -18,7 +18,7 @@ class BaseEmbedding(ABC):
         pass
 
     @abstractmethod
-    async def embed_text(self, text: str) -> List[float]:
+    async def embed_text(self, text: str, timeout: Optional[int]) -> List[float]:
         """
         Embed a text.
         """
