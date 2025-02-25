@@ -118,13 +118,17 @@ class DBPluginInterface(ABC):
 
     # =================== tenant ===================
     @abstractmethod
-    async def get_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
-        pass
-
-    @abstractmethod
-    async def validate_tenant_by_sk(self, secret_key: str) -> bool:
+    async def save_tenant(self, tenant: Tenant) -> Union[Tenant, None]:
         pass
 
     @abstractmethod
     async def get_tenant_by_sk(self, secret_key: str) -> Union[Tenant, None]:
+        pass
+
+    @abstractmethod
+    async def update_tenant(self, tenant: Tenant) -> None:
+        pass
+
+    @abstractmethod
+    async def validate_tenant_name(self, tenant_name: str) -> bool:
         pass

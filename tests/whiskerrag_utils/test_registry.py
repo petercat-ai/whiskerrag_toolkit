@@ -8,7 +8,7 @@ from whiskerrag_utils import RegisterTypeEnum, get_register
 class TestRegister:
     def test_get_github_loader(self) -> None:
         github_loader = get_register(
-            RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_REPO
+            RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_FILE
         )
         assert issubclass(github_loader, BaseLoader)
 

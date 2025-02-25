@@ -38,11 +38,41 @@ def calculate_sha256(text: str) -> str:
 
 class KnowledgeSourceEnum(str, Enum):
     GITHUB_REPO = "github_repo"
+    GITHUB_FILE = "github_file"
     S3 = "S3"
     TEXT = "text"
 
 
+class GithubRepoSourceConfig(BaseModel):
+    repo_name: str = Field(..., description="github repo url")
+    branch: Optional[str] = Field(None, description="branch name of the repo")
+    commit_id: Optional[str] = Field(None, description="commit id of the repo")
+    auth_info: Optional[str] = Field(None, description="authentication information")
+
+
+class GithubFileSourceConfig(GithubRepoSourceConfig):
+    path: str = Field(..., description="path of the file in the repo")
+
+
+class S3SourceConfig(BaseModel):
+    bucket: str = Field(..., description="s3 bucket name")
+    key: str = Field(..., description="s3 key")
+    version_id: Optional[str] = Field(None, description="s3 version id")
+    region: Optional[str] = Field(None, description="s3 region")
+    access_key: Optional[str] = Field(None, description="s3 access key")
+    secret_key: Optional[str] = Field(None, description="s3 secret key")
+    session_token: Optional[str] = Field(None, description="s3 session token")
+
+
+class TextSourceConfig(BaseModel):
+    text: str = Field(..., description="text content")
+
+
 class KnowledgeTypeEnum(str, Enum):
+    """
+    mime type of the knowledge
+    """
+
     TEXT = "text"
     MARKDOWN = "markdown"
     HTML = "html"
@@ -85,37 +115,40 @@ class KnowledgeCreate(BaseModel):
         file_size (Optional[int]): Size of the file.
         split_config (Optional[dict]): Configuration for splitting the knowledge.
         source_data (Optional[str]): Source data of the knowledge.
-        source_url (Optional[str]): URL of the source.
         auth_info (Optional[str]): Authentication information.
         embedding_model_name (Optional[str]): Name of the embedding model.
         metadata (Optional[dict]): Additional metadata.
     """
 
-    source_type: KnowledgeSourceEnum = Field(
-        KnowledgeSourceEnum.TEXT, description="source type"
+    space_id: str = Field(
+        ...,
+        description="the space of knowledge, example: petercat bot id, github repo name",
     )
     knowledge_type: KnowledgeTypeEnum = Field(
         KnowledgeTypeEnum.TEXT, description="type of knowledge resource"
     )
-    space_id: str = Field(..., description="space id, example: petercat bot id")
     knowledge_name: str = Field(..., description="name of the knowledge resource")
-    file_sha: Optional[str] = Field(None, description="SHA of the file")
-    file_size: Optional[int] = Field(None, description="size of the file")
+    source_type: KnowledgeSourceEnum = Field(
+        KnowledgeSourceEnum.TEXT, description="source type"
+    )
+    source_config: Union[
+        GithubRepoSourceConfig, GithubFileSourceConfig, S3SourceConfig, TextSourceConfig
+    ] = Field(
+        ...,
+        description="source config of the knowledge",
+    )
+    embedding_model_name: EmbeddingModelEnum = Field(
+        EmbeddingModelEnum.OPENAI, description="name of the embedding model"
+    )
     split_config: KnowledgeSplitConfig = Field(
         ...,
         description="configuration for splitting the knowledge",
     )
-    source_data: Optional[str] = Field(None, description="source data of the knowledge")
-    source_url: Optional[str] = Field(
-        None,
-        description="URL of the source",
-        pattern=r"^(https?|ftp)://[^\s/$.?#].[^\s]*$",
-    )
-    auth_info: Optional[str] = Field(None, description="authentication information")
-    embedding_model_name: EmbeddingModelEnum = Field(
-        EmbeddingModelEnum.OPENAI, description="name of the embedding model"
-    )
-    metadata: dict = Field({}, description="additional metadata, user can change")
+    file_sha: Optional[str] = Field(None, description="SHA of the file")
+    file_size: Optional[int] = Field(None, description="size of the file")
+    metadata: dict = Field({}, description="additional metadata, user can update it")
+    parent_id: Optional[str] = Field(None, description="parent knowledge id")
+    enabled: bool = Field(True, description="is knowledge enabled")
 
     @field_serializer("metadata")
     def serialize_metadata(self, metadata: dict) -> Optional[dict]:
@@ -180,12 +213,13 @@ class Knowledge(KnowledgeCreate):
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
         if (
-            self.source_data is not None
+            self.source_type == KnowledgeSourceEnum.TEXT
+            and isinstance(self.source_config, TextSourceConfig)
+            and self.source_config.text is not None
             and self.file_sha is None
-            and self.source_type == KnowledgeSourceEnum.TEXT
         ):
-            self.file_sha = calculate_sha256(self.source_data)
-            self.file_size = len(self.source_data.encode("utf-8"))
+            self.file_sha = calculate_sha256(self.source_config.text)
+            self.file_size = len(self.source_config.text.encode("utf-8"))
 
     @field_serializer("created_at")
     def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:

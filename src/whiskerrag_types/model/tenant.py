@@ -11,7 +11,6 @@ class Tenant(BaseModel):
     )
     tenant_name: str = Field("", description="tenant name")
     email: str = Field(..., description="email")
-    user_id: Optional[str] = Field(None, description="user id")
     secret_key: str = Field("", description="secret_key")
     is_active: bool = Field(True, description="is active")
     created_at: Optional[datetime] = Field(

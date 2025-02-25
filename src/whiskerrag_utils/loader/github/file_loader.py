@@ -5,12 +5,20 @@ from github import Github
 from langchain_core.documents import Document
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
-from whiskerrag_types.model.knowledge import Knowledge, KnowledgeSourceEnum
+from whiskerrag_types.model.knowledge import (
+    GithubFileSourceConfig,
+    Knowledge,
+    KnowledgeSourceEnum,
+)
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_REPO)
+@register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_FILE)
 class GithubFileLoader(BaseLoader):
+    """
+    Load a file from a GitHub repository.
+    """
+
     knowledge: Knowledge
     path: str
     mode: str
@@ -27,21 +35,16 @@ class GithubFileLoader(BaseLoader):
         knowledge: Knowledge,
     ):
         self.knowledge = knowledge
-        if not knowledge.metadata or not all(
-            key in knowledge.metadata for key in ["repo_name", "path", "branch"]
-        ):
-            raise ValueError("metadata must contain 'repo_name', 'path', and 'branch'")
-        if not knowledge.auth_info:
-            raise ValueError("auth_info is required")
-        self.github = Github(knowledge.auth_info)
-        self.repo_name = knowledge.metadata["repo_name"]
-        self.repo = self.github.get_repo(self.repo_name)
-        if not self.repo:
-            raise ValueError(f"repo {self.repo_name} not found")
-        self.path = knowledge.metadata["path"]
-        self.branch = knowledge.metadata["branch"]
-        self.commit_id = knowledge.metadata.get(
-            "commit_id", self._get_commit_id_by_branch(self.branch)
+        if not isinstance(knowledge.source_config, GithubFileSourceConfig):
+            raise ValueError("source_config should be GithubFileSourceConfig")
+        source_config: GithubFileSourceConfig = knowledge.source_config
+        self.github = (
+            Github(source_config.auth_info) if source_config.auth_info else Github()
+        )
+        self.repo = self.github.get_repo(source_config.repo_name)
+        self.branch = source_config.branch or self.repo.default_branch
+        self.commit_id = source_config.commit_id or self._get_commit_id_by_branch(
+            self.branch
         )
 
     def _get_commit_id_by_branch(self, branch: str) -> str:
@@ -65,9 +68,4 @@ class GithubFileLoader(BaseLoader):
 
     async def load(self) -> List[Document]:
         content = self._get_file_content_by_path()
-        metadata = {
-            **self.knowledge.metadata,
-            "sha": self.sha,
-            "size": self.size,
-        }
-        return [Document(page_content=content, metadata=metadata)]
+        return [Document(page_content=content, metadata=self.knowledge.metadata)]
