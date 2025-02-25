@@ -8,7 +8,7 @@ README = (HERE / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="whiskerrag",
-    version="0.0.7",
+    version="0.0.8",
     description="A utility package for RAG operations",
     long_description=README,
     long_description_content_type="text/markdown",
