@@ -46,6 +46,7 @@ class GithubFileLoader(BaseLoader):
         self.commit_id = source_config.commit_id or self._get_commit_id_by_branch(
             self.branch
         )
+        self.path = source_config.path
 
     def _get_commit_id_by_branch(self, branch: str) -> str:
         branch_info = self.repo.get_branch(branch)
