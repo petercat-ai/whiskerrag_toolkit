@@ -52,4 +52,5 @@ class TaskClient:
             endpoint=f"{self.base_path}/restart",
             json={"task_id_list": task_id_list},
         )
+
         return [Task(**task) for task in response["data"]]

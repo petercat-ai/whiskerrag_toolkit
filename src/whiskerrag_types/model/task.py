@@ -1,9 +1,13 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_serializer
+
+
+class TaskRestartRequest(BaseModel):
+    task_id_list: List[str] = Field(..., description="List of task IDs to restart")
 
 
 class TaskStatus(str, Enum):

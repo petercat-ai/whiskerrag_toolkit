@@ -14,7 +14,7 @@ from .retrieval import (
     RetrievalChunk,
     RetrievalEnum,
 )
-from .task import Task, TaskStatus
+from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
 
 __all__ = [
@@ -33,5 +33,6 @@ __all__ = [
     "RetrievalChunk",
     "Task",
     "TaskStatus",
+    "TaskRestartRequest",
     "Tenant",
 ]
