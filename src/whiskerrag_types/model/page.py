@@ -18,7 +18,7 @@ class BasePageParams(BaseModel):
 
 class PageParams(BaseModel, Generic[T]):
     page: int = Field(default=1, ge=1, description="page number")
-    page_size: int = Field(default=10, ge=1, le=100, description="page size")
+    page_size: int = Field(default=10, ge=1, le=1000, description="page size")
     order_by: Optional[str] = Field(default=None, description="order by field")
     order_direction: Optional[str] = Field(default="asc", description="asc or desc")
     eq_conditions: Optional[Dict[str, Any]] = Field(
