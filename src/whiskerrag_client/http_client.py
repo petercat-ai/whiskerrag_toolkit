@@ -42,6 +42,12 @@ class HttpClient(BaseClient):
         super().__init__(base_url, token, timeout)
         self.client = httpx.AsyncClient()
 
+    async def __aenter__(self) -> "HttpClient":
+        return self
+
+    async def __aexit__(self) -> None:
+        await self.close()
+
     async def _request(
         self,
         method: str,
@@ -69,12 +75,15 @@ class HttpClient(BaseClient):
             if key not in request_kwargs:
                 request_kwargs[key] = value
 
-        async with self.client as client:
-            response = await client.request(
+            response = await self.client.request(
                 **request_kwargs, timeout=self.timeout  # type: ignore
             )
-            response.raise_for_status()
-            return response.json()
+        response = await self.client.request(
+            **request_kwargs, timeout=self.timeout  # type: ignore
+        )
+        response.raise_for_status()
+        return response.json()
 
     async def close(self) -> None:
-        await self.client.aclose()
+        if self.client:
+            await self.client.aclose()

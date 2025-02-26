@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from whiskerrag_client.http_client import BaseClient
 from whiskerrag_types.model.page import PageParams, PageResponse
@@ -45,3 +45,11 @@ class TaskClient:
             params={"task_id": task_id},
         )
         return Task(**response["data"])
+
+    async def restart_task(self, task_id_list: List[str]) -> List[Task]:
+        response = await self.http_client._request(
+            method="POST",
+            endpoint=f"{self.base_path}/restart",
+            json={"task_id_list": task_id_list},
+        )
+        return [Task(**task) for task in response["data"]]

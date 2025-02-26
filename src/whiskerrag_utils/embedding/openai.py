@@ -39,7 +39,6 @@ class OpenAIEmbedding(BaseEmbedding):
         chunks: List[Chunk] = []
         docs = splitter.split_documents(documents)
         embedding_client = OpenAIEmbeddings()
-        # TODO: rate
         for doc in docs:
             embedding = embedding_client.embed_query(doc.page_content)
             chunk = Chunk(
