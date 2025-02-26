@@ -43,7 +43,7 @@ class KnowledgeClient:
             total=response["data"]["total"],
             page=response["data"]["page"],
             page_size=response["data"]["page_size"],
-            total_pages=response["data"]["total_page"],
+            total_pages=response["data"]["total_pages"],
         )
 
     async def get_knowledge_by_id(self, knowledge_id: str) -> Knowledge:

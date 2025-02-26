@@ -13,7 +13,7 @@ class OrCondition:
 
 class BasePageParams(BaseModel):
     page: int = Field(default=1, ge=1, description="page number")
-    page_size: int = Field(default=10, ge=1, le=100, description="page size")
+    page_size: int = Field(default=10, ge=1, le=1000, description="page size")
 
 
 class PageParams(BaseModel, Generic[T]):
