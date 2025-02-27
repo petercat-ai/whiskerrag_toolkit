@@ -1,11 +1,15 @@
 from .chunk import Chunk
 from .knowledge import (
     EmbeddingModelEnum,
+    GithubFileSourceConfig,
+    GithubRepoSourceConfig,
     Knowledge,
     KnowledgeCreate,
     KnowledgeSourceEnum,
     KnowledgeSplitConfig,
     KnowledgeTypeEnum,
+    S3SourceConfig,
+    TextSourceConfig,
 )
 from .page import PageParams, PageResponse
 from .retrieval import (
@@ -24,6 +28,10 @@ __all__ = [
     "EmbeddingModelEnum",
     "KnowledgeSplitConfig",
     "KnowledgeCreate",
+    "GithubRepoSourceConfig",
+    "GithubFileSourceConfig",
+    "S3SourceConfig",
+    "TextSourceConfig",
     "Knowledge",
     "PageParams",
     "PageResponse",
