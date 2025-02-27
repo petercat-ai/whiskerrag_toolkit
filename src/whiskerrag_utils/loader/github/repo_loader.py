@@ -49,18 +49,21 @@ class GithubRepoLoader:
         file_tree = self.repo.get_git_tree(self.branch_name, recursive=True)  # type: ignore
         file_list = []
         for item in file_tree.tree:
-            if item.type == "tree":
+            # type usually be blob, tree, commit. We only care about blob
+            if item.type != "blob":
                 continue
-            else:
-                file_list.append(
-                    GitFileElementType(
-                        sha=item.sha,
-                        path=item.path,
-                        url=item.url,
-                        mode=item.mode,
-                        size=item.size,
-                        branch=self.branch_name,  # type: ignore[arg-type]
-                        repo_name=self.repo_name,
-                    )
+            if not isinstance(item.size, int):
+                print(f"Invalid size for file {item.path}: {item.size}")
+                continue
+            file_list.append(
+                GitFileElementType(
+                    sha=item.sha,
+                    path=item.path,
+                    url=item.url,
+                    mode=item.mode,
+                    size=item.size,
+                    branch=self.branch_name,  # type: ignore[arg-type]
+                    repo_name=self.repo_name,
                 )
+            )
         return file_list
