@@ -80,6 +80,12 @@ class DBPluginInterface(ABC):
     async def get_chunk_by_id(self, tenant_id: str, chunk_id: str) -> Chunk:
         pass
 
+    @abstractmethod
+    async def delete_knowledge_chunk(
+        self, tenant_id: str, knowledge_ids: List[str]
+    ) -> Union[List[Chunk], None]:
+        pass
+
     # =================== retrieval ===================
     @abstractmethod
     async def search_space_chunk_list(
@@ -113,7 +119,13 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_task_by_id(self, tenant_id: str, task_id: str) -> Chunk:
+    async def get_task_by_id(self, tenant_id: str, task_id: str) -> Union[Task, None]:
+        pass
+
+    @abstractmethod
+    async def delete_knowledge_task(
+        self, tenant_id: str, knowledge_ids: List[str]
+    ) -> Union[List[Task], None]:
         pass
 
     # =================== tenant ===================
