@@ -44,15 +44,22 @@ class Task(BaseModel):
     task_id: str = Field(default_factory=lambda: str(uuid4()), description="task id")
     status: TaskStatus = Field(TaskStatus.PENDING, description="task status")
     knowledge_id: str = Field(..., description="file source info")
+    metadata: Optional[dict] = Field(
+        None, description="task metadata info, make task readable"
+    )
     error_message: Optional[str] = Field(None, description="error message")
     space_id: str = Field(..., description="space id")
     user_id: Optional[str] = Field(None, description="user id")
     tenant_id: str = Field(..., description="tenant id")
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(), description="creation time"
+        default_factory=lambda: datetime.now(),
+        alias="gmt_create",
+        description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(), description="update time"
+        default_factory=lambda: datetime.now(),
+        alias="gmt_modified",
+        description="update time",
     )
 
     @field_serializer("status")
@@ -76,3 +83,4 @@ class Task(BaseModel):
 
     class Config:
         extra = "ignore"
+        allow_population_by_field_name = True

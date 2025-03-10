@@ -14,10 +14,14 @@ class Tenant(BaseModel):
     secret_key: str = Field("", description="secret_key")
     is_active: bool = Field(True, description="is active")
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(), description="creation time"
+        default_factory=lambda: datetime.now(),
+        alias="gmt_create",
+        description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(), description="update time"
+        default_factory=lambda: datetime.now(),
+        alias="gmt_modified",
+        description="update time",
     )
 
     @field_serializer("created_at")
@@ -34,3 +38,6 @@ class Tenant(BaseModel):
 
         self.updated_at = datetime.now()
         return self
+
+    class Config:
+        allow_population_by_field_name = True

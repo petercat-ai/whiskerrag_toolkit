@@ -65,7 +65,12 @@ class S3SourceConfig(BaseModel):
 
 
 class TextSourceConfig(BaseModel):
-    text: str = Field(..., description="text content")
+    text: str = Field(
+        default="",
+        min_length=1,
+        max_length=100000,
+        description="Text content, length range 1-100000 characters",
+    )
 
 
 class KnowledgeTypeEnum(str, Enum):
@@ -81,9 +86,8 @@ class KnowledgeTypeEnum(str, Enum):
     CSV = "csv"
     DOCX = "docx"
     PPTX = "pptx"
-    VISUAL = "visual"
-    AURAL = "aural"
     FOLDER = "folder"
+    QA = "qa"
 
 
 class EmbeddingModelEnum(str, Enum):
@@ -127,7 +131,9 @@ class KnowledgeCreate(BaseModel):
     knowledge_type: KnowledgeTypeEnum = Field(
         KnowledgeTypeEnum.TEXT, description="type of knowledge resource"
     )
-    knowledge_name: str = Field(..., description="name of the knowledge resource")
+    knowledge_name: str = Field(
+        ..., max_length=255, description="name of the knowledge resource"
+    )
     source_type: KnowledgeSourceEnum = Field(
         KnowledgeSourceEnum.TEXT, description="source type"
     )
@@ -203,10 +209,14 @@ class Knowledge(KnowledgeCreate):
         default_factory=lambda: str(uuid4()), description="knowledge id"
     )
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(), description="creation time"
+        default_factory=lambda: datetime.now(),
+        alias="gmt_create",
+        description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(), description="update time"
+        default_factory=lambda: datetime.now(),
+        alias="gmt_modified",
+        description="update time",
     )
     tenant_id: str = Field(..., description="tenant id")
 
@@ -220,6 +230,9 @@ class Knowledge(KnowledgeCreate):
         ):
             self.file_sha = calculate_sha256(self.source_config.text)
             self.file_size = len(self.source_config.text.encode("utf-8"))
+
+    class Config:
+        allow_population_by_field_name = True
 
     @field_serializer("created_at")
     def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
