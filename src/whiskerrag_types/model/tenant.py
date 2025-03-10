@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 
 class Tenant(BaseModel):
@@ -38,6 +38,11 @@ class Tenant(BaseModel):
 
         self.updated_at = datetime.now()
         return self
+
+    @field_validator("is_active", mode="before")
+    @classmethod
+    def convert_tinyint_to_bool(cls, v: Any) -> bool:
+        return bool(v)
 
     class Config:
         allow_population_by_field_name = True

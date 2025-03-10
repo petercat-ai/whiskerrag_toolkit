@@ -5,7 +5,13 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_serializer, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 
 class MetadataSerializer:
@@ -186,6 +192,11 @@ class KnowledgeCreate(BaseModel):
         if isinstance(embedding_model_name, EmbeddingModelEnum):
             return embedding_model_name.value
         return str(embedding_model_name)
+
+    @field_validator("enabled", mode="before")
+    @classmethod
+    def convert_tinyint_to_bool(cls, v: Any) -> bool:
+        return bool(v)
 
 
 class Knowledge(KnowledgeCreate):

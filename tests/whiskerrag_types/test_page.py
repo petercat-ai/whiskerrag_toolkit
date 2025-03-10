@@ -55,7 +55,7 @@ class TestPageParams:
         with pytest.raises(ValidationError):
             PageParams[DummyModel](page_size=0)  # page_size 必须 >= 1
         with pytest.raises(ValidationError):
-            PageParams[DummyModel](page_size=101)  # page_size 必须 <= 100
+            PageParams[DummyModel](page_size=1001)  # page_size 必须 <= 1000
 
     def test_order_direction_validation(self):
         params = PageParams[DummyModel](order_direction="desc")
