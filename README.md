@@ -75,8 +75,8 @@ from whiskerrag_types.model import Knowledge, Task, Tenant, PageParams, PageResp
 1. 克隆项目
 
 ```bash
-git clone https://github.com/your-username/whiskerRAG-toolkit.git
-cd whiskerRAG-toolkit
+git clone https://github.com/petercat-ai/whiskerrag_toolkit.git
+cd whiskerrag_toolkit
 ```
 
 2. 创建并激活虚拟环境
@@ -85,7 +85,7 @@ cd whiskerRAG-toolkit
 make setup
 source venv/bin/activate
 ```
-
+`
 ### 开发工作流
 
 1. 代码格式化
