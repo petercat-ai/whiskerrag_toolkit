@@ -24,9 +24,6 @@ class OpenAIEmbedding(BaseEmbedding):
             splitter = CharacterTextSplitter(
                 chunk_size=knowledge.split_config.chunk_size,
                 chunk_overlap=knowledge.split_config.chunk_overlap,
-                separator=",".join(
-                    x for x in (knowledge.split_config.separators or [])
-                ),
             )
         if knowledge.knowledge_type == KnowledgeTypeEnum.MARKDOWN:
             splitter = MarkdownTextSplitter(

@@ -1,15 +1,9 @@
-from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_serializer
 
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
-
-
-class RetrievalEnum(str, Enum):
-    SIMPLE = "simple"
-    SIMILARITY = "similarity"
 
 
 class RetrievalRequestBase(BaseModel):

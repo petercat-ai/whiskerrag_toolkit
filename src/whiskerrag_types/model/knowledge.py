@@ -10,7 +10,14 @@ from pydantic import (
     Field,
     field_serializer,
     field_validator,
-    model_validator,
+)
+
+from whiskerrag_types.model.splitter import (
+    BaseSplitConfig,
+    JSONSplitConfig,
+    MarkdownSplitConfig,
+    PDFSplitConfig,
+    TextSplitConfig,
 )
 
 
@@ -101,17 +108,13 @@ class EmbeddingModelEnum(str, Enum):
     QWEN = "qwen"
 
 
-class KnowledgeSplitConfig(BaseModel):
-    separators: Optional[List[str]] = Field(default=None)
-    split_regex: Optional[str] = Field(default=None)
-    chunk_size: int = Field(default=1500, ge=1)
-    chunk_overlap: int = Field(default=150, ge=0)
-
-    @model_validator(mode="after")
-    def validate_overlap(self) -> "KnowledgeSplitConfig":
-        if self.chunk_overlap >= self.chunk_size:
-            raise ValueError("chunk_overlap must be less than chunk_size")
-        return self
+KnowledgeSplitConfig = Union[
+    BaseSplitConfig,
+    MarkdownSplitConfig,
+    PDFSplitConfig,
+    TextSplitConfig,
+    JSONSplitConfig,
+]
 
 
 class KnowledgeCreate(BaseModel):

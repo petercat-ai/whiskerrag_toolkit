@@ -2,44 +2,95 @@ import importlib
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Callable, Dict, Literal, Type, TypeVar, Union, overload
+from typing import (
+    Callable,
+    Dict,
+    Generic,
+    Literal,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.interface.retriever_interface import BaseRetriever
+from whiskerrag_types.interface.splitter_interface import BaseSplitter
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
 )
-from whiskerrag_types.model.retrieval import RetrievalEnum
-
-RegisterKeyType = Union[
-    KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, RetrievalEnum
-]
-BaseRegisterClsType = Union[
-    Type[BaseLoader], Type[BaseEmbedding], Type[BaseRetriever], None
-]
 
 
 class RegisterTypeEnum(str, Enum):
     EMBEDDING = "embedding"
     KNOWLEDGE_LOADER = "knowledge_loader"
     RETRIEVER = "retriever"
+    SPLITTER = "splitter"
 
 
+class RetrievalEnum(str, Enum):
+    SIMPLE = "simple"
+    SIMILARITY = "similarity"
+
+
+RegisterKeyType = Union[
+    KnowledgeSourceEnum,
+    KnowledgeTypeEnum,
+    EmbeddingModelEnum,
+    RetrievalEnum,
+]
+
+# 泛型类型变量
+T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
 T_Retriever = TypeVar("T_Retriever", bound=BaseRetriever)
+T_Splitter = TypeVar("T_Splitter", bound=BaseSplitter)
+RegisteredType = Union[
+    Type[T_Embedding], Type[T_Loader], Type[T_Retriever], Type[T_Splitter]
+]
 
-RegisteredType = Union[Type[T_Embedding], Type[T_Loader], Type[T_Retriever]]
 
-RegisterDict = Dict[RegisterKeyType, RegisteredType]
-_registry: Dict[RegisterTypeEnum, RegisterDict] = {
-    RegisterTypeEnum.EMBEDDING: {},
-    RegisterTypeEnum.KNOWLEDGE_LOADER: {},
-    RegisterTypeEnum.RETRIEVER: {},
+class RegisterDict(Generic[T]):
+    def __init__(self) -> None:
+        self._dict: Dict[RegisterKeyType, Type[T]] = {}
+
+    def __getitem__(self, key: RegisterKeyType) -> Type[T]:
+        return self._dict[key]
+
+    def __setitem__(self, key: RegisterKeyType, value: Type[T]) -> None:
+        if not isinstance(value, type):
+            raise TypeError(f"Value must be a class, got {type(value)}")
+        self._dict[key] = value
+
+    def get(self, key: RegisterKeyType) -> Optional[Type[T]]:
+        return self._dict.get(key)
+
+
+EmbeddingRegistry = RegisterDict[BaseEmbedding]
+LoaderRegistry = RegisterDict[BaseLoader]
+RetrieverRegistry = RegisterDict[BaseRetriever]
+SplitterRegistry = RegisterDict[BaseSplitter]
+
+_registry: Dict[
+    RegisterTypeEnum,
+    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, SplitterRegistry],
+] = {
+    RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
+    RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
+    RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
+    RegisterTypeEnum.SPLITTER: RegisterDict[BaseSplitter](),
 }
+
+BaseRegisterClsType = Union[
+    Type[BaseLoader], Type[BaseEmbedding], Type[BaseRetriever], Type[BaseSplitter], None
+]
+
 _loaded_packages = set()
 
 
@@ -51,6 +102,7 @@ def register(
         setattr(cls, "_is_register_item", True)
         setattr(cls, "_register_type", register_type)
         setattr(cls, "_register_key", register_key)
+
         expected_base: BaseRegisterClsType = None
         if register_type == RegisterTypeEnum.EMBEDDING:
             expected_base = BaseEmbedding
@@ -58,6 +110,8 @@ def register(
             expected_base = BaseLoader
         elif register_type == RegisterTypeEnum.RETRIEVER:
             expected_base = BaseRetriever
+        elif register_type == RegisterTypeEnum.SPLITTER:
+            expected_base = BaseSplitter
         else:
             raise ValueError(f"Unknown register type: {register_type}")
 
@@ -82,12 +136,15 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
             raise ValueError(
                 f"Package {package_name} does not have a __file__ attribute"
             )
+
         package_path = Path(package.__file__).parent
         current_file = Path(__file__).name
+
         for root, _, files in os.walk(package_path):
             for file in files:
                 if file == current_file or not file.endswith(".py"):
                     continue
+
                 module_name = (
                     Path(root, file)
                     .relative_to(package_path)
@@ -98,10 +155,12 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
 
                 if module_name == "__init__":
                     continue
+
                 try:
                     importlib.import_module(f"{package_name}.{module_name}")
                 except ImportError as e:
                     print(f"Error importing module {module_name}: {e}")
+
         _loaded_packages.add(package_name)
 
     except ImportError as e:
@@ -112,25 +171,60 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
 def get_register(
     register_type: Literal[RegisterTypeEnum.KNOWLEDGE_LOADER],
     register_key: KnowledgeSourceEnum,
-) -> Type[T_Loader]: ...
+) -> Type[BaseLoader]: ...
 
 
 @overload
 def get_register(
-    register_type: Literal[RegisterTypeEnum.EMBEDDING], register_key: EmbeddingModelEnum
-) -> Type[T_Embedding]: ...
+    register_type: Literal[RegisterTypeEnum.EMBEDDING],
+    register_key: EmbeddingModelEnum,
+) -> Type[BaseEmbedding]: ...
 
 
 @overload
 def get_register(
-    register_type: Literal[RegisterTypeEnum.RETRIEVER], register_key: RetrievalEnum
-) -> Type[T_Retriever]: ...
+    register_type: Literal[RegisterTypeEnum.RETRIEVER],
+    register_key: RetrievalEnum,
+) -> Type[BaseRetriever]: ...
+
+
+@overload
+def get_register(
+    register_type: Literal[RegisterTypeEnum.SPLITTER],
+    register_key: KnowledgeTypeEnum,
+) -> Type[BaseSplitter]: ...
 
 
 def get_register(
-    register_type: RegisterTypeEnum, register_key: RegisterKeyType
-) -> RegisteredType:
-    register_cls = _registry.get(register_type, {}).get(register_key, None)
-    if register_cls is None:
-        raise KeyError(f"No loader registered for type: {register_type}.{register_key}")
-    return register_cls
+    register_type: RegisterTypeEnum,
+    register_key: RegisterKeyType,
+) -> Union[
+    Type[BaseLoader],
+    Type[BaseEmbedding],
+    Type[BaseRetriever],
+    Type[BaseSplitter],
+]:
+    """
+    获取注册的类
+    """
+    registry = _registry.get(register_type)
+    if registry is None:
+        raise KeyError(f"No registry for type: {register_type}")
+
+    # 类型转换
+    if register_type == RegisterTypeEnum.KNOWLEDGE_LOADER:
+        registry = cast(LoaderRegistry, registry)
+    elif register_type == RegisterTypeEnum.EMBEDDING:
+        registry = cast(EmbeddingRegistry, registry)
+    elif register_type == RegisterTypeEnum.RETRIEVER:
+        registry = cast(RetrieverRegistry, registry)
+    elif register_type == RegisterTypeEnum.SPLITTER:
+        registry = cast(SplitterRegistry, registry)
+
+    cls = registry.get(register_key)
+    if cls is None:
+        raise KeyError(
+            f"No implementation registered for type: {register_type}.{register_key}"
+        )
+
+    return cls

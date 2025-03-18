@@ -16,7 +16,6 @@ from .retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
     RetrievalChunk,
-    RetrievalEnum,
 )
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
@@ -35,7 +34,6 @@ __all__ = [
     "Knowledge",
     "PageParams",
     "PageResponse",
-    "RetrievalEnum",
     "RetrievalBySpaceRequest",
     "RetrievalByKnowledgeRequest",
     "RetrievalChunk",
