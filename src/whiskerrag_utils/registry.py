@@ -45,7 +45,6 @@ RegisterKeyType = Union[
     RetrievalEnum,
 ]
 
-# 泛型类型变量
 T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
