@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -19,18 +19,12 @@ class BaseSplitConfig(BaseModel):
 class MarkdownSplitConfig(BaseSplitConfig):
     """Markdown document split configuration"""
 
-    separators: Optional[List[str]] = Field(default=None)
-    split_regex: Optional[str] = Field(default=None)
-    heading_levels: List[int] = Field(
-        default=[1, 2],
-        description="Heading levels to consider, e.g., [1, 2] means splitting only at # and ##",
-    )
-    split_by_heading: bool = Field(
-        default=True, description="Whether to split by headings"
-    )
-    remove_markdown_chars: bool = Field(
-        default=False, description="Whether to remove Markdown syntax characters"
-    )
+    separators: Optional[List[str]] = Field(description="separator list")
+    split_regex: Optional[str] = Field(description="split_regex")
+    # split_by_heading: Optional[bool] = Field(description="Whether to split by headings")
+    # remove_markdown_chars: Optional[bool] = Field(
+    #     description="Whether to remove Markdown syntax characters"
+    # )
 
 
 class PDFSplitConfig(BaseSplitConfig):
@@ -49,10 +43,13 @@ class PDFSplitConfig(BaseSplitConfig):
 class TextSplitConfig(BaseSplitConfig):
     """Plain text split configuration"""
 
-    separators: Optional[List[str]] = Field(default=None)
-    split_regex: Optional[str] = Field(default=None)
+    keep_separator: Union[bool, Literal["start", "end"]] = Field(
+        default=False,
+        description="""Whether to keep the separator and where to place it in each corresponding chunk (True='start')""",
+    )
     strip_whitespace: bool = Field(
-        default=True, description="Whether to remove extra whitespace"
+        default=False,
+        description="""If `True`, strips whitespace from the start and end of every document""",
     )
 
 

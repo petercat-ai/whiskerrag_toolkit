@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from types import TracebackType
+from typing import Any, Dict, List, Optional, Type, Union
 
 import httpx
 from pydantic import BaseModel
@@ -32,7 +33,6 @@ class BaseClient(ABC):
 
 
 class HttpClient(BaseClient):
-
     def __init__(
         self,
         base_url: str,
@@ -45,7 +45,12 @@ class HttpClient(BaseClient):
     async def __aenter__(self) -> "HttpClient":
         return self
 
-    async def __aexit__(self) -> None:
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         await self.close()
 
     async def _request(
@@ -75,9 +80,6 @@ class HttpClient(BaseClient):
             if key not in request_kwargs:
                 request_kwargs[key] = value
 
-            response = await self.client.request(
-                **request_kwargs, timeout=self.timeout  # type: ignore
-            )
         response = await self.client.request(
             **request_kwargs, timeout=self.timeout  # type: ignore
         )

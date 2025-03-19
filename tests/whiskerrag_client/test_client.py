@@ -20,7 +20,7 @@ async def http_client():
 
 
 @pytest.mark.asyncio
-async def test_client_initialization(http_client):
+async def test_client_initialization(http_client) -> None:
     assert http_client.base_url == "http://test.com"
     assert http_client.headers == {
         "Authorization": "Bearer test_token",
@@ -30,7 +30,7 @@ async def test_client_initialization(http_client):
 
 
 @pytest.mark.asyncio
-async def test_request_with_dict_json(http_client):
+async def test_request_with_dict_json(http_client) -> None:
     test_json = {"key": "value"}
     test_response = {"result": "success"}
 
@@ -49,7 +49,7 @@ async def test_request_with_dict_json(http_client):
 
 
 @pytest.mark.asyncio
-async def test_request_with_pydantic_model(http_client):
+async def test_request_with_pydantic_model(http_client) -> None:
     test_model = TestModel(name="test", value=123)
     test_response = {"result": "success"}
 
@@ -68,7 +68,7 @@ async def test_request_with_pydantic_model(http_client):
 
 
 @pytest.mark.asyncio
-async def test_request_with_params(http_client):
+async def test_request_with_params(http_client) -> None:
     test_params = {"query": "test"}
     test_response = {"result": "success"}
 
@@ -87,7 +87,7 @@ async def test_request_with_params(http_client):
 
 
 @pytest.mark.asyncio
-async def test_request_with_invalid_json_type(http_client):
+async def test_request_with_invalid_json_type(http_client) -> None:
     with pytest.raises(ValueError) as exc_info:
         await http_client._request(
             method="POST", endpoint="/test", json=123  # Invalid JSON type
@@ -96,7 +96,7 @@ async def test_request_with_invalid_json_type(http_client):
 
 
 @pytest.mark.asyncio
-async def test_request_http_error(http_client):
+async def test_request_http_error(http_client) -> None:
     with patch.object(httpx.AsyncClient, "request") as mock_request:
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = httpx.HTTPError("HTTP Error")
@@ -107,13 +107,13 @@ async def test_request_http_error(http_client):
 
 
 @pytest.mark.asyncio
-async def test_context_manager():
+async def test_context_manager() -> None:
     async with HttpClient(base_url="http://test.com", token="test_token") as client:
         assert isinstance(client, HttpClient)
 
 
 @pytest.mark.asyncio
-async def test_custom_timeout(http_client):
+async def test_custom_timeout(http_client) -> None:
     test_response = {"result": "success"}
 
     with patch.object(httpx.AsyncClient, "request") as mock_request:
@@ -129,7 +129,7 @@ async def test_custom_timeout(http_client):
 
 
 @pytest.mark.asyncio
-async def test_additional_request_kwargs(http_client):
+async def test_additional_request_kwargs(http_client) -> None:
     test_response = {"result": "success"}
 
     with patch.object(httpx.AsyncClient, "request") as mock_request:
