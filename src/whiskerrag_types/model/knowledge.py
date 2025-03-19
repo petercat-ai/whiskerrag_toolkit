@@ -53,7 +53,7 @@ class KnowledgeSourceEnum(str, Enum):
     GITHUB_REPO = "github_repo"
     GITHUB_FILE = "github_file"
     S3 = "S3"
-    TEXT = "text"
+    USER_INPUT_TEXT = "user_input_text"
 
 
 class GithubRepoSourceConfig(BaseModel):
@@ -144,7 +144,7 @@ class KnowledgeCreate(BaseModel):
         ..., max_length=255, description="name of the knowledge resource"
     )
     source_type: KnowledgeSourceEnum = Field(
-        KnowledgeSourceEnum.TEXT, description="source type"
+        KnowledgeSourceEnum.USER_INPUT_TEXT, description="source type"
     )
     source_config: Union[
         GithubRepoSourceConfig, GithubFileSourceConfig, S3SourceConfig, TextSourceConfig
@@ -237,7 +237,7 @@ class Knowledge(KnowledgeCreate):
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
         if (
-            self.source_type == KnowledgeSourceEnum.TEXT
+            self.source_type == KnowledgeSourceEnum.USER_INPUT_TEXT
             and isinstance(self.source_config, TextSourceConfig)
             and self.source_config.text is not None
             and self.file_sha is None

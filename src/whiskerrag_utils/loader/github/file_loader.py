@@ -1,8 +1,7 @@
 import base64
-from typing import List, Optional
+from typing import Optional
 
 from github import Github
-from langchain_core.documents import Document
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.model.knowledge import (
@@ -67,6 +66,6 @@ class GithubFileLoader(BaseLoader):
         self.size = file_content.size
         return base64.b64decode(file_content.content).decode("utf-8")
 
-    async def load(self) -> List[Document]:
+    async def load(self) -> str:
         content = self._get_file_content_by_path()
-        return [Document(page_content=content, metadata=self.knowledge.metadata)]
+        return content

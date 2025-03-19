@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List
 
-from langchain_core.documents import Document
+from whiskerrag_types.model.knowledge import Knowledge
 
 
 class BaseLoader(ABC):
+    def __init__(self, knowledge: Knowledge):
+        self.knowledge = knowledge
+
     @abstractmethod
-    async def load(self) -> List[Document]:
+    async def load(self) -> str:
         pass

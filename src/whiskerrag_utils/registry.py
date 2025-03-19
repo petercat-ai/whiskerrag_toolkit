@@ -204,14 +204,11 @@ def get_register(
     Type[BaseRetriever],
     Type[BaseSplitter],
 ]:
-    """
-    获取注册的类
-    """
+
     registry = _registry.get(register_type)
     if registry is None:
         raise KeyError(f"No registry for type: {register_type}")
 
-    # 类型转换
     if register_type == RegisterTypeEnum.KNOWLEDGE_LOADER:
         registry = cast(LoaderRegistry, registry)
     elif register_type == RegisterTypeEnum.EMBEDDING:
