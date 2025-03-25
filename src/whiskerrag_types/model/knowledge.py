@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
@@ -10,6 +10,7 @@ from pydantic import (
     Field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 
 from whiskerrag_types.model.splitter import (
@@ -19,6 +20,7 @@ from whiskerrag_types.model.splitter import (
     PDFSplitConfig,
     TextSplitConfig,
 )
+from whiskerrag_types.model.utils import parse_datetime
 
 
 class MetadataSerializer:
@@ -223,15 +225,16 @@ class Knowledge(KnowledgeCreate):
         default_factory=lambda: str(uuid4()), description="knowledge id"
     )
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
         alias="gmt_create",
         description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
         alias="gmt_modified",
         description="update time",
     )
+
     tenant_id: str = Field(..., description="tenant id")
 
     def __init__(self, **data: Any) -> None:
@@ -248,16 +251,37 @@ class Knowledge(KnowledgeCreate):
     class Config:
         allow_population_by_field_name = True
 
-    @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
-        return created_at.isoformat() if created_at else None
-
-    @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
-        return updated_at.isoformat() if updated_at else None
-
     def update(self, **kwargs: Dict[str, Any]) -> "Knowledge":
         for key, value in kwargs.items():
             setattr(self, key, value)
         self.updated_at = datetime.now()
+        return self
+
+    @model_validator(mode="before")
+    def ensure_aware_timezones(cls, values: dict) -> dict:
+        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
+        for field, alias_name in field_mappings.items():
+            val = values.get(field) or values.get(alias_name)
+            if val is None:
+                continue
+
+            if isinstance(val, str):
+                dt = parse_datetime(val)
+                values[field] = dt
+                values[alias_name] = dt
+            else:
+                if val and val.tzinfo is None:
+                    dt = val.replace(tzinfo=timezone.utc)
+                    values[field] = dt
+                    values[alias_name] = dt
+
+        return values
+
+    @model_validator(mode="after")
+    def set_defaults(self) -> "Knowledge":
+        now = datetime.now(timezone.utc)
+        if self.created_at is None:
+            self.created_at = now
+        if self.updated_at is None:
+            self.updated_at = now
         return self

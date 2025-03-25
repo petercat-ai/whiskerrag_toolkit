@@ -1,8 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_serializer, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    field_validator,
+    model_validator,
+)
+
+from whiskerrag_types.model.utils import parse_datetime
 
 
 class Tenant(BaseModel):
@@ -24,14 +31,6 @@ class Tenant(BaseModel):
         description="update time",
     )
 
-    @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
-        return created_at.isoformat() if created_at else None
-
-    @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
-        return updated_at.isoformat() if updated_at else None
-
     def update(self, **kwargs: dict) -> "Tenant":
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -43,6 +42,35 @@ class Tenant(BaseModel):
     @classmethod
     def convert_tinyint_to_bool(cls, v: Any) -> bool:
         return bool(v)
+
+    @model_validator(mode="before")
+    def ensure_aware_timezones(cls, values: dict) -> dict:
+        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
+        for field, alias_name in field_mappings.items():
+            val = values.get(field) or values.get(alias_name)
+            if val is None:
+                continue
+
+            if isinstance(val, str):
+                dt = parse_datetime(val)
+                values[field] = dt
+                values[alias_name] = dt
+            else:
+                if val and val.tzinfo is None:
+                    dt = val.replace(tzinfo=timezone.utc)
+                    values[field] = dt
+                    values[alias_name] = dt
+
+        return values
+
+    @model_validator(mode="after")
+    def set_defaults(self) -> "Tenant":
+        now = datetime.now(timezone.utc)
+        if self.created_at is None:
+            self.created_at = now
+        if self.updated_at is None:
+            self.updated_at = now
+        return self
 
     class Config:
         allow_population_by_field_name = True

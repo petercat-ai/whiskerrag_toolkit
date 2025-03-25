@@ -4,8 +4,8 @@ version = "0.0.17"
 description = "A utility package for RAG operations"
 authors = ["petercat.ai <antd.antgroup@gmail.com>"]
 readme = "README.md"
-packages = [{include = "whiskerrag_utils", from = "src"}, 
-            {include = "whiskerrag_types", from = "src"}, 
+packages = [{include = "whiskerrag_utils", from = "src"},
+            {include = "whiskerrag_types", from = "src"},
             {include = "whiskerrag_client", from = "src"}]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -102,4 +102,4 @@ omit = [
 
 [tool.coverage.run]
 branch = true
-source = ["src"] 
+source = ["src"]

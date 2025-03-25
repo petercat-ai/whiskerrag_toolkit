@@ -1,9 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import (
+    BaseModel,
+    Field,
+    model_validator,
+)
+
+from whiskerrag_types.model.utils import parse_datetime
 
 
 class TaskRestartRequest(BaseModel):
@@ -21,66 +27,73 @@ class TaskStatus(str, Enum):
 
 
 class Task(BaseModel):
-    """
-    Task model representing a task entity with various attributes.
-    Attributes:
-        task_id (str): Task ID.
-        status (TaskStatus): Status of the task.
-        knowledge_id (str): File source information.
-        space_id (str): Space ID.
-        user_id (Optional[str]): User ID.
-        tenant_id (str): Tenant ID.
-        created_at (Optional[datetime]): Creation time, defaults to current time.
-        updated_at (Optional[datetime]): Update time, defaults to current time.
-    Methods:
-        serialize_created_at(created_at: Optional[datetime]) -> str:
-            Serializes the created_at attribute to ISO format.
-        serialize_updated_at(updated_at: Optional[datetime]) -> str:
-            Serializes the updated_at attribute to ISO format.
-        update(**kwargs) -> Task:
-            Updates the task attributes with provided keyword arguments and sets updated_at to current time.
-    """
-
-    task_id: str = Field(default_factory=lambda: str(uuid4()), description="task id")
-    status: TaskStatus = Field(TaskStatus.PENDING, description="task status")
-    knowledge_id: str = Field(..., description="file source info")
-    metadata: Optional[dict] = Field(
-        None, description="task metadata info, make task readable"
+    task_id: str = Field(
+        default_factory=lambda: str(uuid4()),
+        description="任务唯一标识符",
+        alias="task_id",
     )
-    error_message: Optional[str] = Field(None, description="error message")
-    space_id: str = Field(..., description="space id")
-    user_id: Optional[str] = Field(None, description="user id")
-    tenant_id: str = Field(..., description="tenant id")
+    status: TaskStatus = Field(
+        default=TaskStatus.PENDING, description="任务当前状态", alias="status"
+    )
+    knowledge_id: str = Field(..., description="文件来源标识符", alias="knowledge_id")
+    metadata: Optional[dict] = Field(None, description="任务元数据", alias="metadata")
+    error_message: Optional[str] = Field(
+        None, description="错误信息（仅失败时存在）", alias="error_message"
+    )
+    space_id: str = Field(..., description="空间标识符", alias="space_id")
+    user_id: Optional[str] = Field(None, description="用户标识符", alias="user_id")
+    tenant_id: str = Field(..., description="租户标识符", alias="tenant_id")
+
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
+        description="任务创建时间",
         alias="gmt_create",
-        description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
+        description="最后更新时间",
         alias="gmt_modified",
-        description="update time",
     )
 
-    @field_serializer("status")
-    def serialize_status(self, status: TaskStatus) -> str:
-        return status.value if isinstance(status, TaskStatus) else str(status)
-
-    @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
-        return created_at.isoformat() if created_at else None
-
-    @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
-        return updated_at.isoformat() if updated_at else None
-
-    def update(self, **kwargs: dict) -> "Task":
+    def update(self, **kwargs: Any) -> "Task":
+        if "created_at" in kwargs:
+            raise ValueError("created_at 是不可修改的只读字段")
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
+        return self
+
+    @model_validator(mode="before")
+    def ensure_aware_timezones(cls, values: dict) -> dict:
+        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
+        for field, alias_name in field_mappings.items():
+            val = values.get(field) or values.get(alias_name)
+            if val is None:
+                continue
+
+            if isinstance(val, str):
+                dt = parse_datetime(val)
+                values[field] = dt
+                values[alias_name] = dt
+            else:
+                if val and val.tzinfo is None:
+                    dt = val.replace(tzinfo=timezone.utc)
+                    values[field] = dt
+                    values[alias_name] = dt
+
+        return values
+
+    @model_validator(mode="after")
+    def set_defaults(self) -> "Task":
+        now = datetime.now(timezone.utc)
+        if self.created_at is None:
+            self.created_at = now
+        if self.updated_at is None:
+            self.updated_at = now
         return self
 
     class Config:
         extra = "ignore"
         allow_population_by_field_name = True
+        serialize_by_alias = False

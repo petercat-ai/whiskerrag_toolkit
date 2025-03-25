@@ -1,10 +1,17 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Optional, Union
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_serializer, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
+from whiskerrag_types.model.utils import parse_datetime
 
 
 class Chunk(BaseModel):
@@ -21,12 +28,12 @@ class Chunk(BaseModel):
         None, description="Arbitrary metadata associated with the content."
     )
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
         alias="gmt_create",
         description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
         alias="gmt_modified",
         description="update time",
     )
@@ -60,14 +67,6 @@ class Chunk(BaseModel):
 
         raise ValueError(f"Unsupported embedding type: {type(v)}")
 
-    @field_serializer("created_at")
-    def serialize_created_at(self, created_at: Optional[datetime]) -> Optional[str]:
-        return created_at.isoformat() if created_at else None
-
-    @field_serializer("updated_at")
-    def serialize_updated_at(self, updated_at: Optional[datetime]) -> Optional[str]:
-        return updated_at.isoformat() if updated_at else None
-
     @field_serializer("embedding_model_name")
     def serialize_embedding_model_name(
         self, embedding_model_name: Optional[EmbeddingModelEnum]
@@ -78,7 +77,36 @@ class Chunk(BaseModel):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
+        return self
+
+    @model_validator(mode="before")
+    def ensure_aware_timezones(cls, values: dict) -> dict:
+        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
+        for field, alias_name in field_mappings.items():
+            val = values.get(field) or values.get(alias_name)
+            if val is None:
+                continue
+
+            if isinstance(val, str):
+                dt = parse_datetime(val)
+                values[field] = dt
+                values[alias_name] = dt
+            else:
+                if val and val.tzinfo is None:
+                    dt = val.replace(tzinfo=timezone.utc)
+                    values[field] = dt
+                    values[alias_name] = dt
+
+        return values
+
+    @model_validator(mode="after")
+    def set_defaults(self) -> "Chunk":
+        now = datetime.now(timezone.utc)
+        if self.created_at is None:
+            self.created_at = now
+        if self.updated_at is None:
+            self.updated_at = now
         return self
 
     class Config:
