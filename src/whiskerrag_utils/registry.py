@@ -39,10 +39,7 @@ class RetrievalEnum(str, Enum):
 
 
 RegisterKeyType = Union[
-    KnowledgeSourceEnum,
-    KnowledgeTypeEnum,
-    EmbeddingModelEnum,
-    RetrievalEnum,
+    KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, RetrievalEnum, str
 ]
 
 T = TypeVar("T")
@@ -119,6 +116,13 @@ def register(
                 f"Class {cls.__name__} must inherit from {expected_base.__name__}"
             )
 
+        # Perform health check before registering
+        if hasattr(cls, "health_check") and callable(getattr(cls, "health_check")):
+            health_check_result = cls.health_check()
+            if not health_check_result:
+                raise ValueError(
+                    f"Health check failed for class {cls.__name__}. Registration aborted."
+                )
         print(f"Registering {cls.__name__} as {register_type} with key {register_key}")
         _registry[register_type][register_key] = cls
         return cls
@@ -176,7 +180,7 @@ def get_register(
 @overload
 def get_register(
     register_type: Literal[RegisterTypeEnum.EMBEDDING],
-    register_key: EmbeddingModelEnum,
+    register_key: Union[EmbeddingModelEnum, str],
 ) -> Type[BaseEmbedding]: ...
 
 
@@ -224,3 +228,10 @@ def get_register(
         )
 
     return cls
+
+
+def get_registry_list() -> Dict[
+    RegisterTypeEnum,
+    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, SplitterRegistry],
+]:
+    return _registry

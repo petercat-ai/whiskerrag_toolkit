@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any, Optional
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import (
     BaseModel,
@@ -21,17 +21,17 @@ class Tenant(BaseModel):
     secret_key: str = Field("", description="secret_key")
     is_active: bool = Field(True, description="is active")
     created_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
+        description="tenant created time",
         alias="gmt_create",
-        description="creation time",
     )
     updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(),
+        default=None,
+        description="tenant updated time",
         alias="gmt_modified",
-        description="update time",
     )
 
-    def update(self, **kwargs: dict) -> "Tenant":
+    def update(self, **kwargs: Any) -> "Tenant":
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -44,24 +44,27 @@ class Tenant(BaseModel):
         return bool(v)
 
     @model_validator(mode="before")
-    def ensure_aware_timezones(cls, values: dict) -> dict:
+    def pre_process_data(cls, data: dict) -> dict:
+        for field, value in data.items():
+            if isinstance(value, UUID):
+                data[field] = str(value)
         field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
         for field, alias_name in field_mappings.items():
-            val = values.get(field) or values.get(alias_name)
+            val = data.get(field) or data.get(alias_name)
             if val is None:
                 continue
 
             if isinstance(val, str):
                 dt = parse_datetime(val)
-                values[field] = dt
-                values[alias_name] = dt
+                data[field] = dt
+                data[alias_name] = dt
             else:
                 if val and val.tzinfo is None:
                     dt = val.replace(tzinfo=timezone.utc)
-                    values[field] = dt
-                    values[alias_name] = dt
+                    data[field] = dt
+                    data[alias_name] = dt
 
-        return values
+        return data
 
     @model_validator(mode="after")
     def set_defaults(self) -> "Tenant":

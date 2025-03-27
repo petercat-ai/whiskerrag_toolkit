@@ -24,14 +24,31 @@ class DBPluginInterface(ABC):
     def __init__(
         self, logger: LoggerManagerInterface, settings: SettingsInterface
     ) -> None:
-        logger.info("DB plugin is initializing...")
         self.settings = settings
         self.logger = logger
-        self.init()
-        logger.info("DB plugin is initialized")
+        self._initialized: bool = False
+
+    async def ensure_initialized(self) -> None:
+        if not self._initialized:
+            try:
+                self.logger.info("DBEngine plugin is initializing...")
+                await self.init()
+                self._initialized = True
+                self.logger.info("DBEngine plugin is initialized")
+            except Exception as e:
+                self.logger.error(f"DBEngine plugin init error: {e}")
+                raise
+
+    @property
+    def is_initialized(self) -> bool:
+        return self._initialized
 
     @abstractmethod
-    def init(self) -> None:
+    async def init(self) -> None:
+        pass
+
+    @abstractmethod
+    async def cleanup(self) -> None:
         pass
 
     @abstractmethod

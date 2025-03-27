@@ -1,4 +1,5 @@
 from .chunk import Chunk
+from .converter import GenericConverter
 from .knowledge import (
     EmbeddingModelEnum,
     GithubFileSourceConfig,
@@ -41,4 +42,5 @@ __all__ = [
     "TaskStatus",
     "TaskRestartRequest",
     "Tenant",
+    "GenericConverter",
 ]

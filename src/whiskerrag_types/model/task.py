@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, List, Optional
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import (
     BaseModel,
@@ -29,35 +29,47 @@ class TaskStatus(str, Enum):
 class Task(BaseModel):
     task_id: str = Field(
         default_factory=lambda: str(uuid4()),
-        description="任务唯一标识符",
+        description="Unique identifier for the task",
         alias="task_id",
     )
     status: TaskStatus = Field(
-        default=TaskStatus.PENDING, description="任务当前状态", alias="status"
+        default=TaskStatus.PENDING,
+        description="Current status of the task",
+        alias="status",
     )
-    knowledge_id: str = Field(..., description="文件来源标识符", alias="knowledge_id")
-    metadata: Optional[dict] = Field(None, description="任务元数据", alias="metadata")
+    knowledge_id: str = Field(
+        ..., description="Identifier for the source file", alias="knowledge_id"
+    )
+    metadata: Optional[dict] = Field(
+        None, description="Metadata for the task", alias="metadata"
+    )
     error_message: Optional[str] = Field(
-        None, description="错误信息（仅失败时存在）", alias="error_message"
+        None,
+        description="Error message (only present if the task failed)",
+        alias="error_message",
     )
-    space_id: str = Field(..., description="空间标识符", alias="space_id")
-    user_id: Optional[str] = Field(None, description="用户标识符", alias="user_id")
-    tenant_id: str = Field(..., description="租户标识符", alias="tenant_id")
+    space_id: str = Field(..., description="Identifier for the space", alias="space_id")
+    user_id: Optional[str] = Field(
+        None, description="Identifier for the user", alias="user_id"
+    )
+    tenant_id: str = Field(
+        ..., description="Identifier for the tenant", alias="tenant_id"
+    )
 
     created_at: Optional[datetime] = Field(
         default=None,
-        description="任务创建时间",
+        description="Task creation time",
         alias="gmt_create",
     )
     updated_at: Optional[datetime] = Field(
         default=None,
-        description="最后更新时间",
+        description="Last update time",
         alias="gmt_modified",
     )
 
     def update(self, **kwargs: Any) -> "Task":
         if "created_at" in kwargs:
-            raise ValueError("created_at 是不可修改的只读字段")
+            raise ValueError("created_at is a read-only field and cannot be modified")
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -65,24 +77,27 @@ class Task(BaseModel):
         return self
 
     @model_validator(mode="before")
-    def ensure_aware_timezones(cls, values: dict) -> dict:
+    def pre_process_data(cls, data: dict) -> dict:
+        for field, value in data.items():
+            if isinstance(value, UUID):
+                data[field] = str(value)
         field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
         for field, alias_name in field_mappings.items():
-            val = values.get(field) or values.get(alias_name)
+            val = data.get(field) or data.get(alias_name)
             if val is None:
                 continue
 
             if isinstance(val, str):
                 dt = parse_datetime(val)
-                values[field] = dt
-                values[alias_name] = dt
+                data[field] = dt
+                data[alias_name] = dt
             else:
                 if val and val.tzinfo is None:
                     dt = val.replace(tzinfo=timezone.utc)
-                    values[field] = dt
-                    values[alias_name] = dt
+                    data[field] = dt
+                    data[alias_name] = dt
 
-        return values
+        return data
 
     @model_validator(mode="after")
     def set_defaults(self) -> "Task":

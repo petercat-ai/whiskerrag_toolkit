@@ -14,17 +14,27 @@ class TaskEnginPluginInterface(ABC):
         logger: LoggerManagerInterface,
         settings: SettingsInterface,
     ):
-        try:
-            logger.info("TaskEngine plugin is initializing...")
-            self.settings = settings
-            self.logger = logger
-            self.init()
-            logger.info("TaskEngine plugin is initialized")
-        except Exception as e:
-            logger.error(f"TaskEngine plugin init error: {e}")
+        self.settings = settings
+        self.logger = logger
+        self._initialized: bool = False
+
+    async def ensure_initialized(self) -> None:
+        if not self._initialized:
+            try:
+                self.logger.info("TaskEngine plugin is initializing...")
+                await self.init()
+                self._initialized = True
+                self.logger.info("TaskEngine plugin is initialized")
+            except Exception as e:
+                self.logger.error(f"TaskEngine plugin init error: {e}")
+                raise
+
+    @property
+    def is_initialized(self) -> bool:
+        return self._initialized
 
     @abstractmethod
-    def init(self) -> None:
+    async def init(self) -> None:
         """
         Initialize the task engine plugin, such as loading middleware, establishing contact with the task execution engine, etc.
         """

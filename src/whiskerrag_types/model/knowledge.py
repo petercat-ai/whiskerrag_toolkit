@@ -1,9 +1,8 @@
-import hashlib
 from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import (
     BaseModel,
@@ -20,7 +19,7 @@ from whiskerrag_types.model.splitter import (
     PDFSplitConfig,
     TextSplitConfig,
 )
-from whiskerrag_types.model.utils import parse_datetime
+from whiskerrag_types.model.utils import calculate_sha256, parse_datetime
 
 
 class MetadataSerializer:
@@ -42,13 +41,6 @@ class MetadataSerializer:
             return None
         sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
         return sorted_metadata if isinstance(sorted_metadata, dict) else None
-
-
-def calculate_sha256(text: str) -> str:
-    text_bytes = text.encode("utf-8")
-    sha256_hash = hashlib.sha256()
-    sha256_hash.update(text_bytes)
-    return sha256_hash.hexdigest()
 
 
 class KnowledgeSourceEnum(str, Enum):
@@ -107,7 +99,16 @@ class KnowledgeTypeEnum(str, Enum):
 
 class EmbeddingModelEnum(str, Enum):
     OPENAI = "openai"
-    QWEN = "qwen"
+    # 轻量级
+    ALL_MINILM_L6_V2 = "sentence-transformers/all-MiniLM-L6-v2"
+    # 通用性能
+    all_mpnet_base_v2 = "sentence-transformers/all-mpnet-base-v2"
+    # 多语言
+    PARAPHRASE_MULTILINGUAL_MINILM_L12_V2 = (
+        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    )
+    # 中文
+    TEXT2VEC_BASE_CHINESE = "shibing624/text2vec-base-chinese"
 
 
 KnowledgeSplitConfig = Union[
@@ -154,8 +155,9 @@ class KnowledgeCreate(BaseModel):
         ...,
         description="source config of the knowledge",
     )
-    embedding_model_name: EmbeddingModelEnum = Field(
-        EmbeddingModelEnum.OPENAI, description="name of the embedding model"
+    embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
+        EmbeddingModelEnum.OPENAI,
+        description="name of the embedding model. you can set any other model if target embedding service registered",
     )
     split_config: KnowledgeSplitConfig = Field(
         ...,
@@ -258,24 +260,27 @@ class Knowledge(KnowledgeCreate):
         return self
 
     @model_validator(mode="before")
-    def ensure_aware_timezones(cls, values: dict) -> dict:
+    def pre_process_data(cls, data: dict) -> dict:
+        for field, value in data.items():
+            if isinstance(value, UUID):
+                data[field] = str(value)
         field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
         for field, alias_name in field_mappings.items():
-            val = values.get(field) or values.get(alias_name)
+            val = data.get(field) or data.get(alias_name)
             if val is None:
                 continue
 
             if isinstance(val, str):
                 dt = parse_datetime(val)
-                values[field] = dt
-                values[alias_name] = dt
+                data[field] = dt
+                data[alias_name] = dt
             else:
                 if val and val.tzinfo is None:
                     dt = val.replace(tzinfo=timezone.utc)
-                    values[field] = dt
-                    values[alias_name] = dt
+                    data[field] = dt
+                    data[alias_name] = dt
 
-        return values
+        return data
 
     @model_validator(mode="after")
     def set_defaults(self) -> "Knowledge":

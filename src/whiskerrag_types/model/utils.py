@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime, timezone
 
 from dateutil import parser
@@ -13,4 +14,11 @@ def parse_datetime(value: str) -> datetime:
         raise ValueError(f"Invalid datetime format: {value}") from e
 
 
-__all__ = ["parse_datetime"]
+def calculate_sha256(text: str) -> str:
+    text_bytes = text.encode("utf-8")
+    sha256_hash = hashlib.sha256()
+    sha256_hash.update(text_bytes)
+    return sha256_hash.hexdigest()
+
+
+__all__ = ["parse_datetime", "calculate_sha256"]
