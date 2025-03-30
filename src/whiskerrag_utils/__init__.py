@@ -12,8 +12,6 @@ from .registry import (
     register,
 )
 
-init_register()
-
 
 async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
