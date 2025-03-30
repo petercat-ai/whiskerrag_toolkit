@@ -118,11 +118,12 @@ def register(
 
         # Perform health check before registering
         if hasattr(cls, "health_check") and callable(getattr(cls, "health_check")):
-            health_check_result = cls.health_check()
+            health_check_result = cls.sync_health_check()
             if not health_check_result:
-                raise ValueError(
+                print(
                     f"Health check failed for class {cls.__name__}. Registration aborted."
                 )
+                return cls
         print(f"Registering {cls.__name__} as {register_type} with key {register_key}")
         _registry[register_type][register_key] = cls
         return cls
@@ -207,7 +208,6 @@ def get_register(
     Type[BaseRetriever],
     Type[BaseSplitter],
 ]:
-
     registry = _registry.get(register_type)
     if registry is None:
         raise KeyError(f"No registry for type: {register_type}")

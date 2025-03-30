@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
-from ..interface import LoggerManagerInterface, SettingsInterface
+from ..interface import DBPluginInterface, LoggerManagerInterface, SettingsInterface
 from ..model import Knowledge, Task, Tenant
 
 
 class TaskEnginPluginInterface(ABC):
     settings: SettingsInterface
     logger: LoggerManagerInterface
+    db_plugin: Optional[DBPluginInterface] = None
 
     def __init__(
         self,
@@ -18,11 +19,16 @@ class TaskEnginPluginInterface(ABC):
         self.logger = logger
         self._initialized: bool = False
 
-    async def ensure_initialized(self) -> None:
+    async def ensure_initialized(self, db_plugin: Optional[DBPluginInterface]) -> None:
         if not self._initialized:
             try:
                 self.logger.info("TaskEngine plugin is initializing...")
                 await self.init()
+                if db_plugin:
+                    if not db_plugin.is_initialized:
+                        self.logger.info("Initializing DB plugin...")
+                        await db_plugin.ensure_initialized()
+                    self.db_plugin = db_plugin
                 self._initialized = True
                 self.logger.info("TaskEngine plugin is initialized")
             except Exception as e:

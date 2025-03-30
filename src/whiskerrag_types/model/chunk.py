@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, List, Optional, Union
 from uuid import UUID, uuid4
 
+import numpy as np
 from pydantic import (
     BaseModel,
     Field,
@@ -43,6 +44,8 @@ class Chunk(BaseModel):
     def parse_embedding(cls, v: Union[str, List[float], None]) -> Optional[List[float]]:
         if v is None:
             return None
+        if isinstance(v, np.ndarray):
+            return v.tolist()
 
         if isinstance(v, list):
             return [float(x) for x in v]
@@ -69,9 +72,11 @@ class Chunk(BaseModel):
 
     @field_serializer("embedding_model_name")
     def serialize_embedding_model_name(
-        self, embedding_model_name: Optional[EmbeddingModelEnum]
-    ) -> Optional[str]:
-        return embedding_model_name.value if embedding_model_name else None
+        self, embedding_model_name: Union[EmbeddingModelEnum, str]
+    ) -> str:
+        if isinstance(embedding_model_name, EmbeddingModelEnum):
+            return embedding_model_name.value
+        return str(embedding_model_name)
 
     def update(self, **kwargs: Any) -> "Chunk":
         for key, value in kwargs.items():
