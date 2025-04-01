@@ -3,20 +3,20 @@ from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 
 
-class BaseSplitConfig(BaseModel):
+class BaseCharSplitConfig(BaseModel):
     """Base split configuration class"""
 
-    chunk_size: int = Field(default=1500, ge=1)
+    chunk_size: int = Field(default=1500, ge=1, lt=5000)
     chunk_overlap: int = Field(default=150, ge=0)
 
     @model_validator(mode="after")
-    def validate_overlap(self) -> "BaseSplitConfig":
+    def validate_overlap(self) -> "BaseCharSplitConfig":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("chunk_overlap must be less than chunk_size")
         return self
 
 
-class MarkdownSplitConfig(BaseSplitConfig):
+class MarkdownSplitConfig(BaseCharSplitConfig):
     """Markdown document split configuration"""
 
     separators: Optional[List[str]] = Field(description="separator list")
@@ -27,7 +27,7 @@ class MarkdownSplitConfig(BaseSplitConfig):
     # )
 
 
-class PDFSplitConfig(BaseSplitConfig):
+class PDFSplitConfig(BaseCharSplitConfig):
     """PDF document split configuration"""
 
     split_by_page: bool = Field(default=False, description="Whether to split by pages")
@@ -40,9 +40,15 @@ class PDFSplitConfig(BaseSplitConfig):
     )
 
 
-class TextSplitConfig(BaseSplitConfig):
+class TextSplitConfig(BaseCharSplitConfig):
     """Plain text split configuration"""
 
+    separators: List[str] = Field(
+        default=[
+            "\n\n",
+        ],
+        description="""List of separators to split the text. If None, uses default separators""",
+    )
     keep_separator: Union[bool, Literal["start", "end"]] = Field(
         default=False,
         description="""Whether to keep the separator and where to place it in each corresponding chunk (True='start')""",
@@ -53,7 +59,7 @@ class TextSplitConfig(BaseSplitConfig):
     )
 
 
-class JSONSplitConfig(BaseSplitConfig):
+class JSONSplitConfig(BaseCharSplitConfig):
     """JSON document split configuration"""
 
     split_level: int = Field(
