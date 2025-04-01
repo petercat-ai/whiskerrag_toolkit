@@ -101,7 +101,7 @@ make format
 make test
 
 # 运行特定测试文件
-make test-file file=tests/test_specific.py
+make test-file file=tests/whiskerrag_types/test_knowledge.py
 ```
 
 3. 代码检查

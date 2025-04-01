@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Generic, List, TypeVar
 
 from whiskerrag_types.interface.embed_interface import Image
-from whiskerrag_types.model.knowledge import BaseSplitConfig
+from whiskerrag_types.model.knowledge import BaseCharSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 
-T = TypeVar("T", bound=BaseSplitConfig)
+T = TypeVar("T", bound=BaseCharSplitConfig)
 R = TypeVar("R", Text, Image)
 
 
