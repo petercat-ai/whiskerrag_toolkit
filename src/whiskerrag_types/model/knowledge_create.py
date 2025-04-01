@@ -141,6 +141,8 @@ class PDFCreate(KnowledgeCreateBase):
         ...,
         description="split config of the knowledge",
     )
+    file_sha: str = Field(..., description="SHA of the file")
+    file_size: int = Field(..., description="Byte size of the file")
 
 
 class GithubRepoCreate(KnowledgeCreateBase):
@@ -193,6 +195,8 @@ class ImageCreate(KnowledgeCreateBase):
             description="source config of the knowledge",
         )
     )
+    file_sha: str = Field(..., description="SHA of the file")
+    file_size: int = Field(..., description="Byte size of the file")
 
 
 # TODO: add more knowledge types

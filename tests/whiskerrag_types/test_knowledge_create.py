@@ -64,6 +64,8 @@ class TestKnowledge:
             "knowledge_type": KnowledgeTypeEnum.IMAGE,
             "source_config": {"id": "112233"},
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
+            "file_size": 122,
+            "file_sha": "123213",
         }
         knowledge = ImageCreate(**data)
         assert knowledge.knowledge_type == KnowledgeTypeEnum.IMAGE
