@@ -1,12 +1,12 @@
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,
     Knowledge,
-    KnowledgeCreate,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
     TextSourceConfig,
-    calculate_sha256,
 )
+from whiskerrag_types.model.knowledge_create import TextCreate
+from whiskerrag_types.model.utils import calculate_sha256
 
 
 class TestKnowledge:
@@ -21,12 +21,12 @@ class TestKnowledge:
             "split_config": {
                 "chunk_size": 500,
                 "chunk_overlap": 100,
-                "separators": None,
-                "split_regex": None,
+                "separators": ["\n\n", "##"],
                 "strip_whitespace": True,
+                "keep_separator": False,
             },
         }
-        knowledge_create = KnowledgeCreate(**data)
+        knowledge_create = TextCreate(**data)
         assert knowledge_create.space_id == "test_space"
         assert knowledge_create.knowledge_type == KnowledgeTypeEnum.TEXT
         assert knowledge_create.knowledge_name == "Test Knowledge"
@@ -50,7 +50,7 @@ class TestKnowledge:
             "split_config": {
                 "chunk_size": 500,
                 "chunk_overlap": 100,
-                "separators": None,
+                "separators": [],
                 "split_regex": None,
                 "strip_whitespace": True,
             },

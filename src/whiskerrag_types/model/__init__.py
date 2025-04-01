@@ -12,6 +12,15 @@ from .knowledge import (
     S3SourceConfig,
     TextSourceConfig,
 )
+from .knowledge_create import (
+    GithubRepoCreate,
+    ImageCreate,
+    JSONCreate,
+    MarkdownCreate,
+    PDFCreate,
+    QACreate,
+    TextCreate,
+)
 from .page import PageParams, PageResponse
 from .retrieval import (
     RetrievalByKnowledgeRequest,
@@ -28,6 +37,13 @@ __all__ = [
     "EmbeddingModelEnum",
     "KnowledgeSplitConfig",
     "KnowledgeCreate",
+    "TextCreate",
+    "ImageCreate",
+    "JSONCreate",
+    "MarkdownCreate",
+    "PDFCreate",
+    "GithubRepoCreate",
+    "QACreate",
     "GithubRepoSourceConfig",
     "GithubFileSourceConfig",
     "S3SourceConfig",
