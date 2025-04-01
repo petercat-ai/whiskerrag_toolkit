@@ -18,6 +18,7 @@ from .retrieval import (
     RetrievalBySpaceRequest,
     RetrievalChunk,
 )
+from .space import Space, SpaceCreate, SpaceResponse
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
 
@@ -33,6 +34,9 @@ __all__ = [
     "S3SourceConfig",
     "TextSourceConfig",
     "Knowledge",
+    "Space",
+    "SpaceCreate",
+    "SpaceResponse",
     "PageParams",
     "PageResponse",
     "RetrievalBySpaceRequest",
