@@ -16,6 +16,7 @@ from .knowledge_create import (
     GithubRepoCreate,
     ImageCreate,
     JSONCreate,
+    KnowledgeCreateUnion,
     MarkdownCreate,
     PDFCreate,
     QACreate,
@@ -63,4 +64,5 @@ __all__ = [
     "TaskRestartRequest",
     "Tenant",
     "GenericConverter",
+    "KnowledgeCreateUnion",
 ]
