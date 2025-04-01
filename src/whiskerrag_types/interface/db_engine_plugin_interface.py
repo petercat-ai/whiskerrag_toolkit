@@ -9,6 +9,7 @@ from whiskerrag_types.model.retrieval import (
     RetrievalBySpaceRequest,
     RetrievalChunk,
 )
+from whiskerrag_types.model.space import Space
 
 from ..model import Knowledge, PageParams, PageResponse, Task, Tenant
 from .logger_interface import LoggerManagerInterface
@@ -80,6 +81,31 @@ class DBPluginInterface(ABC):
     async def delete_knowledge(
         self, tenant_id: str, knowledge_id_list: List[str]
     ) -> None:
+        pass
+
+    # =================== Space ===================
+    @abstractmethod
+    async def save_space(self, space: Space) -> Space:
+        pass
+
+    @abstractmethod
+    async def update_space(self, space: Space) -> Space:
+        pass
+
+    @abstractmethod
+    async def get_space_list(
+        self, tenant_id: str, page_params: PageParams[Space]
+    ) -> PageResponse[Space]:
+        pass
+
+    @abstractmethod
+    async def get_space(self, tenant_id: str, space_id: str) -> Space:
+        pass
+
+    @abstractmethod
+    async def delete_space(
+        self, tenant_id: str, space_id: str
+    ) -> Union[List[Space], None]:
         pass
 
     # =================== chunk ===================
