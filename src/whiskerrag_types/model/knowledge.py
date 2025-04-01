@@ -109,7 +109,7 @@ class EmbeddingModelEnum(str, Enum):
     # 轻量级
     ALL_MINILM_L6_V2 = "sentence-transformers/all-MiniLM-L6-v2"
     # 通用性能
-    all_mpnet_base_v2 = "sentence-transformers/all-mpnet-base-v2"
+    ALL_MPNET_BASE_V2 = "sentence-transformers/all-mpnet-base-v2"
     # 多语言
     PARAPHRASE_MULTILINGUAL_MINILM_L12_V2 = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
