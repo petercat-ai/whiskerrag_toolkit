@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
+import logging
 import subprocess
 import sys
 from pathlib import Path
 from typing import List, Tuple
-import logging
 
 
 class Linter:

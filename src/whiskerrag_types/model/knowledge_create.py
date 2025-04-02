@@ -1,11 +1,6 @@
 from typing import Literal, Optional, Union
 
-from pydantic import (
-    BaseModel,
-    Field,
-    field_serializer,
-    model_validator,
-)
+from pydantic import BaseModel, Field, field_serializer, model_validator
 
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,

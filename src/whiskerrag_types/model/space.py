@@ -2,11 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
-from pydantic import (
-    BaseModel,
-    Field,
-    model_validator,
-)
+from pydantic import BaseModel, Field, model_validator
 
 from whiskerrag_types.model.utils import parse_datetime
 

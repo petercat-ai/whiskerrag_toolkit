@@ -1,8 +1,5 @@
 from whiskerrag_types.interface.loader_interface import BaseLoader
-from whiskerrag_types.model.knowledge import (
-    KnowledgeSourceEnum,
-    TextSourceConfig,
-)
+from whiskerrag_types.model.knowledge import KnowledgeSourceEnum, TextSourceConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 

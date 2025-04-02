@@ -4,9 +4,7 @@ from typing import List, Optional
 from langchain_openai import OpenAIEmbeddings
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding, Image
-from whiskerrag_types.model.knowledge import (
-    EmbeddingModelEnum,
-)
+from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 from whiskerrag_utils import RegisterTypeEnum, register
 
 
