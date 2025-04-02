@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 import numpy as np
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
     field_serializer,
     field_validator,
@@ -117,5 +118,10 @@ class Chunk(BaseModel):
             self.updated_at = now
         return self
 
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+
+    @field_serializer("created_at", "updated_at")
+    def serialize_datetime(self, dt: datetime) -> str:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
