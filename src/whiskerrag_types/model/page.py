@@ -62,7 +62,7 @@ class PageResponse(BaseModel, Generic[T]):
 
 class StatusStatisticsPageResponse(PageResponse, Generic[T]):
     """
-    #please append the statistical field: pending,failed .....
+    please append the statistical field: pending,failed .....
     """
 
-    total_sucess: int = 0
+    success: int = 0
