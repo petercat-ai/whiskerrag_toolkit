@@ -8,10 +8,9 @@ WhiskerRAG 是为 PeterCat 和 Whisker 项目开发的 RAG（Retrieval-Augmented
 
 ## 特性
 
-- 领域建模类型
-- 插件接口描述
-- Github、S3 数据源加载器
-- OpenAI Emedding
+- 针对通用 RAG 的领域建模类型, 包括任务（Task）、知识（Knowledge）、分段(Chunk)、租户(Tenant)、知识库空间(Space)。
+- Whisker rag 插件接口描述。
+- Github 仓库、S3 资源管理器。
 
 ## 安装
 
@@ -23,13 +22,19 @@ pip install whiskerrag
 
 ## 快速开始
 
+whiskerrag 包含三个子模块，分别是 whiskerrag_utils、whiskerrag_client、whiskerrag_types。它们分别有不同的用途：
+
 ### whiskerrag_utils
+
+包含了构建 RAG 系统的常用方法：
 
 ```python
 from whiskerrag_utils import loader,embedding,retriever
 ```
 
 ### whiskerrag_client
+
+将 RAG 系统服务通过 python sdk 的形式向外暴露。
 
 ```python
 from whiskerrag_client import APIClient
@@ -63,14 +68,16 @@ task_detail = await api_client.task.get_task_detail("task_id_here")
 
 ### whiskerrag_types
 
+一些辅助开发的类型提示，接口；
+
 ```python
 from whiskerrag_types.interface import DBPluginInterface, TaskEngineInterface
 from whiskerrag_types.model import Knowledge, Task, Tenant, PageParams, PageResponse
 ```
 
-## 开发指南
+## 开发者指南
 
-### 环境设置
+### 环境初始化
 
 1. 克隆项目
 
@@ -82,107 +89,66 @@ cd whiskerrag_toolkit
 2. 创建并激活虚拟环境
 
 ```bash
-make setup
-source venv/bin/activate
-```
-`
-### 开发工作流
+# 查看poetry配置
+poetry config --list
 
-1. 代码格式化
+# 修改 poetry 配置
+poetry config virtualenvs.create true
+poetry config virtualenvs.in-project true
+
+poetry env use python3.10
+
+# 激活虚拟环境
+source .venv/bin/activate
+```
+
+3. 安装依赖
 
 ```bash
-make format
+# 安装项目依赖
+poetry install
+# 安装 pre-commit 工具
+pre-commit install
 ```
 
-2. 运行测试
+4. 运行测试
 
 ```bash
 # 运行所有测试
-make test
-
-# 运行特定测试文件
-make test-file file=tests/whiskerrag_types/test_knowledge.py
+poetry run pytest
+# 运行指定测试文件
+poetry run pytest tests/test_loader.py
 ```
 
-3. 代码检查
+4. poetry 常用命令
 
 ```bash
-# 运行所有检查（lint, type check, test）
-make check
+# 安装依赖
+poetry install
 
-# 仅运行 lint
-make lint
+# 添加新依赖
+poetry add package_name
 
-# 仅运行类型检查
-make lint-mypy
+# 添加新 dev 依赖
+poetry add --dev package_name
+
+# 更新依赖
+poetry update
+
+# 查看环境信息
+poetry env info
+
+# 查看已安装的包
+poetry show
 ```
 
-4. 生成测试覆盖率报告
+### 开发工作流
 
-```bash
-make coverage
-```
-
-### 分支管理
-
-创建新的功能分支：
-
-```bash
-make branch name=feature/new-feature
-```
-
-### 构建和发布
-
-1. 构建包
-
-```bash
-make build
-```
-
-2. 检查构建的包
-
-```bash
-make check-build
-```
-
-3. 发布到 TestPyPI
-
-```bash
-make upload-test
-```
-
-4. 发布到 PyPI
-
-```bash
-make upload
-```
-
-5. 创建新版本发布
-
-```bash
-# 本地发布
-make release-local new_version=X.Y.Z
-```
-
-### 其他命令
-
-- 清理构建文件和缓存：
-
-```bash
-make clean
-```
-
-- 更新依赖版本：
-
-```bash
-make update-deps
-```
-
-- 运行 pre-commit 钩子：
-
-```bash
-make pre-commit
-```
+1. 创建新分支
+2. 开发新功能，补充单元测试，确保代码质量。注意，请确保单元测试覆盖率不低于 80%。
+3. 提交代码，并创建 Pull Request。
+4. 等待代码审查，并根据反馈进行修改。
+5. 合并 Pull Request。
 
 ## 项目结构
 
@@ -192,10 +158,7 @@ whiskerRAG-toolkit/
 │   ├── whiskerrag_utils/
 │   └── whiskerrag_types/
 │   └── whiskerrag_client/
-├── requirements.txt
-├── requirements-dev.txt
-├── setup.py
-└── Makefile
+└── pyproject.toml
 ```
 
 ## 贡献指南
