@@ -62,10 +62,11 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --with dev
 
       - name: Run tests with coverage
-        run: poetry run pytest --cov=your_package_name --cov-report=xml --cov-report=term-missing
+        run: |
+          poetry run pytest --cov=src --cov-report=xml tests/
 
       - name: List files (for debugging)
         run: ls -la
@@ -78,7 +79,6 @@ jobs:
 
   publish-test:
     needs: test
-    # 在 dev 分支或 PR 到 main 时执行测试发布
     if: |
       (startsWith(github.ref, 'refs/heads/dev/') || startsWith(github.ref, 'refs/heads/dev-')) ||
       (github.event_name == 'pull_request' && github.base_ref == 'main')
