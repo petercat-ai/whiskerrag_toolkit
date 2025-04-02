@@ -3,6 +3,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Python Version](https://img.shields.io/pypi/pyversions/whiskerrag)](https://pypi.org/project/whiskerrag/)
 [![PyPI version](https://badge.fury.io/py/whiskerrag.svg)](https://badge.fury.io/py/whiskerrag)
+[![codecov](https://codecov.io/gh/petercat-ai/whiskerrag_toolkit/branch/main/graph/badge.svg)](https://codecov.io/gh/petercat-ai/whiskerrag_toolkit)
 
 WhiskerRAG 是为 PeterCat 和 Whisker 项目开发的 RAG（Retrieval-Augmented Generation）工具包，提供完整的 RAG 相关类型定义和方法实现。
 

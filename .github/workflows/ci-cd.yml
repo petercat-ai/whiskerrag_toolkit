@@ -67,10 +67,13 @@ jobs:
       - name: Run tests with coverage
         run: poetry run pytest --cov=your_package_name --cov-report=xml --cov-report=term-missing
 
+      - name: List files (for debugging)
+        run: ls -la
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage.xml
+          files: coverage.xml
           fail_ci_if_error: true
 
   publish-test:

@@ -88,14 +88,16 @@ addopts = [
     "-q",
     "-v",
     "-s",
-    "--cov=com",
+    "--cov=whiskerrag",
     "--cov-report=xml",
-    "--cov-report=html",
     "--md-report",
     "--md-report-verbose=0",
     "--md-report-color=auto",
 ]
 asyncio_mode = "auto"
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [tool.coverage.report]
 exclude_lines = [
