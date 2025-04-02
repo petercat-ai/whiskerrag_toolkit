@@ -187,3 +187,17 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def validate_tenant_name(self, tenant_name: str) -> bool:
         pass
+
+    @abstractmethod
+    async def get_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
+        pass
+
+    @abstractmethod
+    async def get_tenant_list(
+        self, page_params: PageParams[Tenant]
+    ) -> PageResponse[Tenant]:
+        pass
+
+    @abstractmethod
+    async def delete_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
+        pass
