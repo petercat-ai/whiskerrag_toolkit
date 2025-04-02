@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-from enum import Enum
+import logging
+import re
 import subprocess
 import sys
+from enum import Enum
 from pathlib import Path
-import re
 from typing import Optional, Tuple
-import logging
+
 from packaging import version
 
 

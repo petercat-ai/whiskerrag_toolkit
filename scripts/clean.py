@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import shutil
 import os
+import shutil
 from pathlib import Path
 
 
