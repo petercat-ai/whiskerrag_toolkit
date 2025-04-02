@@ -104,3 +104,24 @@ class TestKnowledge:
         assert knowledge.split_config.chunk_overlap == 100
         assert knowledge.split_config.separators is None
         assert knowledge.split_config.split_regex is None
+
+    def test_knowledge_model_dump(self) -> None:
+        data = {
+            "space_id": "test_space",
+            "knowledge_type": KnowledgeTypeEnum.TEXT,
+            "knowledge_name": "Test Knowledge",
+            "source_type": KnowledgeSourceEnum.USER_INPUT_TEXT,
+            "source_config": TextSourceConfig(text="Initial text."),
+            "embedding_model_name": EmbeddingModelEnum.OPENAI,
+            "split_config": {
+                "chunk_size": 500,
+                "chunk_overlap": 100,
+                "separators": None,
+                "split_regex": None,
+                "strip_whitespace": True,
+            },
+            "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
+            "gmt_create": "2023-01-01T00:00:00Z",
+        }
+        knowledge = Knowledge(**data).model_dump()
+        assert knowledge["created_at"] == "2023-01-01T00:00:00.000000Z"

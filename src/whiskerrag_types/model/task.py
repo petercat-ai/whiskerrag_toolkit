@@ -3,11 +3,7 @@ from enum import Enum
 from typing import Any, List, Optional
 from uuid import UUID, uuid4
 
-from pydantic import (
-    BaseModel,
-    Field,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
 from whiskerrag_types.model.utils import parse_datetime
 
@@ -108,7 +104,10 @@ class Task(BaseModel):
             self.updated_at = now
         return self
 
-    class Config:
-        extra = "ignore"
-        allow_population_by_field_name = True
-        serialize_by_alias = False
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+
+    @field_serializer("created_at", "updated_at")
+    def serialize_datetime(self, dt: datetime) -> str:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
