@@ -21,10 +21,6 @@ class MarkdownSplitConfig(BaseCharSplitConfig):
 
     separators: Optional[List[str]] = Field(description="separator list")
     split_regex: Optional[str] = Field(description="split_regex")
-    # split_by_heading: Optional[bool] = Field(description="Whether to split by headings")
-    # remove_markdown_chars: Optional[bool] = Field(
-    #     description="Whether to remove Markdown syntax characters"
-    # )
 
 
 class PDFSplitConfig(BaseCharSplitConfig):
@@ -49,11 +45,11 @@ class TextSplitConfig(BaseCharSplitConfig):
         ],
         description="""List of separators to split the text. If None, uses default separators""",
     )
-    keep_separator: Union[bool, Literal["start", "end"]] = Field(
+    keep_separator: Optional[Union[bool, Literal["start", "end"]]] = Field(
         default=False,
         description="""Whether to keep the separator and where to place it in each corresponding chunk (True='start')""",
     )
-    strip_whitespace: bool = Field(
+    strip_whitespace: Optional[bool] = Field(
         default=False,
         description="""If `True`, strips whitespace from the start and end of every document""",
     )
