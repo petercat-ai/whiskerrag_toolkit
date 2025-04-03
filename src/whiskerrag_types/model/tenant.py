@@ -4,7 +4,9 @@ from uuid import UUID, uuid4
 
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
+    field_serializer,
     field_validator,
     model_validator,
 )
@@ -29,6 +31,10 @@ class Tenant(BaseModel):
         default=None,
         description="tenant updated time",
         alias="gmt_modified",
+    )
+
+    model_config = ConfigDict(
+        populate_by_name=True,
     )
 
     def update(self, **kwargs: Any) -> "Tenant":
@@ -75,5 +81,6 @@ class Tenant(BaseModel):
             self.updated_at = now
         return self
 
-    class Config:
-        allow_population_by_field_name = True
+    @field_serializer("created_at", "updated_at")
+    def serialize_datetime(self, dt: datetime) -> str:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")

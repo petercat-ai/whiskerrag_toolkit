@@ -28,6 +28,13 @@ from .retrieval import (
     RetrievalChunk,
 )
 from .space import Space, SpaceCreate, SpaceResponse
+from .splitter import (
+    BaseCharSplitConfig,
+    JSONSplitConfig,
+    MarkdownSplitConfig,
+    PDFSplitConfig,
+    TextSplitConfig,
+)
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
 
@@ -63,4 +70,9 @@ __all__ = [
     "TaskRestartRequest",
     "Tenant",
     "GenericConverter",
+    "BaseCharSplitConfig",
+    "JSONSplitConfig",
+    "MarkdownSplitConfig",
+    "PDFSplitConfig",
+    "TextSplitConfig",
 ]

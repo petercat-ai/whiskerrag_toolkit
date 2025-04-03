@@ -2,11 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
-from pydantic import (
-    BaseModel,
-    Field,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
 from whiskerrag_types.model.utils import parse_datetime
 
@@ -96,6 +92,14 @@ class Space(SpaceCreate):
         if self.updated_at is None:
             self.updated_at = now
         return self
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+
+    @field_serializer("created_at", "updated_at")
+    def serialize_datetime(self, dt: datetime) -> str:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class SpaceResponse(Space):

@@ -222,6 +222,7 @@ def get_register(
         registry = cast(SplitterRegistry, registry)
 
     cls = registry.get(register_key)
+
     if cls is None:
         raise KeyError(
             f"No implementation registered for type: {register_type}.{register_key}"

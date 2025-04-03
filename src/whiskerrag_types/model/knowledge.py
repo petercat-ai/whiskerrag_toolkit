@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from deprecated import deprecated
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
     field_serializer,
     field_validator,
@@ -269,8 +270,9 @@ class Knowledge(BaseModel):
         description="update time",
     )
 
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
@@ -288,6 +290,11 @@ class Knowledge(BaseModel):
             setattr(self, key, value)
         self.updated_at = datetime.now()
         return self
+
+    @field_validator("enabled", mode="before")
+    @classmethod
+    def convert_tinyint_to_bool(cls, v: Any) -> bool:
+        return bool(v)
 
     @model_validator(mode="before")
     def pre_process_data(cls, data: dict) -> dict:
@@ -352,7 +359,6 @@ class Knowledge(BaseModel):
             return embedding_model_name.value
         return str(embedding_model_name)
 
-    @field_validator("enabled", mode="before")
-    @classmethod
-    def convert_tinyint_to_bool(cls, v: Any) -> bool:
-        return bool(v)
+    @field_serializer("created_at", "updated_at")
+    def serialize_datetime(self, dt: datetime) -> str:
+        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
