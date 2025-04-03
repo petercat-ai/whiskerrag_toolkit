@@ -58,3 +58,11 @@ class PageResponse(BaseModel, Generic[T]):
     page: int
     page_size: int
     total_pages: int
+
+
+class StatusStatisticsPageResponse(PageResponse, Generic[T]):
+    """
+    please append the statistical field: pending,failed .....
+    """
+
+    success: int = 0
