@@ -79,6 +79,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   publish-release:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
