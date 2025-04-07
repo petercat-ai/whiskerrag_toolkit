@@ -112,7 +112,7 @@ jobs:
         run: |
           echo "Starting build and publish process..."
           VERSION=$(poetry version -s)
-          TIMESTAMP=$(date +%Y%m%d)
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
           poetry version "${VERSION}.dev${TIMESTAMP}"
           poetry build
           poetry publish
