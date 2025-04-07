@@ -98,11 +98,21 @@ jobs:
         with:
           version: latest
 
-      - name: Build and publish test version
+      - name: Debug Secret
         run: |
+          if [ -n "${{ secrets.PYPI_TOKEN }}" ]; then
+            echo "PYPI_TOKEN is set"
+          else
+            echo "PYPI_TOKEN is not set"
+          fi
+
+      - name: Build and publish test version
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          echo "Starting build and publish process..."
           VERSION=$(poetry version -s)
-          TIMESTAMP=$(date +%Y%m%d)
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
           poetry version "${VERSION}.dev${TIMESTAMP}"
           poetry build
-          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
           poetry publish
