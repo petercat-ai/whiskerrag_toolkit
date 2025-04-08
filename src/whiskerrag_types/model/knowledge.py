@@ -257,6 +257,7 @@ class Knowledge(BaseModel):
     file_sha: Optional[str] = Field(None, description="SHA of the file")
     file_size: Optional[int] = Field(None, description="size of the file")
     metadata: dict = Field({}, description="additional metadata, user can update it")
+    retrieval_count: int = Field(default=0, description="count of the retrieval")
     parent_id: Optional[str] = Field(None, description="parent knowledge id")
     enabled: bool = Field(True, description="is knowledge enabled")
     created_at: Optional[datetime] = Field(

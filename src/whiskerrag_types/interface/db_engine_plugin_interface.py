@@ -166,6 +166,12 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
+    async def delete_task_by_id(
+        self, tenant_id: str, task_id: str
+    ) -> Union[Task, None]:
+        pass
+
+    @abstractmethod
     async def delete_knowledge_task(
         self, tenant_id: str, knowledge_ids: List[str]
     ) -> Union[List[Task], None]:
