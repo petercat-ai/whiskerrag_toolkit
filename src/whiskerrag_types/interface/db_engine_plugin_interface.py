@@ -174,7 +174,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def task_statistics(
-        self, tenant_id: str, status: TaskStatus
+        self, space_id: str, status: TaskStatus
     ) -> dict[TaskStatus, int]:
         pass
 
