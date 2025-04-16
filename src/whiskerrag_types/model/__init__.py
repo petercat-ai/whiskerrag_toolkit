@@ -21,7 +21,7 @@ from .knowledge_create import (
     QACreate,
     TextCreate,
 )
-from .page import PageParams, PageResponse
+from .page import PageParams, PageResponse, StatusStatisticsPageResponse
 from .retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
@@ -62,6 +62,7 @@ __all__ = [
     "SpaceResponse",
     "PageParams",
     "PageResponse",
+    "StatusStatisticsPageResponse",
     "RetrievalBySpaceRequest",
     "RetrievalByKnowledgeRequest",
     "RetrievalChunk",

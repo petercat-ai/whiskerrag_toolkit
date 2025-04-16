@@ -10,6 +10,7 @@ from whiskerrag_types.model.retrieval import (
     RetrievalChunk,
 )
 from whiskerrag_types.model.space import Space
+from whiskerrag_types.model.task import TaskStatus
 
 from ..model import Knowledge, PageParams, PageResponse, Task, Tenant
 from .logger_interface import LoggerManagerInterface
@@ -163,6 +164,18 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_task_by_id(self, tenant_id: str, task_id: str) -> Union[Task, None]:
+        pass
+
+    @abstractmethod
+    async def delete_task_by_id(
+        self, tenant_id: str, task_id: str
+    ) -> Union[Task, None]:
+        pass
+
+    @abstractmethod
+    async def task_statistics(
+        self, space_id: str, status: TaskStatus
+    ) -> Union[dict[TaskStatus, int], int]:
         pass
 
     @abstractmethod

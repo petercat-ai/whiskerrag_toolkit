@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -22,6 +23,9 @@ class Tenant(BaseModel):
     email: str = Field(..., description="email")
     secret_key: str = Field("", description="secret_key")
     is_active: bool = Field(True, description="is active")
+    metadata: Optional[dict] = Field(
+        None, description="Metadata for the tenant", alias="metadata"
+    )
     created_at: Optional[datetime] = Field(
         default=None,
         description="tenant created time",
@@ -54,6 +58,8 @@ class Tenant(BaseModel):
         for field, value in data.items():
             if isinstance(value, UUID):
                 data[field] = str(value)
+            if field == "metadata" and isinstance(value, str):
+                data[field] = json.loads(value)
         field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
         for field, alias_name in field_mappings.items():
             val = data.get(field) or data.get(alias_name)
