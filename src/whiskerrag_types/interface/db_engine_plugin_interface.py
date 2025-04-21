@@ -127,6 +127,12 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
+    async def delete_chunk_by_id(
+        self, tenant_id: str, chunk_id: str, embedding_model_name: str
+    ) -> Union[Chunk, None]:
+        pass
+
+    @abstractmethod
     async def delete_knowledge_chunk(
         self, tenant_id: str, knowledge_ids: List[str]
     ) -> Union[List[Chunk], None]:
