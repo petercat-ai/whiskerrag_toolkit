@@ -121,7 +121,9 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_chunk_by_id(self, tenant_id: str, chunk_id: str) -> Chunk:
+    async def get_chunk_by_id(
+        self, tenant_id: str, chunk_id: str, embedding_model_name: str
+    ) -> Chunk:
         pass
 
     @abstractmethod
