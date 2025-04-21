@@ -1,8 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from whiskerrag_client.http_client import BaseClient
 from whiskerrag_types.model.page import PageParams, PageResponse
-from whiskerrag_types.model.space import Space, SpaceCreate
+from whiskerrag_types.model.space import Space, SpaceCreate, SpaceResponse
 
 
 class SpaceClient:
@@ -10,13 +10,21 @@ class SpaceClient:
         self.http_client = http_client
         self.base_path = base_path
 
-    async def add_space(self, items: List[SpaceCreate]) -> List[Space]:
+    async def add_space(self, body: SpaceCreate) -> SpaceResponse:
         response = await self.http_client._request(
             method="POST",
             endpoint=f"{self.base_path}/add",
-            json=[item.model_dump() for item in items],
+            json=body.model_dump(),
         )
-        return [Space(**item) for item in response["data"]]
+        return SpaceResponse(**response["data"])
+
+    async def update_space(self, space_id: str, body: SpaceCreate) -> SpaceResponse:
+        response = await self.http_client._request(
+            method="PUT",
+            endpoint=f"{self.base_path}/{space_id}",
+            json=body.model_dump(),
+        )
+        return SpaceResponse(**response["data"])
 
     async def get_space_list(
         self,
@@ -46,9 +54,16 @@ class SpaceClient:
             total_pages=response["data"]["total_pages"],
         )
 
-    async def delete_space_by_id(self, space_id: str) -> Space:
+    async def delete_space_by_id(self, space_id: str) -> Any:
         response = await self.http_client._request(
             method="DELETE",
             endpoint=f"{self.base_path}/{space_id}",
         )
-        return Space(**response["data"])
+        return response["message"]
+
+    async def get_space_by_id(self, space_id: str) -> SpaceResponse:
+        response = await self.http_client._request(
+            method="GET",
+            endpoint=f"{self.base_path}/{space_id}",
+        )
+        return SpaceResponse(**response["data"])
