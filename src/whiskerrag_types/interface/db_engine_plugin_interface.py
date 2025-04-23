@@ -123,7 +123,7 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def get_chunk_by_id(
         self, tenant_id: str, chunk_id: str, embedding_model_name: str
-    ) -> Chunk:
+    ) -> Union[Chunk, None]:
         pass
 
     @abstractmethod
