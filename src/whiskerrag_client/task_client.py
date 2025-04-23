@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from whiskerrag_client.http_client import BaseClient
-from whiskerrag_types.model.page import PageParams, PageResponse
+from whiskerrag_types.model.page import PageParams, StatusStatisticsPageResponse
 from whiskerrag_types.model.task import Task
 
 
@@ -17,7 +17,7 @@ class TaskClient:
         order_by: Optional[str] = None,
         order_direction: str = "asc",
         eq_conditions: Optional[Dict[str, Any]] = None,
-    ) -> PageResponse[Task]:
+    ) -> StatusStatisticsPageResponse[Task]:
         params: PageParams = PageParams(
             page=page,
             page_size=page_size,
@@ -30,9 +30,10 @@ class TaskClient:
             endpoint=f"{self.base_path}/list",
             json=params.model_dump(exclude_none=True),
         )
-        return PageResponse(
+        return StatusStatisticsPageResponse(
             items=[Task(**task) for task in response["data"]["items"]],
             total=response["data"]["total"],
+            success=response["data"]["success"],
             page=response["data"]["page"],
             page_size=response["data"]["page_size"],
             total_pages=response["data"]["total_pages"],
@@ -54,3 +55,21 @@ class TaskClient:
         )
 
         return [Task(**task) for task in response["data"]]
+
+    async def cancel_task(self, task_id_list: List[str]) -> List[Task]:
+        response = await self.http_client._request(
+            method="POST",
+            endpoint=f"{self.base_path}/cancel",
+            json={"task_id_list": task_id_list},
+        )
+
+        return [Task(**task) for task in response["data"]]
+
+    async def delete_task(self, task_id: str) -> Task:
+        response = await self.http_client._request(
+            method="DELETE",
+            endpoint=f"{self.base_path}/delete",
+            params={"task_id": task_id},
+        )
+
+        return Task(**response["data"])

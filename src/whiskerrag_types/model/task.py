@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, List, Optional
@@ -77,6 +78,8 @@ class Task(BaseModel):
         for field, value in data.items():
             if isinstance(value, UUID):
                 data[field] = str(value)
+            if field == "metadata" and isinstance(value, str):
+                data[field] = json.loads(value)
         field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
         for field, alias_name in field_mappings.items():
             val = data.get(field) or data.get(alias_name)
