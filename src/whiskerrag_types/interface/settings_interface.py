@@ -8,6 +8,7 @@ class SettingsInterface(ABC):
     TASK_TABLE_NAME: str
     ACTION_TABLE_NAME: str
     TENANT_TABLE_NAME: str
+    SPACE_TABLE_NAME: str
     LOG_DIR: str
     PLUGIN_ENV = dict
 
