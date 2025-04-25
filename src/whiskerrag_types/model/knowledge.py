@@ -111,7 +111,7 @@ class KnowledgeTypeEnum(str, Enum):
     PDF = "pdf"
     QA = "qa"
     YUQUEDOC = "yuquedoc"
-    ONEAPIJSON = "oneapi_json"
+    ONEAPIAPP = "openapi_app"
     """ such as github repo """
     FOLDER = "folder"
 
