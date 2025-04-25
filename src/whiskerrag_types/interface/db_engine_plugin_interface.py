@@ -84,6 +84,12 @@ class DBPluginInterface(ABC):
     ) -> None:
         pass
 
+    @abstractmethod
+    async def batch_update_knowledge_retrieval_count(
+        self, knowledge_id_list: dict[str, int]
+    ) -> None:
+        pass
+
     # =================== Space ===================
     @abstractmethod
     async def save_space(self, space: Space) -> Space:
