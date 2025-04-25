@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID, uuid4
 
 from deprecated import deprecated
@@ -46,6 +46,10 @@ class MetadataSerializer:
 
 
 class KnowledgeSourceEnum(str, Enum):
+    """
+    Specifies the source of knowledge, which influences the behavior of the resource loader
+    """
+
     GITHUB_REPO = "github_repo"
     GITHUB_FILE = "github_file"
     USER_INPUT_TEXT = "user_input_text"
@@ -71,6 +75,10 @@ class S3SourceConfig(BaseModel):
     access_key: Optional[str] = Field(None, description="s3 access key")
     secret_key: Optional[str] = Field(None, description="s3 secret key")
     session_token: Optional[str] = Field(None, description="s3 session token")
+
+
+class YuqueSourceConfig(BaseModel):
+    access_token: str = Field(..., description="authentication information")
 
 
 class OpenUrlSourceConfig(BaseModel):
@@ -102,6 +110,9 @@ class KnowledgeTypeEnum(str, Enum):
     DOCX = "docx"
     PDF = "pdf"
     QA = "qa"
+    YUQUEDOC = "yuquedoc"
+    ONEAPIJSON = "oneapi_json"
+    """ such as github repo """
     FOLDER = "folder"
 
 
@@ -120,11 +131,12 @@ class EmbeddingModelEnum(str, Enum):
 
 
 KnowledgeSplitConfig = Union[
-    BaseCharSplitConfig,
+    JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
     TextSplitConfig,
-    JSONSplitConfig,
+    Literal["auto"],
+    BaseCharSplitConfig,
 ]
 
 
@@ -218,7 +230,6 @@ class KnowledgeCreate(BaseModel):
 
 
 class Knowledge(BaseModel):
-
     knowledge_id: str = Field(
         default_factory=lambda: str(uuid4()), description="knowledge id"
     )

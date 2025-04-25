@@ -12,6 +12,7 @@ from whiskerrag_types.model.knowledge import (
     OpenUrlSourceConfig,
     S3SourceConfig,
     TextSourceConfig,
+    YuqueSourceConfig,
 )
 from whiskerrag_types.model.splitter import (
     BaseCharSplitConfig,
@@ -194,6 +195,21 @@ class ImageCreate(KnowledgeCreateBase):
     file_size: int = Field(..., description="Byte size of the file")
 
 
+class YuqueCreate(KnowledgeCreateBase):
+    knowledge_type: Literal[KnowledgeTypeEnum.IMAGE] = Field(
+        KnowledgeTypeEnum.IMAGE, description="type of knowledge resource"
+    )
+    source_config: YuqueSourceConfig = Field(
+        ...,
+        description="source config of the knowledge",
+    )
+    book_id: str = Field(..., description="the yuque book id")
+    document_id: Optional[str] = Field(
+        ...,
+        description="the yuque document id in book, if not set, will use the book id as document id",
+    )
+
+
 # TODO: add more knowledge types
 # EXCEL = "excel"
 # PPTX = "pptx"
@@ -206,4 +222,5 @@ KnowledgeCreateUnion = Union[
     PDFCreate,
     GithubRepoCreate,
     QACreate,
+    YuqueCreate,
 ]
