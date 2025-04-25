@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Generic, List, TypeVar
 
+from pydantic import BaseModel
+
 from whiskerrag_types.interface.embed_interface import Image
-from whiskerrag_types.model.knowledge import BaseCharSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 
-T = TypeVar("T", bound=BaseCharSplitConfig)
+T = TypeVar("T", bound=BaseModel)
 R = TypeVar("R", Text, Image)
 
 

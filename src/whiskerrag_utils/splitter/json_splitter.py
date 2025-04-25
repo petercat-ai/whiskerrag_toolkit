@@ -1,0 +1,31 @@
+import json
+from typing import List
+
+from langchain_text_splitters import RecursiveJsonSplitter
+
+from whiskerrag_types.interface.splitter_interface import BaseSplitter
+from whiskerrag_types.model.knowledge import JSONSplitConfig, KnowledgeTypeEnum
+from whiskerrag_types.model.multi_modal import Text
+from whiskerrag_utils.registry import RegisterTypeEnum, register
+
+
+@register(RegisterTypeEnum.SPLITTER, KnowledgeTypeEnum.JSON)
+class JSONSplitter(BaseSplitter[JSONSplitConfig, Text]):
+
+    def split(self, content: str, split_config: JSONSplitConfig) -> List[Text]:
+        """Splits JSON content into smaller chunks based on the provided configuration."""
+        json_content = {}
+        try:
+            json_content = json.loads(content)
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON content provided for splitting.")
+        splitter = RecursiveJsonSplitter(
+            max_chunk_size=split_config.max_chunk_size,
+            min_chunk_size=split_config.min_chunk_size,
+        )
+        return splitter.split_text(json_content)
+
+    def batch_split(
+        self, content: List[str], split_config: JSONSplitConfig
+    ) -> List[List[str]]:
+        return [self.split(text, split_config) for text in content]

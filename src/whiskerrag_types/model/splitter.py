@@ -26,6 +26,7 @@ class MarkdownSplitConfig(BaseCharSplitConfig):
 class PDFSplitConfig(BaseCharSplitConfig):
     """PDF document split configuration"""
 
+    type: Literal["pdf"] = "pdf"
     split_by_page: bool = Field(default=False, description="Whether to split by pages")
     keep_layout: bool = Field(
         default=True, description="Whether to preserve the original layout"
@@ -39,6 +40,7 @@ class PDFSplitConfig(BaseCharSplitConfig):
 class TextSplitConfig(BaseCharSplitConfig):
     """Plain text split configuration"""
 
+    type: Literal["text"] = "text"
     separators: List[str] = Field(
         default=[
             "\n\n",
@@ -55,26 +57,32 @@ class TextSplitConfig(BaseCharSplitConfig):
     )
 
 
-class JSONSplitConfig(BaseCharSplitConfig):
-    """JSON document split configuration"""
+class JSONSplitConfig(BaseModel):
+    """
+    JSON document split configuration
+    @link {https://python.langchain.com/api_reference/text_splitters/json/langchain_text_splitters.json.RecursiveJsonSplitter.html}
+    """
 
-    split_level: int = Field(
-        default=1, description="Depth level for JSON splitting", ge=1
+    type: Literal["json"] = "json"
+    max_chunk_size: int = Field(
+        default=2000,
+        description=""" The maximum size for each chunk. Defaults to 2000 """,
     )
-    preserve_structure: bool = Field(
-        default=True, description="Whether to preserve JSON structure"
-    )
-    array_handling: str = Field(
-        default="split",
-        description="Array handling mode: 'split' or 'merge'",
-    )
-    key_filters: Optional[List[str]] = Field(
-        default=None, description="List of keys to process; processes all keys if None"
+    min_chunk_size: Optional[int] = Field(
+        default=200,
+        description="""The minimum size for a chunk. If None,
+                defaults to the maximum chunk size minus 200, with a lower bound of 50.""",
     )
 
-    @model_validator(mode="after")
-    def validate_array_handling(self) -> "JSONSplitConfig":
-        valid_handlers = ["split", "merge"]
-        if self.array_handling not in valid_handlers:
-            raise ValueError(f"array_handling must be one of {valid_handlers}")
-        return self
+
+class GeaGraphSplitConfig(BaseModel):
+    """
+    JSON document split configuration
+    @link {https://python.langchain.com/api_reference/text_splitters/json/langchain_text_splitters.json.RecursiveJsonSplitter.html}
+    """
+
+    type: Literal["geagraph"] = "geagraph"
+    schema_id: Optional[str] = Field(
+        default=None,
+        description=""" The maximum size for each chunk. Defaults to 2000 """,
+    )
