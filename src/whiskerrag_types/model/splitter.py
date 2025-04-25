@@ -73,3 +73,16 @@ class JSONSplitConfig(BaseModel):
         description="""The minimum size for a chunk. If None,
                 defaults to the maximum chunk size minus 200, with a lower bound of 50.""",
     )
+
+
+class GeaGraphSplitConfig(BaseModel):
+    """
+    JSON document split configuration
+    @link {https://python.langchain.com/api_reference/text_splitters/json/langchain_text_splitters.json.RecursiveJsonSplitter.html}
+    """
+
+    type: Literal["geagraph"] = "geagraph"
+    schema_id: Optional[str] = Field(
+        default=None,
+        description=""" The maximum size for each chunk. Defaults to 2000 """,
+    )

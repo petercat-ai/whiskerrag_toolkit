@@ -16,6 +16,7 @@ from pydantic import (
 
 from whiskerrag_types.model.splitter import (
     BaseCharSplitConfig,
+    GeaGraphSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
@@ -78,6 +79,15 @@ class S3SourceConfig(BaseModel):
 
 
 class YuqueSourceConfig(BaseModel):
+    group_id: str = Field(..., description="the yuque group id")
+    book_id: Optional[str] = Field(
+        default=None,
+        description="the yuque book id, if not set, will use the group all book",
+    )
+    document_id: Optional[str] = Field(
+        default=None,
+        description="the yuque document id in book, if not set, will use the book id as document id",
+    )
     access_token: str = Field(..., description="authentication information")
 
 
@@ -134,6 +144,7 @@ KnowledgeSplitConfig = Union[
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
+    GeaGraphSplitConfig,
     TextSplitConfig,
     Literal["auto"],
     BaseCharSplitConfig,

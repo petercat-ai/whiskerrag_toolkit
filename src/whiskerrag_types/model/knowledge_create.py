@@ -16,6 +16,7 @@ from whiskerrag_types.model.knowledge import (
 )
 from whiskerrag_types.model.splitter import (
     BaseCharSplitConfig,
+    GeaGraphSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
@@ -203,10 +204,9 @@ class YuqueCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    book_id: str = Field(..., description="the yuque book id")
-    document_id: Optional[str] = Field(
+    split_config: Union[GeaGraphSplitConfig, BaseCharSplitConfig] = Field(
         ...,
-        description="the yuque document id in book, if not set, will use the book id as document id",
+        description="split config of the knowledge",
     )
 
 

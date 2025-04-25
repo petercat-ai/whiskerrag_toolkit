@@ -30,6 +30,7 @@ from .retrieval import (
 from .space import Space, SpaceCreate, SpaceResponse
 from .splitter import (
     BaseCharSplitConfig,
+    GeaGraphSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
@@ -76,4 +77,5 @@ __all__ = [
     "MarkdownSplitConfig",
     "PDFSplitConfig",
     "TextSplitConfig",
+    "GeaGraphSplitConfig",
 ]
