@@ -4,18 +4,13 @@ from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import Knowledge
 from whiskerrag_types.model.multi_modal import Image
 
-from .registry import (
-    RegisterTypeEnum,
-    RetrievalEnum,
-    get_register,
-    init_register,
-    register,
-)
+from .registry import RegisterTypeEnum, get_register, init_register, register
 
 
 async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
-    SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
+    split_type = getattr(knowledge.split_config, "type", None) or "text"
+    SplitterCls = get_register(RegisterTypeEnum.SPLITTER, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )
@@ -48,7 +43,6 @@ __all__ = [
     "register",
     "RegisterTypeEnum",
     "init_register",
-    "RetrievalEnum",
     "SplitterEnum",
     "get_chunks_by_knowledge",
 ]

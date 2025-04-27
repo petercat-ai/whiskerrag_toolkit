@@ -33,14 +33,7 @@ class RegisterTypeEnum(str, Enum):
     SPLITTER = "splitter"
 
 
-class RetrievalEnum(str, Enum):
-    SIMPLE = "simple"
-    SIMILARITY = "similarity"
-
-
-RegisterKeyType = Union[
-    KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, RetrievalEnum, str
-]
+RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
 
 T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
@@ -188,14 +181,14 @@ def get_register(
 @overload
 def get_register(
     register_type: Literal[RegisterTypeEnum.RETRIEVER],
-    register_key: RetrievalEnum,
+    register_key: str,
 ) -> Type[BaseRetriever]: ...
 
 
 @overload
 def get_register(
     register_type: Literal[RegisterTypeEnum.SPLITTER],
-    register_key: KnowledgeTypeEnum,
+    register_key: str,
 ) -> Type[BaseSplitter]: ...
 
 
