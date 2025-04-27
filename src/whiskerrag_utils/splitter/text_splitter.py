@@ -15,6 +15,9 @@ class TextSplitter(BaseSplitter[TextSplitConfig, Text]):
         config_dict = split_config.model_dump(mode="json")
         separators = config_dict["separators"] or ["\n\n"]
         separator_pattern = "|".join(map(re.escape, separators))
+        split_regex = config_dict["split_regex"]
+        if split_regex:
+            separator_pattern = split_regex
         splitter = CharacterTextSplitter(
             chunk_size=config_dict["chunk_size"],
             chunk_overlap=config_dict["chunk_overlap"],

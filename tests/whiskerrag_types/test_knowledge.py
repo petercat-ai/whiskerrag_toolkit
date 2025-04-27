@@ -19,6 +19,7 @@ class TestKnowledge:
             "source_config": {"text": "This is a test text for knowledge creation."},
             "embedding_model_name": EmbeddingModelEnum.OPENAI,
             "split_config": {
+                "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": ["\n\n", "##"],
@@ -48,6 +49,7 @@ class TestKnowledge:
             "source_config": TextSourceConfig(text=text),
             "embedding_model_name": EmbeddingModelEnum.OPENAI,
             "split_config": {
+                "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": [],
@@ -59,6 +61,7 @@ class TestKnowledge:
         knowledge = Knowledge(**data)
         assert knowledge.file_sha == calculate_sha256(text)
         assert knowledge.file_size == len(text.encode("utf-8"))
+        assert knowledge.split_config.type == "text"
 
     def test_knowledge_update(self) -> None:
         data = {
@@ -69,6 +72,7 @@ class TestKnowledge:
             "source_config": TextSourceConfig(text="Initial text."),
             "embedding_model_name": EmbeddingModelEnum.OPENAI,
             "split_config": {
+                "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": None,
@@ -104,6 +108,12 @@ class TestKnowledge:
         assert knowledge.split_config.chunk_overlap == 100
         assert knowledge.split_config.separators is None
         assert knowledge.split_config.split_regex is None
+        assert knowledge.split_config.model_dump() == {
+            "chunk_size": 500,
+            "chunk_overlap": 100,
+            "separators": None,
+            "split_regex": None,
+        }
 
     def test_knowledge_model_dump(self) -> None:
         data = {
@@ -114,6 +124,7 @@ class TestKnowledge:
             "source_config": TextSourceConfig(text="Initial text."),
             "embedding_model_name": EmbeddingModelEnum.OPENAI,
             "split_config": {
+                "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": None,
@@ -125,3 +136,13 @@ class TestKnowledge:
         }
         knowledge = Knowledge(**data).model_dump()
         assert knowledge["created_at"] == "2023-01-01T00:00:00.000000Z"
+        assert knowledge["split_config"] == {
+            "chunk_size": 500,
+            "chunk_overlap": 100,
+            "separators": None,
+            "split_regex": None,
+            "type": "text",
+            "keep_separator": False,
+            "strip_whitespace": True,
+        }
+        # assert knowledge["split_config"] == "2023-01-01T00:00:00.000000Z"

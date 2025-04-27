@@ -1,26 +1,50 @@
+import re
 from typing import List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class BaseCharSplitConfig(BaseModel):
     """Base split configuration class"""
 
-    chunk_size: int = Field(default=1500, ge=1, lt=5000)
-    chunk_overlap: int = Field(default=150, ge=0)
+    chunk_size: int = Field(default=1500, ge=1, description="chunk max size")
+    chunk_overlap: int = Field(
+        default=150,
+        ge=0,
+        description="chunk overlap size, must be less than chunk_size",
+    )
+    separators: Optional[List[str]] = Field(
+        default=None, description="separator list, if None, use default separators"
+    )
+    split_regex: Optional[str] = Field(
+        default=None, description="split_regex,if set, use it instead of separators"
+    )
+
+    @field_validator("split_regex")
+    @classmethod
+    def validate_regex(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            try:
+                re.compile(v)
+            except re.error as e:
+                raise ValueError(f"Invalid regular expression: {str(e)}")
+        return v
 
     @model_validator(mode="after")
-    def validate_overlap(self) -> "BaseCharSplitConfig":
+    def validate_config(self) -> "BaseCharSplitConfig":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("chunk_overlap must be less than chunk_size")
+        if self.separators and self.split_regex:
+            raise ValueError("Cannot specify both separators and split_regex")
         return self
 
 
 class MarkdownSplitConfig(BaseCharSplitConfig):
-    """Markdown document split configuration"""
-
-    separators: Optional[List[str]] = Field(description="separator list")
-    split_regex: Optional[str] = Field(description="split_regex")
+    type: Literal["markdown"] = "markdown"
+    separators: List[str] = Field(
+        default=["\n\n"],
+        description="""List of separators to split the text. If None, uses default separators""",
+    )
 
 
 class PDFSplitConfig(BaseCharSplitConfig):
@@ -41,7 +65,7 @@ class TextSplitConfig(BaseCharSplitConfig):
     """Plain text split configuration"""
 
     type: Literal["text"] = "text"
-    separators: List[str] = Field(
+    separators: Optional[List[str]] = Field(
         default=[
             "\n\n",
         ],

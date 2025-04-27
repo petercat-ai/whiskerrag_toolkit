@@ -141,13 +141,13 @@ class EmbeddingModelEnum(str, Enum):
 
 
 KnowledgeSplitConfig = Union[
-    JSONSplitConfig,
+    BaseCharSplitConfig,
     MarkdownSplitConfig,
+    TextSplitConfig,
+    JSONSplitConfig,
     PDFSplitConfig,
     GeaGraphSplitConfig,
-    TextSplitConfig,
     Literal["auto"],
-    BaseCharSplitConfig,
 ]
 
 
