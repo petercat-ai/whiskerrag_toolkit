@@ -164,7 +164,7 @@ class QACreate(KnowledgeCreateBase):
     answer: str = Field(..., description="answer of the knowledge resource")
     split_config: TextSplitConfig = Field(
         ...,
-        description="split config of the knowledge",
+        description="split config of the knowledge, used to split the question into chunks",
     )
     source_config: Optional[TextSourceConfig] = Field(
         default=None,
