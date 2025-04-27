@@ -8,6 +8,7 @@ knowledge_data = {
     "space_id": "local_test",
     "knowledge_name": "local_test_5",
     "split_config": {
+        "type": "text",
         "chunk_size": 1,
         "chunk_overlap": 0,
         "separators": ["\n\n", "\n", " "],
@@ -19,12 +20,10 @@ knowledge_data = {
 }
 
 
-# pytest tests/whiskerrag_utils/splitter/test_text_splitter.py
 class TestTextSplitter:
     def test_text_split(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
         res = SplitterCls().split("hello world \n ~", knowledge.split_config)
-        print("---res", res)
         assert res == ["hello", "world", "~"]

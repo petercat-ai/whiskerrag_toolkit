@@ -16,6 +16,7 @@ class TestKnowledge:
             "source_config": {"text": "This is a test text for knowledge creation."},
             "embedding_model_name": EmbeddingModelEnum.OPENAI,
             "split_config": {
+                "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": ["\n\n", "##"],
@@ -33,7 +34,12 @@ class TestKnowledge:
             == "This is a test text for knowledge creation."
         )
         assert knowledge_create.embedding_model_name == EmbeddingModelEnum.OPENAI
+        assert knowledge_create.split_config.type == "text"
         assert knowledge_create.split_config.chunk_size == 500
+        assert knowledge_create.split_config.chunk_overlap == 100
+        assert knowledge_create.split_config.separators == ["\n\n", "##"]
+        assert knowledge_create.split_config.strip_whitespace is True
+        assert knowledge_create.split_config.keep_separator is False
 
     def test_QACreate(self) -> None:
         text = "This is a test text for knowledge creation."
@@ -45,6 +51,7 @@ class TestKnowledge:
             "question": text,
             "answer": "world",
             "split_config": {
+                "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": ["\n\n", "##"],
