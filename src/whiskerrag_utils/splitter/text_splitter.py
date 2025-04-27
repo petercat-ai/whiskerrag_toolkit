@@ -4,12 +4,12 @@ from typing import List
 from langchain_text_splitters import CharacterTextSplitter
 
 from whiskerrag_types.interface.splitter_interface import BaseSplitter
-from whiskerrag_types.model.knowledge import KnowledgeTypeEnum, TextSplitConfig
+from whiskerrag_types.model.knowledge import TextSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, KnowledgeTypeEnum.TEXT)
+@register(RegisterTypeEnum.SPLITTER, "text")
 class TextSplitter(BaseSplitter[TextSplitConfig, Text]):
     def split(self, content: str, split_config: TextSplitConfig) -> List[Text]:
         config_dict = split_config.model_dump(mode="json")

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID, uuid4
 
 from deprecated import deprecated
@@ -147,7 +147,6 @@ KnowledgeSplitConfig = Union[
     JSONSplitConfig,
     PDFSplitConfig,
     GeaGraphSplitConfig,
-    Literal["auto"],
 ]
 
 

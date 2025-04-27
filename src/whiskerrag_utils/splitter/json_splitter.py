@@ -4,12 +4,12 @@ from typing import List
 from langchain_text_splitters import RecursiveJsonSplitter
 
 from whiskerrag_types.interface.splitter_interface import BaseSplitter
-from whiskerrag_types.model.knowledge import JSONSplitConfig, KnowledgeTypeEnum
+from whiskerrag_types.model.knowledge import JSONSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, KnowledgeTypeEnum.JSON)
+@register(RegisterTypeEnum.SPLITTER, "json")
 class JSONSplitter(BaseSplitter[JSONSplitConfig, Text]):
 
     def split(self, content: str, split_config: JSONSplitConfig) -> List[Text]:
