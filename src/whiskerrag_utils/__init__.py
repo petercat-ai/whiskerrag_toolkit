@@ -10,11 +10,13 @@ from .registry import RegisterTypeEnum, get_register, init_register, register
 async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
     split_type = getattr(knowledge.split_config, "type", None) or "text"
+    print("get_chunks_by_knowledge:split_type", split_type)
     SplitterCls = get_register(RegisterTypeEnum.SPLITTER, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )
     content = await LoaderCls(knowledge).load()
+    print("get_chunks_by_knowledge:split_config", knowledge.split_config)
     split_result = SplitterCls().split(content, knowledge.split_config)
     chunks = []
     for split_item in split_result:

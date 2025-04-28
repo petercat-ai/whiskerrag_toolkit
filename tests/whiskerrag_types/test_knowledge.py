@@ -117,3 +117,33 @@ class TestKnowledge:
             "strip_whitespace": True,
         }
         assert knowledge["updated_at"] is not None
+
+    def test_init_knowledge(self) -> None:
+        data = {
+            "knowledge_id": "425c7431-bade-4eac-8e81-1d6dcd8113b7",
+            "space_id": "e16c63c3-5899-4c4d-9a09-c50c1d7cd7d2",
+            "tenant_id": "db224d11-0d15-4afb-bebe-30a670edbe13",
+            "knowledge_type": "text",
+            "knowledge_name": "eyre7222",
+            "parent_id": None,
+            "source_type": "user_input_text",
+            "source_config": {"text": "this is test aaaaa\n"},
+            "embedding_model_name": "bge-base-chinese-1117",
+            "split_config": {
+                "chunk_size": 1024,
+                "chunk_overlap": 1000,
+                "separators": ["\n\n"],
+                "split_regex": None,
+                "type": "text",
+                "keep_separator": True,
+                "strip_whitespace": True,
+            },
+            "file_sha": "b25d83386bb4ff85c97dede5e831b0de2d6a38326c52f2abab3b2fe88eb1c2d5",
+            "file_size": 19,
+            "metadata": {},
+            "enabled": 1,
+            "created_at": "2025-04-28T03:03:48.000000Z",
+            "updated_at": "2025-04-28T03:03:48.000000Z",
+            "retrieval_count": 0,
+        }
+        Knowledge(**data)
