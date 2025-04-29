@@ -4,7 +4,7 @@ from whiskerrag_types.model.task import Task, TaskStatus
 
 
 class TestTask:
-    def test_dist_to_task(self) -> None:
+    def test_dict_to_task(self) -> None:
         data = {
             "task_id": "8db89531-0a67-44e8-88f9-3616d9a49c8a",
             "status": "failed",
