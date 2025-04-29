@@ -55,6 +55,9 @@ class KnowledgeSourceEnum(str, Enum):
     GITHUB_FILE = "github_file"
     USER_INPUT_TEXT = "user_input_text"
     USER_UPLOAD_FILE = "user_upload_file"
+    YUQUE = "yuque"
+    YOUTUBE = "youtube"
+    DATABASE = "database"
 
 
 class GithubRepoSourceConfig(BaseModel):
@@ -79,6 +82,10 @@ class S3SourceConfig(BaseModel):
 
 
 class YuqueSourceConfig(BaseModel):
+    api_url: str = Field(
+        default="https://www.yuque.com",
+        description="the yuque api url",
+    )
     group_id: str = Field(..., description="the yuque group id")
     book_id: Optional[str] = Field(
         default=None,

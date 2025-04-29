@@ -2,7 +2,7 @@ from typing import List
 
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import Knowledge
-from whiskerrag_types.model.multi_modal import Image
+from whiskerrag_types.model.multi_modal import Image, Text
 
 from .registry import RegisterTypeEnum, get_register, init_register, register
 
@@ -33,20 +33,23 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )
-    content = await LoaderCls(knowledge).load()
-    split_result = SplitterCls().split(content, knowledge.split_config)
+    contents = await LoaderCls(knowledge).load()
+    parse_results = []
+    for content in contents:
+        split_result = SplitterCls().split(content, knowledge.split_config)
+        parse_results.extend(split_result)
     chunks = []
-    for split_item in split_result:
-        if isinstance(split_item, str):
-            embedding = await EmbeddingCls().embed_text(split_item, timeout=30)
-        elif isinstance(split_item, Image):
-            embedding = await EmbeddingCls().embed_image(split_item, timeout=30)
+    for parseItem in parse_results:
+        if isinstance(parseItem, Text):
+            embedding = await EmbeddingCls().embed_text(parseItem.content, timeout=30)
+        elif isinstance(parseItem, Image):
+            embedding = await EmbeddingCls().embed_image(parseItem, timeout=30)
         else:
-            print(f"[warn]: illegal split item :{split_item}")
+            print(f"[warn]: illegal split item :{parseItem}")
             continue
         chunk = Chunk(
-            context=split_item if isinstance(split_item, str) else str(split_item),
-            metadata={},
+            context=parseItem.content,
+            metadata=parseItem.metadata,
             embedding=embedding,
             knowledge_id=knowledge.knowledge_id,
             embedding_model_name=knowledge.embedding_model_name,

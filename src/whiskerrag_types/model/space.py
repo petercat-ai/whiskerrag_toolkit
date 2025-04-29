@@ -13,12 +13,18 @@ class SpaceCreate(BaseModel):
     Attributes:
         space_name (str): Space name, example: petercat bot group.
         description (str): descrition of the space resource.
+        metadata (Dict[str, Any]): metadata of the space resource.such as embedding model name
+            and other parameters.
     """
 
     space_name: str = Field(
         ..., max_length=64, description="name of the space resource"
     )
     description: str = Field(..., max_length=255, description="descrition of the space")
+    metadata: Dict[str, Any] = Field(
+        default={},
+        description="metadata of the space resource",
+    )
 
 
 class Space(SpaceCreate):

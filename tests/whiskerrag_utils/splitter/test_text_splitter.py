@@ -1,4 +1,5 @@
 from whiskerrag_types.model.knowledge import Knowledge
+from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils import RegisterTypeEnum, get_register
 from whiskerrag_utils.registry import init_register
 
@@ -25,5 +26,11 @@ class TestTextSplitter:
         knowledge = Knowledge(**knowledge_data)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
-        res = SplitterCls().split("hello world \n ~", knowledge.split_config)
-        assert res == ["hello", "world", "~"]
+        res = SplitterCls().split(
+            Text(content="hello world \n ~", metadata={}), knowledge.split_config
+        )
+        assert res == [
+            Text(content="hello", metadata={}),
+            Text(content="world", metadata={}),
+            Text(content="~", metadata={}),
+        ]

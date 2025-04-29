@@ -28,5 +28,5 @@ class TestTextLoader:
         LoaderCls = get_register(
             RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type
         )
-        content = await LoaderCls(knowledge).load()
-        assert content == "hello world"
+        res = await LoaderCls(knowledge).load()
+        assert res[0].content == "hello world"

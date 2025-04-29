@@ -1,13 +1,13 @@
 from typing import List, Optional, Union
 
+from deprecated import deprecated
 from pydantic import BaseModel, Field, field_serializer
 
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 
 
-class RetrievalRequestBase(BaseModel):
-    question: str = Field(..., description="The query question")
+class RetrievalBaseConfig(BaseModel):
     embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
         ..., description="The name of the embedding model"
     )
@@ -19,9 +19,6 @@ class RetrievalRequestBase(BaseModel):
     )
     top: int = Field(1024, ge=1, description="The maximum number of results to return.")
     metadata_filter: dict = Field({}, description="metadata filter")
-    # aggs: bool = Field(True, description="是否进行聚合")
-    # rerank_mdl: Optional[str] = Field(None, description="重排序模型名称")
-    # highlight: bool = Field(False, description="是否高亮显示")
 
     @field_serializer("embedding_model_name")
     def serialize_embedding_model_name(
@@ -36,13 +33,62 @@ class RetrievalRequestBase(BaseModel):
             return None
 
 
-class RetrievalBySpaceRequest(RetrievalRequestBase):
+class QueryBySpaceConfig(RetrievalBaseConfig):
+    type: str = Field(
+        "query_in_space_list",
+        description="The type of the request, should be 'query_in_space_list'.",
+    )
     space_id_list: List[str] = Field(..., description="space id list")
 
 
-class RetrievalByKnowledgeRequest(RetrievalRequestBase):
+class QueryByKnowledgeConfig(RetrievalBaseConfig):
+    type: str = Field(
+        "query_in_knowledge_list",
+        description="The type of the request, should be 'query_in_knowledge_list'.",
+    )
+    embedding_model_name: str = Field(
+        ..., description="The name of the embedding model"
+    )
+    space_id_list: List[str] = Field(..., description="knowledge id list")
+
+
+class QueryByDeepSearch(RetrievalBaseConfig):
+    type: str = Field(
+        "deep_search",
+        description="The type of the request, should be 'deep_search'.",
+    )
+    space_name_list: List[str] = Field(..., description="space name list")
+
+
+RetrievalConfig = Union[
+    QueryBySpaceConfig, QueryByKnowledgeConfig, QueryByDeepSearch, dict
+]
+
+
+@deprecated(
+    "RetrievalBySpaceRequest is deprecated, please use RetrievalRequest instead."
+)
+class RetrievalBySpaceRequest(RetrievalBaseConfig):
+    question: str = Field(..., description="The query question")
+    space_id_list: List[str] = Field(..., description="space id list")
+
+
+@deprecated(
+    "RetrievalBySpaceRequest is deprecated, please use RetrievalRequest instead."
+)
+class RetrievalByKnowledgeRequest(RetrievalBaseConfig):
+    question: str = Field(..., description="The query question")
     knowledge_id_list: List[str] = Field(..., description="knowledge id list")
 
 
+class RetrievalRequest(BaseModel):
+    question: str = Field(..., description="The query question")
+    config: RetrievalConfig = Field(
+        ..., description="The configuration for the retrieval request"
+    )
+
+
 class RetrievalChunk(Chunk):
-    similarity: float = Field(..., description="The similarity of the chunk")
+    similarity: float = Field(
+        ..., description="The similarity of the chunk, ranging from 0.0 to 1.0."
+    )

@@ -10,6 +10,12 @@ class TestSpace:
         space_create = SpaceCreate(**data)
         assert space_create.space_name == "test_space"
         assert space_create.description == "this is a test"
+        assert space_create.metadata == {}
+        assert space_create.model_dump() == {
+            "space_name": "test_space",
+            "description": "this is a test",
+            "metadata": {},
+        }
 
     def test_space_initialization(self) -> None:
         data = {
