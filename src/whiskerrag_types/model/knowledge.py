@@ -75,7 +75,7 @@ class S3SourceConfig(BaseModel):
     region: Optional[str] = Field(None, description="s3 region")
     access_key: Optional[str] = Field(None, description="s3 access key")
     secret_key: Optional[str] = Field(None, description="s3 secret key")
-    session_token: Optional[str] = Field(None, description="s3 session token")
+    auth_info: Optional[str] = Field(None, description="s3 session token")
 
 
 class YuqueSourceConfig(BaseModel):
@@ -88,7 +88,7 @@ class YuqueSourceConfig(BaseModel):
         default=None,
         description="the yuque document id in book, if not set, will use the book id as document id",
     )
-    access_token: str = Field(..., description="authentication information")
+    auth_info: str = Field(..., description="authentication information")
 
 
 class OpenUrlSourceConfig(BaseModel):
