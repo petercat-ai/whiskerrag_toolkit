@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field, field_serializer
 
@@ -8,7 +8,7 @@ from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 
 class RetrievalRequestBase(BaseModel):
     question: str = Field(..., description="The query question")
-    embedding_model_name: EmbeddingModelEnum = Field(
+    embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
         ..., description="The name of the embedding model"
     )
     similarity_threshold: float = Field(
@@ -25,9 +25,15 @@ class RetrievalRequestBase(BaseModel):
 
     @field_serializer("embedding_model_name")
     def serialize_embedding_model_name(
-        self, embedding_model_name: Optional[EmbeddingModelEnum]
+        self, embedding_model_name: Optional[Union[EmbeddingModelEnum, str]]
     ) -> Optional[str]:
-        return embedding_model_name.value if embedding_model_name else None
+        if embedding_model_name:
+            if isinstance(embedding_model_name, EmbeddingModelEnum):
+                return embedding_model_name.value
+            else:
+                return embedding_model_name
+        else:
+            return None
 
 
 class RetrievalBySpaceRequest(RetrievalRequestBase):
