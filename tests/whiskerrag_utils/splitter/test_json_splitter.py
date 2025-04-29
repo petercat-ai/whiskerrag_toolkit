@@ -1,4 +1,5 @@
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
+from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, get_register, init_register
 
 json_str = """
@@ -32,10 +33,22 @@ class TestJSONSplitter:
         knowledge = Knowledge(**knowledge_data)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
-        res = SplitterCls().split(json_str, knowledge.split_config)
+        res = SplitterCls().split(
+            Text(
+                content=json_str,
+                metadata=knowledge.metadata,
+            ),
+            knowledge.split_config,
+        )
         assert res == [
-            '{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
-            '{"age": 30}',
-            '{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
-            '{"is_active": true}',
+            Text(
+                content="{'name': 'John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe'}",
+                metadata={},
+            ),
+            Text(content="{'age': 30}", metadata={}),
+            Text(
+                content="{'email': 'johnjohnjohnjohnjohnjohnjohn@example.com'}",
+                metadata={},
+            ),
+            Text(content="{'is_active': True}", metadata={}),
         ]

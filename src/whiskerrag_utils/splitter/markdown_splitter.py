@@ -11,14 +11,17 @@ from whiskerrag_utils.registry import RegisterTypeEnum, register
 @register(RegisterTypeEnum.SPLITTER, "markdown")
 class MarkdownSplitter(BaseSplitter[MarkdownSplitConfig, Text]):
 
-    def split(self, content: str, split_config: MarkdownSplitConfig) -> List[str]:
+    def split(self, content: Text, split_config: MarkdownSplitConfig) -> List[Text]:
         splitter = MarkdownTextSplitter(
             chunk_size=split_config.chunk_size,
             chunk_overlap=split_config.chunk_overlap,
         )
-        return splitter.split_text(content)
+        split_texts = splitter.split_text(content.content)
+        return [
+            Text(content=text, metadata=content.metadata.copy()) for text in split_texts
+        ]
 
     def batch_split(
-        self, content: List[str], split_config: MarkdownSplitConfig
-    ) -> List[List[str]]:
-        return [self.split(text, split_config) for text in content]
+        self, content_list: List[Text], split_config: MarkdownSplitConfig
+    ) -> List[List[Text]]:
+        return [self.split(text, split_config) for text in content_list]

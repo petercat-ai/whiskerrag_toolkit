@@ -10,10 +10,7 @@ class Image(BaseModel):
     format: Optional[str] = None
 
 
-Text = str
-
-
-class Document(BaseModel):
+class Text(BaseModel):
     content: str
     metadata: dict
 

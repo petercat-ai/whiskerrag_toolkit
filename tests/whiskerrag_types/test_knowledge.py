@@ -103,6 +103,7 @@ class TestKnowledge:
             },
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
             "gmt_create": "2023-01-01T00:00:00Z",
+            "gmt_modified": "2023-01-01T00:00:00Z",
         }
         knowledge = Knowledge(**data).model_dump()
         # time use created_at instead of gmt_create
