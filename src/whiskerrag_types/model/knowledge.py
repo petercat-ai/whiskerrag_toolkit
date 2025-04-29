@@ -122,7 +122,7 @@ class KnowledgeTypeEnum(str, Enum):
     QA = "qa"
     YUQUEDOC = "yuquedoc"
     ONEAPIAPP = "openapi_app"
-    """ such as github repo """
+    """ such as github repo, zip """
     FOLDER = "folder"
 
 

@@ -8,6 +8,25 @@ from .registry import RegisterTypeEnum, get_register, init_register, register
 
 
 async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
+    """
+    Convert knowledge into vectorized chunks
+
+    Args:
+        knowledge (Knowledge): Knowledge object containing source type, split configuration,
+                             embedding model and other information
+
+    Returns:
+        List[Chunk]: List of vectorized chunks
+
+    Process flow:
+    1. Get corresponding loader based on knowledge source type
+    2. Get text splitter
+    3. Get embedding model
+    4. Load content
+    5. Split content
+    6. Vectorize each split content
+    7. Generate final list of Chunk objects
+    """
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
     split_type = getattr(knowledge.split_config, "type", None) or "text"
     SplitterCls = get_register(RegisterTypeEnum.SPLITTER, split_type)
