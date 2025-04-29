@@ -120,19 +120,22 @@ class TestKnowledge:
 
     def test_init_knowledge(self) -> None:
         data = {
-            "knowledge_id": "425c7431-bade-4eac-8e81-1d6dcd8113b7",
+            "knowledge_id": "b564001d-0d04-44c7-8034-83ddc88a929d",
             "space_id": "e16c63c3-5899-4c4d-9a09-c50c1d7cd7d2",
             "tenant_id": "db224d11-0d15-4afb-bebe-30a670edbe13",
             "knowledge_type": "text",
-            "knowledge_name": "eyre7222",
+            "knowledge_name": "kunqi_test5",
             "parent_id": None,
             "source_type": "user_input_text",
-            "source_config": {"text": "this is test aaaaa\n"},
+            "source_config": {
+                "text": "this is test aaaaa\
+"
+            },
             "embedding_model_name": "bge-base-chinese-1117",
             "split_config": {
                 "chunk_size": 1024,
                 "chunk_overlap": 1000,
-                "separators": ["\n\n"],
+                "separators": ["\n"],
                 "split_regex": None,
                 "type": "text",
                 "keep_separator": True,
@@ -142,8 +145,8 @@ class TestKnowledge:
             "file_size": 19,
             "metadata": {},
             "enabled": 1,
-            "created_at": "2025-04-28T03:03:48.000000Z",
-            "updated_at": "2025-04-28T03:03:48.000000Z",
+            "gmt_create": "2025-04-28T06:18:34.000000Z",
+            "gmt_modified": "2025-04-28T06:18:34.000000Z",
             "retrieval_count": 0,
         }
-        Knowledge(**data)
+        print("test_init_knowledge", Knowledge(**data))

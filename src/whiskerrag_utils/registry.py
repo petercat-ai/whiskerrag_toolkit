@@ -17,8 +17,8 @@ from typing import (
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
+from whiskerrag_types.interface.parser_interface import BaseParser
 from whiskerrag_types.interface.retriever_interface import BaseRetriever
-from whiskerrag_types.interface.splitter_interface import BaseSplitter
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,
     KnowledgeSourceEnum,
@@ -30,7 +30,7 @@ class RegisterTypeEnum(str, Enum):
     EMBEDDING = "embedding"
     KNOWLEDGE_LOADER = "knowledge_loader"
     RETRIEVER = "retriever"
-    SPLITTER = "splitter"
+    PARSER = "parser"
 
 
 RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
@@ -39,9 +39,9 @@ T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
 T_Retriever = TypeVar("T_Retriever", bound=BaseRetriever)
-T_Splitter = TypeVar("T_Splitter", bound=BaseSplitter)
+T_Parser = TypeVar("T_Parser", bound=BaseParser)
 RegisteredType = Union[
-    Type[T_Embedding], Type[T_Loader], Type[T_Retriever], Type[T_Splitter]
+    Type[T_Embedding], Type[T_Loader], Type[T_Retriever], Type[T_Parser]
 ]
 
 
@@ -64,20 +64,20 @@ class RegisterDict(Generic[T]):
 EmbeddingRegistry = RegisterDict[BaseEmbedding]
 LoaderRegistry = RegisterDict[BaseLoader]
 RetrieverRegistry = RegisterDict[BaseRetriever]
-SplitterRegistry = RegisterDict[BaseSplitter]
+ParserRegistry = RegisterDict[BaseParser]
 
 _registry: Dict[
     RegisterTypeEnum,
-    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, SplitterRegistry],
+    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, ParserRegistry],
 ] = {
     RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
     RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
     RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
-    RegisterTypeEnum.SPLITTER: RegisterDict[BaseSplitter](),
+    RegisterTypeEnum.PARSER: RegisterDict[BaseParser](),
 }
 
 BaseRegisterClsType = Union[
-    Type[BaseLoader], Type[BaseEmbedding], Type[BaseRetriever], Type[BaseSplitter], None
+    Type[BaseLoader], Type[BaseEmbedding], Type[BaseRetriever], Type[BaseParser], None
 ]
 
 _loaded_packages = set()
@@ -99,8 +99,8 @@ def register(
             expected_base = BaseLoader
         elif register_type == RegisterTypeEnum.RETRIEVER:
             expected_base = BaseRetriever
-        elif register_type == RegisterTypeEnum.SPLITTER:
-            expected_base = BaseSplitter
+        elif register_type == RegisterTypeEnum.PARSER:
+            expected_base = BaseParser
         else:
             raise ValueError(f"Unknown register type: {register_type}")
 
@@ -187,9 +187,9 @@ def get_register(
 
 @overload
 def get_register(
-    register_type: Literal[RegisterTypeEnum.SPLITTER],
+    register_type: Literal[RegisterTypeEnum.PARSER],
     register_key: str,
-) -> Type[BaseSplitter]: ...
+) -> Type[BaseParser]: ...
 
 
 def get_register(
@@ -199,7 +199,7 @@ def get_register(
     Type[BaseLoader],
     Type[BaseEmbedding],
     Type[BaseRetriever],
-    Type[BaseSplitter],
+    Type[BaseParser],
 ]:
     registry = _registry.get(register_type)
     if registry is None:
@@ -211,8 +211,8 @@ def get_register(
         registry = cast(EmbeddingRegistry, registry)
     elif register_type == RegisterTypeEnum.RETRIEVER:
         registry = cast(RetrieverRegistry, registry)
-    elif register_type == RegisterTypeEnum.SPLITTER:
-        registry = cast(SplitterRegistry, registry)
+    elif register_type == RegisterTypeEnum.PARSER:
+        registry = cast(ParserRegistry, registry)
 
     cls = registry.get(register_key)
 
@@ -226,6 +226,6 @@ def get_register(
 
 def get_registry_list() -> Dict[
     RegisterTypeEnum,
-    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, SplitterRegistry],
+    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, ParserRegistry],
 ]:
     return _registry

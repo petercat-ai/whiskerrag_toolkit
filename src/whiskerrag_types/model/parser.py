@@ -4,7 +4,7 @@ from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-class BaseCharSplitConfig(BaseModel):
+class BaseCharParseConfig(BaseModel):
     """Base split configuration class"""
 
     chunk_size: int = Field(default=1500, ge=1, description="chunk max size")
@@ -31,7 +31,7 @@ class BaseCharSplitConfig(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def validate_config(self) -> "BaseCharSplitConfig":
+    def validate_config(self) -> "BaseCharParseConfig":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("chunk_overlap must be less than chunk_size")
         if self.separators and self.split_regex:
@@ -39,7 +39,7 @@ class BaseCharSplitConfig(BaseModel):
         return self
 
 
-class MarkdownSplitConfig(BaseCharSplitConfig):
+class MarkdownParseConfig(BaseCharParseConfig):
     type: Literal["markdown"] = "markdown"
     separators: List[str] = Field(
         default=["\n\n"],
@@ -47,7 +47,7 @@ class MarkdownSplitConfig(BaseCharSplitConfig):
     )
 
 
-class PDFSplitConfig(BaseCharSplitConfig):
+class PDFParseConfig(BaseCharParseConfig):
     """PDF document split configuration"""
 
     type: Literal["pdf"] = "pdf"
@@ -61,7 +61,7 @@ class PDFSplitConfig(BaseCharSplitConfig):
     )
 
 
-class TextSplitConfig(BaseCharSplitConfig):
+class TextParseConfig(BaseCharParseConfig):
     """Plain text split configuration"""
 
     type: Literal["text"] = "text"
@@ -81,7 +81,7 @@ class TextSplitConfig(BaseCharSplitConfig):
     )
 
 
-class JSONSplitConfig(BaseModel):
+class JSONParseConfig(BaseModel):
     """
     JSON document split configuration
     @link {https://python.langchain.com/api_reference/text_splitters/json/langchain_text_splitters.json.RecursiveJsonSplitter.html}
@@ -99,7 +99,7 @@ class JSONSplitConfig(BaseModel):
     )
 
 
-class GeaGraphSplitConfig(BaseModel):
+class GeaGraphParseConfig(BaseModel):
     """
     JSON document split configuration
     @link {https://python.langchain.com/api_reference/text_splitters/json/langchain_text_splitters.json.RecursiveJsonSplitter.html}

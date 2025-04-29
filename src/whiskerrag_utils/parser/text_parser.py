@@ -3,15 +3,15 @@ from typing import List
 
 from langchain_text_splitters import CharacterTextSplitter
 
-from whiskerrag_types.interface.splitter_interface import BaseSplitter
-from whiskerrag_types.model.knowledge import TextSplitConfig
+from whiskerrag_types.interface.parser_interface import BaseParser
+from whiskerrag_types.model.knowledge import TextParseConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "text")
-class TextSplitter(BaseSplitter[TextSplitConfig, Text]):
-    def split(self, content: str, split_config: TextSplitConfig) -> List[Text]:
+@register(RegisterTypeEnum.PARSER, "text")
+class TextSplitter(BaseParser[TextParseConfig, Text]):
+    def split(self, content: str, split_config: TextParseConfig) -> List[Text]:
         config_dict = split_config.model_dump(mode="json")
         separators = config_dict["separators"] or ["\n\n"]
         separator_pattern = "|".join(map(re.escape, separators))
@@ -29,6 +29,6 @@ class TextSplitter(BaseSplitter[TextSplitConfig, Text]):
         return splitter.split_text(content)
 
     def batch_split(
-        self, content: List[str], split_config: TextSplitConfig
+        self, content: List[str], split_config: TextParseConfig
     ) -> List[List[str]]:
         return [self.split(text, split_config) for text in content]

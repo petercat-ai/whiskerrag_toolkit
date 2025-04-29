@@ -22,20 +22,20 @@ from .knowledge_create import (
     TextCreate,
 )
 from .page import PageParams, PageResponse, StatusStatisticsPageResponse
+from .parser import (
+    BaseCharParseConfig,
+    GeaGraphParseConfig,
+    JSONParseConfig,
+    MarkdownParseConfig,
+    PDFParseConfig,
+    TextParseConfig,
+)
 from .retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
     RetrievalChunk,
 )
 from .space import Space, SpaceCreate, SpaceResponse
-from .splitter import (
-    BaseCharSplitConfig,
-    GeaGraphSplitConfig,
-    JSONSplitConfig,
-    MarkdownSplitConfig,
-    PDFSplitConfig,
-    TextSplitConfig,
-)
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
 
@@ -72,10 +72,10 @@ __all__ = [
     "TaskRestartRequest",
     "Tenant",
     "GenericConverter",
-    "BaseCharSplitConfig",
-    "JSONSplitConfig",
-    "MarkdownSplitConfig",
-    "PDFSplitConfig",
-    "TextSplitConfig",
-    "GeaGraphSplitConfig",
+    "BaseCharParseConfig",
+    "JSONParseConfig",
+    "MarkdownParseConfig",
+    "PDFParseConfig",
+    "TextParseConfig",
+    "GeaGraphParseConfig",
 ]

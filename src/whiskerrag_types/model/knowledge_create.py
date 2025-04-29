@@ -14,13 +14,13 @@ from whiskerrag_types.model.knowledge import (
     TextSourceConfig,
     YuqueSourceConfig,
 )
-from whiskerrag_types.model.splitter import (
-    BaseCharSplitConfig,
-    GeaGraphSplitConfig,
-    JSONSplitConfig,
-    MarkdownSplitConfig,
-    PDFSplitConfig,
-    TextSplitConfig,
+from whiskerrag_types.model.parser import (
+    BaseCharParseConfig,
+    GeaGraphParseConfig,
+    JSONParseConfig,
+    MarkdownParseConfig,
+    PDFParseConfig,
+    TextParseConfig,
 )
 
 
@@ -86,7 +86,7 @@ class TextCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    split_config: TextSplitConfig = Field(
+    split_config: TextParseConfig = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -102,7 +102,7 @@ class JSONCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    split_config: JSONSplitConfig = Field(
+    split_config: JSONParseConfig = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -118,7 +118,7 @@ class MarkdownCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    split_config: MarkdownSplitConfig = Field(
+    split_config: MarkdownParseConfig = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -134,7 +134,7 @@ class PDFCreate(KnowledgeCreateBase):
             description="source config of the knowledge",
         )
     )
-    split_config: PDFSplitConfig = Field(
+    split_config: PDFParseConfig = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -150,7 +150,7 @@ class GithubRepoCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    split_config: BaseCharSplitConfig = Field(
+    split_config: BaseCharParseConfig = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -162,7 +162,7 @@ class QACreate(KnowledgeCreateBase):
     )
     question: str = Field(..., description="question of the knowledge resource")
     answer: str = Field(..., description="answer of the knowledge resource")
-    split_config: TextSplitConfig = Field(
+    split_config: TextParseConfig = Field(
         ...,
         description="split config of the knowledge, used to split the question into chunks",
     )
@@ -204,7 +204,7 @@ class YuqueCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    split_config: Union[GeaGraphSplitConfig, BaseCharSplitConfig] = Field(
+    split_config: Union[GeaGraphParseConfig, BaseCharParseConfig] = Field(
         ...,
         description="split config of the knowledge",
     )

@@ -18,4 +18,4 @@ class Document(BaseModel):
     metadata: dict
 
 
-__all__ = ["Image", "Text"]
+__all__ = ["Image", "Text", "Document"]

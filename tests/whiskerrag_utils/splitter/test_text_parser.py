@@ -20,10 +20,10 @@ knowledge_data = {
 }
 
 
-class TestTextSplitter:
+class TestTextParser:
     def test_text_split(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
-        res = SplitterCls().split("hello world \n ~", knowledge.split_config)
+        ParserCls = get_register(RegisterTypeEnum.PARSER, knowledge.knowledge_type)
+        res = ParserCls().split("hello world \n ~", knowledge.split_config)
         assert res == ["hello", "world", "~"]

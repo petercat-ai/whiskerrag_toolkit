@@ -31,7 +31,7 @@ class TestJSONSplitter:
     def test_json_split(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, knowledge.knowledge_type)
         res = SplitterCls().split(json_str, knowledge.split_config)
         assert res == [
             '{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',

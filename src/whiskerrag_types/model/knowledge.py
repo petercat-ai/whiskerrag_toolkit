@@ -14,13 +14,13 @@ from pydantic import (
     model_validator,
 )
 
-from whiskerrag_types.model.splitter import (
-    BaseCharSplitConfig,
-    GeaGraphSplitConfig,
-    JSONSplitConfig,
-    MarkdownSplitConfig,
-    PDFSplitConfig,
-    TextSplitConfig,
+from whiskerrag_types.model.parser import (
+    BaseCharParseConfig,
+    GeaGraphParseConfig,
+    JSONParseConfig,
+    MarkdownParseConfig,
+    PDFParseConfig,
+    TextParseConfig,
 )
 from whiskerrag_types.model.utils import calculate_sha256, parse_datetime
 
@@ -141,12 +141,12 @@ class EmbeddingModelEnum(str, Enum):
 
 
 KnowledgeSplitConfig = Union[
-    BaseCharSplitConfig,
-    MarkdownSplitConfig,
-    TextSplitConfig,
-    JSONSplitConfig,
-    PDFSplitConfig,
-    GeaGraphSplitConfig,
+    BaseCharParseConfig,
+    MarkdownParseConfig,
+    TextParseConfig,
+    JSONParseConfig,
+    PDFParseConfig,
+    GeaGraphParseConfig,
 ]
 
 

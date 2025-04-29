@@ -4,13 +4,13 @@ from typing import Generic, List, TypeVar
 from pydantic import BaseModel
 
 from whiskerrag_types.interface.embed_interface import Image
-from whiskerrag_types.model.multi_modal import Text
+from whiskerrag_types.model.multi_modal import Document, Text
 
 T = TypeVar("T", bound=BaseModel)
-R = TypeVar("R", Text, Image)
+R = TypeVar("R", Text, Image, Document)
 
 
-class BaseSplitter(Generic[T, R], ABC):
+class BaseParser(Generic[T, R], ABC):
     @abstractmethod
     def split(self, content: str, split_config: T) -> List[R]:
         pass
