@@ -8,6 +8,7 @@ from whiskerrag_types.model.retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
     RetrievalChunk,
+    RetrievalRequest,
 )
 from whiskerrag_types.model.space import Space
 from whiskerrag_types.model.task import TaskStatus
@@ -158,6 +159,14 @@ class DBPluginInterface(ABC):
         self,
         tenant_id: str,
         params: RetrievalByKnowledgeRequest,
+    ) -> List[RetrievalChunk]:
+        pass
+
+    @abstractmethod
+    async def retrieve(
+        self,
+        tenant_id: str,
+        params: RetrievalRequest,
     ) -> List[RetrievalChunk]:
         pass
 

@@ -26,6 +26,7 @@ from .retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
     RetrievalChunk,
+    RetrievalRequest,
 )
 from .space import Space, SpaceCreate, SpaceResponse
 from .splitter import (
@@ -67,6 +68,7 @@ __all__ = [
     "RetrievalBySpaceRequest",
     "RetrievalByKnowledgeRequest",
     "RetrievalChunk",
+    "RetrievalRequest",
     "Task",
     "TaskStatus",
     "TaskRestartRequest",
