@@ -66,3 +66,5 @@ class StatusStatisticsPageResponse(PageResponse, Generic[T]):
     """
 
     success: int = 0
+    failed: int = 0
+    cancelled: int = 0
