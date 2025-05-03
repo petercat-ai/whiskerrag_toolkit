@@ -28,7 +28,7 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     7. Generate final list of Chunk objects
     """
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
-    split_type = getattr(knowledge.split_config, "type", None) or "text"
+    split_type = getattr(knowledge.split_config, "type", None) or "markdown"
     SplitterCls = get_register(RegisterTypeEnum.SPLITTER, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
