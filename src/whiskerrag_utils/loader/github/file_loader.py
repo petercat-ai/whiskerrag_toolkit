@@ -55,11 +55,17 @@ class GithubFileLoader(BaseLoader[Text]):
     def _get_file_content_by_path(
         self,
     ) -> Text:
-        file_content = (
-            self.repo.get_contents(self.path, ref=self.commit_id)
-            if self.commit_id
-            else self.repo.get_contents(self.path)
-        )
+        try:
+            file_content = (
+                self.repo.get_contents(self.path, ref=self.commit_id)
+                if self.commit_id
+                else self.repo.get_contents(self.path)
+            )
+        except Exception as e:
+            print(f"Failed to get file content: {e}")
+            raise ValueError(
+                f"Failed to get file content from {self.repo_name} with path {self.path}。error: {e}"
+            )
         if isinstance(file_content, list):
             print("[warn]file_content is a list")
             file_content = file_content[0]
