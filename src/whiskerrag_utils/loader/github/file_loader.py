@@ -41,6 +41,7 @@ class GithubFileLoader(BaseLoader[Text]):
         self.github = (
             Github(source_config.auth_info) if source_config.auth_info else Github()
         )
+        self.repo_name = source_config.repo_name
         self.repo = self.github.get_repo(source_config.repo_name)
         self.branch = source_config.branch or self.repo.default_branch
         self.commit_id = source_config.commit_id or self._get_commit_id_by_branch(

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "whiskerrag"
-version = "0.0.40"
+version = "0.0.41"
 description = "A utility package for RAG operations"
 authors = ["petercat.ai <antd.antgroup@gmail.com>"]
 readme = "README.md"
