@@ -27,8 +27,8 @@ class MockSplitter:
 
     def split(self, content, config):
         return [
-            Text(content="split1", metadata={}),
-            Text(content="split2", metadata={}),
+            Text(content="split1", metadata={"key1": "value11", "key2": "value22"}),
+            Text(content="split2", metadata={"key1": "value11", "key2": "value22"}),
         ]
 
 
@@ -65,7 +65,9 @@ async def test_get_chunks_by_knowledge_text() -> None:
         },
         "file_sha": "d592ae35c26e3cbc393080b7549e7754e7206f69",
         "file_size": 3961,
-        "metadata": {},
+        "metadata": {
+            "key1": "value1",
+        },
         "retrieval_count": 0,
         "parent_id": "155555f9-f4d9-471e-9fbd-67239fbe371b",
         "enabled": True,
@@ -87,3 +89,5 @@ async def test_get_chunks_by_knowledge_text() -> None:
     ):
         chunks = await get_chunks_by_knowledge(knowledge)
         assert len(chunks) == 4
+        assert chunks[0].context == "split1"
+        assert chunks[0].metadata == {"key1": "value11", "key2": "value22"}

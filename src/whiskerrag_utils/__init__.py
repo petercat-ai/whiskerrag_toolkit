@@ -47,9 +47,10 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
         else:
             print(f"[warn]: illegal split item :{parseItem}")
             continue
+        merged_metadata = {**knowledge.metadata, **(parseItem.metadata or {})}
         chunk = Chunk(
             context=parseItem.content,
-            metadata=parseItem.metadata,
+            metadata=merged_metadata,
             embedding=embedding,
             knowledge_id=knowledge.knowledge_id,
             embedding_model_name=knowledge.embedding_model_name,
