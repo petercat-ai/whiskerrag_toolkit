@@ -10,11 +10,9 @@ from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 @register(RegisterTypeEnum.SPLITTER, "markdown")
 class MarkdownSplitter(BaseSplitter[MarkdownSplitConfig, Text]):
-
     def split(self, content: Text, split_config: MarkdownSplitConfig) -> List[Text]:
         splitter = MarkdownTextSplitter(
-            chunk_size=split_config.chunk_size,
-            chunk_overlap=split_config.chunk_overlap,
+            chunk_size=split_config.chunk_size, chunk_overlap=split_config.chunk_overlap
         )
         split_texts = splitter.split_text(content.content)
         return [

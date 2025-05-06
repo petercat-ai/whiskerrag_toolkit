@@ -73,7 +73,6 @@ async def test_get_chunks_by_knowledge_text() -> None:
         "updated_at": "2025-05-03T02:14:09.347451Z",
     }
     knowledge = Knowledge(**data)
-
     mock_embedding_instance = AsyncMock()
     mock_embedding_instance.embed_text = AsyncMock(
         side_effect=[["embedding1"], ["embedding2"]]

@@ -27,7 +27,13 @@ class TextSplitter(BaseSplitter[TextSplitConfig, Text]):
             strip_whitespace=config_dict["strip_whitespace"],
         )
         split_texts = splitter.split_text(content.content)
-        return [Text(content=text, metadata=content.metadata) for text in split_texts]
+        cleaned_splits = [
+            re.sub(f"^({separator_pattern})", "", split).strip()
+            for split in split_texts
+        ]
+        return [
+            Text(content=text, metadata=content.metadata) for text in cleaned_splits
+        ]
 
     def batch_split(
         self, content_list: List[Text], split_config: TextSplitConfig
