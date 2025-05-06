@@ -17,8 +17,12 @@ class JSONSplitter(BaseSplitter[JSONSplitConfig, Text]):
         json_content = {}
         try:
             json_content = json.loads(content.content)
+            if not isinstance(json_content, dict):
+                raise ValueError("JSON content must be a dictionary.")
         except json.JSONDecodeError:
             raise ValueError("Invalid JSON content provided for splitting.")
+        except ValueError as e:
+            raise ValueError(f"Error processing JSON content: {str(e)}")
         splitter = RecursiveJsonSplitter(
             max_chunk_size=split_config.max_chunk_size,
             min_chunk_size=split_config.min_chunk_size,
