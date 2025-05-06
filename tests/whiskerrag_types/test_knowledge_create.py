@@ -62,6 +62,7 @@ class TestKnowledge:
         }
         knowledge = QACreate(**data)
         assert knowledge.source_config.text == text
+        assert knowledge.metadata == {"answer": "world"}
 
     def test_ImageCreate(self) -> None:
         data = {
