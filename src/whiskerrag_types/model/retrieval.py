@@ -52,16 +52,16 @@ class QueryByKnowledgeConfig(RetrievalBaseConfig):
     space_id_list: List[str] = Field(..., description="knowledge id list")
 
 
-class QueryByDeepSearch(RetrievalBaseConfig):
+class QueryByDeepRetrieval(RetrievalBaseConfig):
     type: str = Field(
-        "deep_search",
-        description="The type of the request, should be 'deep_search'.",
+        "deep_retrieval",
+        description="The type of the request, should be 'deep_retrieval'.",
     )
     space_name_list: List[str] = Field(..., description="space name list")
 
 
 RetrievalConfig = Union[
-    QueryBySpaceConfig, QueryByKnowledgeConfig, QueryByDeepSearch, dict
+    QueryBySpaceConfig, QueryByKnowledgeConfig, QueryByDeepRetrieval, dict
 ]
 
 
