@@ -25,7 +25,7 @@ class TestTextSplitter:
     def test_text_split(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, knowledge.knowledge_type)
+        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "text")
         res = SplitterCls().split(
             Text(content="hello world \n ~", metadata={}), knowledge.split_config
         )

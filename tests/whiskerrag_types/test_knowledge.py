@@ -97,7 +97,7 @@ class TestKnowledge:
                 "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
-                "separators": None,
+                "separators": ["\n\n", "##"],
                 "split_regex": None,
                 "strip_whitespace": True,
             },
@@ -111,7 +111,7 @@ class TestKnowledge:
         assert knowledge["split_config"] == {
             "chunk_size": 500,
             "chunk_overlap": 100,
-            "separators": None,
+            "separators": ["\n\n", "##"],
             "split_regex": None,
             "type": "text",
             "keep_separator": False,

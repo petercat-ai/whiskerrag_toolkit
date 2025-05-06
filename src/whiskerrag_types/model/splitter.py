@@ -41,10 +41,6 @@ class BaseCharSplitConfig(BaseModel):
 
 class MarkdownSplitConfig(BaseCharSplitConfig):
     type: Literal["markdown"] = "markdown"
-    separators: List[str] = Field(
-        default=["\n\n"],
-        description="""List of separators to split the text. If None, uses default separators""",
-    )
 
 
 class PDFSplitConfig(BaseCharSplitConfig):
@@ -65,9 +61,11 @@ class TextSplitConfig(BaseCharSplitConfig):
     """Plain text split configuration"""
 
     type: Literal["text"] = "text"
-    separators: Optional[List[str]] = Field(
+    separators: List[str] = Field(
         default=[
+            "\n",
             "\n\n",
+            "\r",
         ],
         description="""List of separators to split the text. If None, uses default separators""",
     )
