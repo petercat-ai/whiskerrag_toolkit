@@ -11,7 +11,7 @@ class BaseRetriever(Generic[T, R], ABC):
     """Retriever interface."""
 
     @abstractmethod
-    def retrieve(self, params: T, tenant_id: str) -> List[R]:
+    async def retrieve(self, params: T, tenant_id: str) -> List[R]:
         """
         Retrieve data based on the given parameters.
         Args:
