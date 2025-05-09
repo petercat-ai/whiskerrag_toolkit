@@ -86,12 +86,12 @@ class YuqueSourceConfig(BaseModel):
         default="https://www.yuque.com",
         description="the yuque api url",
     )
-    group_id: str = Field(..., description="the yuque group id")
-    book_id: Optional[str] = Field(
+    group_id: int = Field(..., description="the yuque group id")
+    book_id: Optional[int] = Field(
         default=None,
         description="the yuque book id, if not set, will use the group all book",
     )
-    document_id: Optional[str] = Field(
+    document_id: Optional[int] = Field(
         default=None,
         description="the yuque document id in book, if not set, will use the book id as document id",
     )
@@ -128,8 +128,6 @@ class KnowledgeTypeEnum(str, Enum):
     PDF = "pdf"
     QA = "qa"
     YUQUEDOC = "yuquedoc"
-    ONEAPIAPP = "openapi_app"
-    """ such as github repo, zip """
     FOLDER = "folder"
 
 
@@ -154,6 +152,15 @@ KnowledgeSplitConfig = Union[
     JSONSplitConfig,
     PDFSplitConfig,
     GeaGraphSplitConfig,
+]
+
+KnowledgeSourceConfig = Union[
+    GithubRepoSourceConfig,
+    GithubFileSourceConfig,
+    S3SourceConfig,
+    OpenUrlSourceConfig,
+    TextSourceConfig,
+    YuqueSourceConfig,
 ]
 
 
@@ -189,9 +196,7 @@ class KnowledgeCreate(BaseModel):
     source_type: KnowledgeSourceEnum = Field(
         KnowledgeSourceEnum.USER_INPUT_TEXT, description="source type"
     )
-    source_config: Union[
-        GithubRepoSourceConfig, GithubFileSourceConfig, S3SourceConfig, TextSourceConfig
-    ] = Field(
+    source_config: KnowledgeSourceConfig = Field(
         ...,
         description="source config of the knowledge",
     )
@@ -264,13 +269,7 @@ class Knowledge(BaseModel):
     source_type: KnowledgeSourceEnum = Field(
         KnowledgeSourceEnum.USER_INPUT_TEXT, description="source type"
     )
-    source_config: Union[
-        GithubRepoSourceConfig,
-        GithubFileSourceConfig,
-        S3SourceConfig,
-        OpenUrlSourceConfig,
-        TextSourceConfig,
-    ] = Field(
+    source_config: KnowledgeSourceConfig = Field(
         ...,
         description="source config of the knowledge",
     )
