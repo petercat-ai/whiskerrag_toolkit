@@ -108,7 +108,7 @@ class GeaGraphSplitConfig(BaseModel):
     """
 
     type: Literal["geagraph"] = "geagraph"
-    schema_id: Optional[str] = Field(
+    kisId: Optional[int] = Field(
         default=None,
-        description=""" The maximum size for each chunk. Defaults to 2000 """,
+        description=""" The Kis platform business id  """,
     )
