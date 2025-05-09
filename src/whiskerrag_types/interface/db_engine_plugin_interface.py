@@ -122,6 +122,10 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
+    async def update_chunk_list(self, chunks: List[Chunk]) -> List[Chunk]:
+        pass
+
+    @abstractmethod
     async def get_chunk_list(
         self, tenant_id: str, page_params: PageParams[Chunk]
     ) -> List[Chunk]:
