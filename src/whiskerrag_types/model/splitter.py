@@ -97,6 +97,10 @@ class JSONSplitConfig(BaseModel):
     )
 
 
+class YuqueSplitConfig(BaseCharSplitConfig):
+    type: Literal["yuque"] = "yuque"
+
+
 class GeaGraphSplitConfig(BaseModel):
     """
     JSON document split configuration

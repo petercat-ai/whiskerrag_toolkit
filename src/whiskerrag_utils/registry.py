@@ -15,6 +15,7 @@ from typing import (
     overload,
 )
 
+from whiskerrag_types.interface.decomposer_interface import BaseDecomposer
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.interface.retriever_interface import BaseRetriever
@@ -27,10 +28,27 @@ from whiskerrag_types.model.knowledge import (
 
 
 class RegisterTypeEnum(str, Enum):
+    """Register component types for whisker rag flow"""
+
+    DECOMPOSER = "decomposer"
+    """Decomposer: Breaks down folder type knowledge into simple type knowledge
+    Example: Extracting files from a GitHub repository"""
+
     EMBEDDING = "embedding"
+    """Embedding: Converts data into vector representations
+    Used for semantic search and similarity comparisons"""
+
     KNOWLEDGE_LOADER = "knowledge_loader"
+    """Knowledge Loader: Extracts information from various sources
+    Example: Extracting text or image content from know"""
+
     RETRIEVER = "retriever"
+    """Retriever: Finds and retrieves relevant information
+    Used for searching and accessing stored knowledge"""
+
     SPLITTER = "splitter"
+    """Splitter: Processes and divides knowledge into smaller units
+    Example: Splitting text into chunks or segments"""
 
 
 RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
@@ -40,8 +58,14 @@ T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
 T_Retriever = TypeVar("T_Retriever", bound=BaseRetriever)
 T_Splitter = TypeVar("T_Splitter", bound=BaseSplitter)
+T_Decomposer = TypeVar("T_Decomposer", bound=BaseDecomposer)
+
 RegisteredType = Union[
-    Type[T_Embedding], Type[T_Loader], Type[T_Retriever], Type[T_Splitter]
+    Type[T_Embedding],
+    Type[T_Loader],
+    Type[T_Retriever],
+    Type[T_Splitter],
+    Type[T_Decomposer],
 ]
 
 
@@ -65,19 +89,33 @@ EmbeddingRegistry = RegisterDict[BaseEmbedding]
 LoaderRegistry = RegisterDict[BaseLoader]
 RetrieverRegistry = RegisterDict[BaseRetriever]
 SplitterRegistry = RegisterDict[BaseSplitter]
+DecomposerRegistry = RegisterDict[BaseDecomposer]
+
 
 _registry: Dict[
     RegisterTypeEnum,
-    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, SplitterRegistry],
+    Union[
+        LoaderRegistry,
+        EmbeddingRegistry,
+        RetrieverRegistry,
+        SplitterRegistry,
+        DecomposerRegistry,
+    ],
 ] = {
     RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
     RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
     RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
     RegisterTypeEnum.SPLITTER: RegisterDict[BaseSplitter](),
+    RegisterTypeEnum.DECOMPOSER: RegisterDict[BaseDecomposer](),
 }
 
 BaseRegisterClsType = Union[
-    Type[BaseLoader], Type[BaseEmbedding], Type[BaseRetriever], Type[BaseSplitter], None
+    Type[BaseLoader],
+    Type[BaseEmbedding],
+    Type[BaseRetriever],
+    Type[BaseSplitter],
+    Type[BaseDecomposer],
+    None,
 ]
 
 _loaded_packages = set()
@@ -101,6 +139,8 @@ def register(
             expected_base = BaseRetriever
         elif register_type == RegisterTypeEnum.SPLITTER:
             expected_base = BaseSplitter
+        elif register_type == RegisterTypeEnum.DECOMPOSER:
+            expected_base = BaseDecomposer
         else:
             raise ValueError(f"Unknown register type: {register_type}")
 
@@ -200,6 +240,7 @@ def get_register(
     Type[BaseEmbedding],
     Type[BaseRetriever],
     Type[BaseSplitter],
+    Type[BaseDecomposer],
 ]:
     registry = _registry.get(register_type)
     if registry is None:
@@ -213,6 +254,8 @@ def get_register(
         registry = cast(RetrieverRegistry, registry)
     elif register_type == RegisterTypeEnum.SPLITTER:
         registry = cast(SplitterRegistry, registry)
+    elif register_type == RegisterTypeEnum.DECOMPOSER:
+        registry = cast(DecomposerRegistry, registry)
 
     cls = registry.get(register_key)
 
@@ -220,12 +263,17 @@ def get_register(
         raise KeyError(
             f"No implementation registered for type: {register_type}.{register_key}"
         )
-
     return cls
 
 
 def get_registry_list() -> Dict[
     RegisterTypeEnum,
-    Union[LoaderRegistry, EmbeddingRegistry, RetrieverRegistry, SplitterRegistry],
+    Union[
+        LoaderRegistry,
+        EmbeddingRegistry,
+        RetrieverRegistry,
+        SplitterRegistry,
+        DecomposerRegistry,
+    ],
 ]:
     return _registry

@@ -36,6 +36,7 @@ from .splitter import (
     MarkdownSplitConfig,
     PDFSplitConfig,
     TextSplitConfig,
+    YuqueSplitConfig,
 )
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
@@ -80,4 +81,5 @@ __all__ = [
     "PDFSplitConfig",
     "TextSplitConfig",
     "GeaGraphSplitConfig",
+    "YuqueSplitConfig",
 ]
