@@ -13,7 +13,7 @@ class TestTextSplitter:
             "knowledge_name": "local_test_5",
             "split_config": {
                 "type": "text",
-                "chunk_size": 1,
+                "chunk_size": 5,
                 "chunk_overlap": 0,
                 "separators": ["\n\n", "\n", " "],
                 "keep_separator": False,
@@ -31,6 +31,7 @@ class TestTextSplitter:
         res = SplitterCls().split(
             Text(content="hello world \n ~", metadata={}), knowledge.split_config
         )
+
         assert res == [
             Text(content="hello", metadata={}),
             Text(content="world", metadata={}),
@@ -45,7 +46,7 @@ class TestTextSplitter:
             "knowledge_name": "local_test_5",
             "split_config": {
                 "type": "text",
-                "chunk_size": 1,
+                "chunk_size": 5,
                 "chunk_overlap": 0,
                 "separators": ["\\n\\n", "\\n", "\\s"],
                 "is_separator_regex": True,
@@ -63,7 +64,7 @@ class TestTextSplitter:
         res = SplitterCls().split(
             Text(content="hello world \n ~", metadata={}), knowledge.split_config
         )
-        print("res\n\n", res)
+
         assert res == [
             Text(content="hello", metadata={}),
             Text(content="world", metadata={}),

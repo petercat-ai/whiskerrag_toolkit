@@ -98,6 +98,8 @@ class MarkdownSplitter(BaseSplitter[MarkdownSplitConfig, Text]):
     def _create_recursive_splitter(
         self, config: MarkdownSplitConfig
     ) -> RecursiveCharacterTextSplitter:
+        if "" not in config.separators:
+            config.separators.append("")
         return RecursiveCharacterTextSplitter(
             chunk_size=config.chunk_size,
             chunk_overlap=config.chunk_overlap,
