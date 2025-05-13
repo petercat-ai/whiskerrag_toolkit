@@ -1,5 +1,6 @@
 import os
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 from langchain_core.documents import Document
@@ -15,19 +16,27 @@ from whiskerrag_utils.registry import init_register
 
 
 @pytest.fixture
-def mock_yuque_loader():
-    with patch("whiskerrag_utils.helper.yuque.ExtendedYuqueLoader") as mock_loader:
-        mock_document = Document(page_content="hello world", metadata={})
-        # set mock function
-        instance = mock_loader.return_value
-        instance.load_document_by_path.return_value = mock_document
+def mock_yuque_loader() -> Any:
+    mock_document = Document(page_content="hello world", metadata={})
 
-        yield mock_loader
+    patches = [
+        patch("whiskerrag_utils.helper.yuque.ExtendedYuqueLoader"),
+        patch(
+            "whiskerrag_utils.helper.yuque.ExtendedYuqueLoader.load_document_by_path",
+            return_value=mock_document,
+        ),
+    ]
+
+    with patch.multiple(
+        "whiskerrag_utils.helper.yuque.ExtendedYuqueLoader",
+        load_document_by_path=MagicMock(return_value=mock_document),
+    ) as mocks:
+        yield mocks
 
 
 class TestYuqueLoader:
     @pytest.mark.asyncio
-    async def test_get_text(self, mock_yuque_loader) -> None:
+    async def test_get_text(self, mock_yuque_loader: Any) -> None:
         knowledge_data = {
             "source_type": KnowledgeSourceEnum.YUQUE,
             "knowledge_type": KnowledgeTypeEnum.YUQUEDOC,
