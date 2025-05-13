@@ -28,7 +28,10 @@ class BaseTextParser(BaseSplitter[BaseCharSplitConfig, Text]):
             "\n\n",
             "\n",
             " ",
+            "",
         ]
+        if "" not in separators:
+            separators.append("")
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=split_config.chunk_size,
             chunk_overlap=split_config.chunk_overlap,
