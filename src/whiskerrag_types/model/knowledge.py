@@ -54,10 +54,9 @@ class KnowledgeSourceEnum(str, Enum):
     GITHUB_REPO = "github_repo"
     GITHUB_FILE = "github_file"
     USER_INPUT_TEXT = "user_input_text"
-    USER_UPLOAD_FILE = "user_upload_file"
+    CLOUD_STORAGE_TEXT = "cloud_storage_text"
+    CLOUD_STORAGE_IMAGE = "cloud_storage_image"
     YUQUE = "yuque"
-    YOUTUBE = "youtube"
-    DATABASE = "database"
 
 
 class GithubRepoSourceConfig(BaseModel):
@@ -81,29 +80,29 @@ class S3SourceConfig(BaseModel):
     auth_info: Optional[str] = Field(None, description="s3 session token")
 
 
-class YuqueSourceConfig(BaseModel):
-    api_url: str = Field(
-        default="https://www.yuque.com",
-        description="the yuque api url",
-    )
-    group_id: int = Field(..., description="the yuque group id")
-    book_id: Optional[int] = Field(
-        default=None,
-        description="the yuque book id, if not set, will use the group all book",
-    )
-    document_id: Optional[int] = Field(
-        default=None,
-        description="the yuque document id in book, if not set, will use the book id as document id",
-    )
-    auth_info: str = Field(..., description="authentication information")
-
-
 class OpenUrlSourceConfig(BaseModel):
     url: str = Field(..., description="cloud storage url, such as oss, cos, etc.")
 
 
 class OpenIdSourceConfig(BaseModel):
     id: str = Field(..., description="cloud storage file id, used for afts")
+
+
+class YuqueSourceConfig(BaseModel):
+    api_url: str = Field(
+        default="https://www.yuque.com",
+        description="the yuque api url",
+    )
+    group_login: str = Field(..., description="the yuque group id")
+    book_slug: Optional[str] = Field(
+        default=None,
+        description="the yuque book id, if not set, will use the group all book",
+    )
+    document_id: Optional[Union[str, int]] = Field(
+        default=None,
+        description="the yuque document id in book, if not set, will use the book all doc",
+    )
+    auth_info: str = Field(..., description="authentication information")
 
 
 class TextSourceConfig(BaseModel):

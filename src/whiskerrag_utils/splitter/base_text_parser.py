@@ -4,14 +4,13 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from whiskerrag_types.interface.splitter_interface import BaseSplitter
 from whiskerrag_types.model.multi_modal import Text
-from whiskerrag_types.model.splitter import YuqueSplitConfig
+from whiskerrag_types.model.splitter import BaseCharSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "yuque")
-class BaseSplitterRegistry(BaseSplitter[YuqueSplitConfig, Text]):
-
-    def split(self, content: Text, split_config: YuqueSplitConfig) -> List[Text]:
+@register(RegisterTypeEnum.SPLITTER, "base")
+class BaseTextParser(BaseSplitter[BaseCharSplitConfig, Text]):
+    def split(self, content: Text, split_config: BaseCharSplitConfig) -> List[Text]:
         separators = split_config.separators or [
             # First, try to split along Markdown headings (starting with level 2)
             "\n#{1,6} ",
@@ -40,6 +39,6 @@ class BaseSplitterRegistry(BaseSplitter[YuqueSplitConfig, Text]):
         return [Text(content=text, metadata=content.metadata) for text in split_texts]
 
     def batch_split(
-        self, content_list: List[Text], split_config: YuqueSplitConfig
+        self, content_list: List[Text], split_config: BaseCharSplitConfig
     ) -> List[List[Text]]:
         return [self.split(content, split_config) for content in content_list]

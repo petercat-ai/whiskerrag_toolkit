@@ -32,6 +32,7 @@ from .space import Space, SpaceCreate, SpaceResponse
 from .splitter import (
     BaseCharSplitConfig,
     GeaGraphSplitConfig,
+    ImageSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
@@ -82,4 +83,5 @@ __all__ = [
     "TextSplitConfig",
     "GeaGraphSplitConfig",
     "YuqueSplitConfig",
+    "ImageSplitConfig",
 ]

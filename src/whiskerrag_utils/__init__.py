@@ -22,13 +22,17 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     1. Get corresponding loader based on knowledge source type
     2. Get text splitter
     3. Get embedding model
-    4. Load content
+    4. Load content as Text or Image
     5. Split content
     6. Vectorize each split content
     7. Generate final list of Chunk objects
     """
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
-    split_type = getattr(knowledge.split_config, "type", None) or "base"
+    split_type = getattr(knowledge.split_config, "type", None)
+    if split_type is None:
+        print(f"[warn]:can't get target from {knowledge.split_config} ")
+        split_type = "base"
+
     SplitterCls = get_register(RegisterTypeEnum.SPLITTER, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
@@ -47,10 +51,10 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
         else:
             print(f"[warn]: illegal split item :{parseItem}")
             continue
-        merged_metadata = {**knowledge.metadata, **(parseItem.metadata or {})}
+        combined_metadata = {**knowledge.metadata, **(parseItem.metadata or {})}
         chunk = Chunk(
             context=parseItem.content,
-            metadata=merged_metadata,
+            metadata=combined_metadata,
             embedding=embedding,
             knowledge_id=knowledge.knowledge_id,
             embedding_model_name=knowledge.embedding_model_name,
