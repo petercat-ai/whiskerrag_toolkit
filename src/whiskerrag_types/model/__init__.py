@@ -5,7 +5,6 @@ from .knowledge import (
     GithubFileSourceConfig,
     GithubRepoSourceConfig,
     Knowledge,
-    KnowledgeCreate,
     KnowledgeSourceEnum,
     KnowledgeSplitConfig,
     KnowledgeTypeEnum,
@@ -32,6 +31,7 @@ from .space import Space, SpaceCreate, SpaceResponse
 from .splitter import (
     BaseCharSplitConfig,
     GeaGraphSplitConfig,
+    ImageSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
@@ -47,7 +47,6 @@ __all__ = [
     "KnowledgeTypeEnum",
     "EmbeddingModelEnum",
     "KnowledgeSplitConfig",
-    "KnowledgeCreate",
     "TextCreate",
     "ImageCreate",
     "JSONCreate",
@@ -82,4 +81,5 @@ __all__ = [
     "TextSplitConfig",
     "GeaGraphSplitConfig",
     "YuqueSplitConfig",
+    "ImageSplitConfig",
 ]

@@ -4,7 +4,6 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID, uuid4
 
-from deprecated import deprecated
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -54,10 +53,9 @@ class KnowledgeSourceEnum(str, Enum):
     GITHUB_REPO = "github_repo"
     GITHUB_FILE = "github_file"
     USER_INPUT_TEXT = "user_input_text"
-    USER_UPLOAD_FILE = "user_upload_file"
+    CLOUD_STORAGE_TEXT = "cloud_storage_text"
+    CLOUD_STORAGE_IMAGE = "cloud_storage_image"
     YUQUE = "yuque"
-    YOUTUBE = "youtube"
-    DATABASE = "database"
 
 
 class GithubRepoSourceConfig(BaseModel):
@@ -81,29 +79,29 @@ class S3SourceConfig(BaseModel):
     auth_info: Optional[str] = Field(None, description="s3 session token")
 
 
-class YuqueSourceConfig(BaseModel):
-    api_url: str = Field(
-        default="https://www.yuque.com",
-        description="the yuque api url",
-    )
-    group_id: int = Field(..., description="the yuque group id")
-    book_id: Optional[int] = Field(
-        default=None,
-        description="the yuque book id, if not set, will use the group all book",
-    )
-    document_id: Optional[int] = Field(
-        default=None,
-        description="the yuque document id in book, if not set, will use the book id as document id",
-    )
-    auth_info: str = Field(..., description="authentication information")
-
-
 class OpenUrlSourceConfig(BaseModel):
     url: str = Field(..., description="cloud storage url, such as oss, cos, etc.")
 
 
 class OpenIdSourceConfig(BaseModel):
     id: str = Field(..., description="cloud storage file id, used for afts")
+
+
+class YuqueSourceConfig(BaseModel):
+    api_url: str = Field(
+        default="https://www.yuque.com",
+        description="the yuque api url",
+    )
+    group_login: str = Field(..., description="the yuque group id")
+    book_slug: Optional[str] = Field(
+        default=None,
+        description="the yuque book id, if not set, will use the group all book",
+    )
+    document_id: Optional[Union[str, int]] = Field(
+        default=None,
+        description="the yuque document id in book, if not set, will use the book all doc",
+    )
+    auth_info: str = Field(..., description="authentication information")
 
 
 class TextSourceConfig(BaseModel):
@@ -162,93 +160,6 @@ KnowledgeSourceConfig = Union[
     TextSourceConfig,
     YuqueSourceConfig,
 ]
-
-
-@deprecated(
-    reason="Use TextCreate, ImageCreate, JSONCreate, MarkdownCreate, PDFCreate, GithubRepoCreate,QACreate instead"
-)
-class KnowledgeCreate(BaseModel):
-    """
-    KnowledgeCreate model for creating knowledge resources.
-    Attributes:
-        knowledge_type (ResourceType): Type of knowledge resource.
-        space_id (str): Space ID, example: petercat bot ID.
-        knowledge_name (str): Name of the knowledge resource.
-        file_sha (Optional[str]): SHA of the file.
-        file_size (Optional[int]): Size of the file.
-        split_config (Optional[dict]): Configuration for splitting the knowledge.
-        source_data (Optional[str]): Source data of the knowledge.
-        auth_info (Optional[str]): Authentication information.
-        embedding_model_name (Optional[str]): Name of the embedding model.
-        metadata (Optional[dict]): Additional metadata.
-    """
-
-    space_id: str = Field(
-        ...,
-        description="the space of knowledge, example: petercat bot id, github repo name",
-    )
-    knowledge_type: KnowledgeTypeEnum = Field(
-        KnowledgeTypeEnum.TEXT, description="type of knowledge resource"
-    )
-    knowledge_name: str = Field(
-        ..., max_length=255, description="name of the knowledge resource"
-    )
-    source_type: KnowledgeSourceEnum = Field(
-        KnowledgeSourceEnum.USER_INPUT_TEXT, description="source type"
-    )
-    source_config: KnowledgeSourceConfig = Field(
-        ...,
-        description="source config of the knowledge",
-    )
-    embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
-        EmbeddingModelEnum.OPENAI,
-        description="name of the embedding model. you can set any other model if target embedding service registered",
-    )
-    split_config: KnowledgeSplitConfig = Field(
-        ...,
-        description="configuration for splitting the knowledge",
-    )
-    file_sha: Optional[str] = Field(None, description="SHA of the file")
-    file_size: Optional[int] = Field(None, description="size of the file")
-    metadata: dict = Field({}, description="additional metadata, user can update it")
-    parent_id: Optional[str] = Field(None, description="parent knowledge id")
-    enabled: bool = Field(True, description="is knowledge enabled")
-
-    @field_serializer("metadata")
-    def serialize_metadata(self, metadata: dict) -> Optional[dict]:
-        if metadata is None:
-            return None
-        sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
-        return sorted_metadata if isinstance(sorted_metadata, dict) else None
-
-    @field_serializer("knowledge_type")
-    def serialize_knowledge_type(
-        self, knowledge_type: Union[KnowledgeTypeEnum, str]
-    ) -> str:
-        if isinstance(knowledge_type, KnowledgeTypeEnum):
-            return knowledge_type.value
-        return str(knowledge_type)
-
-    @field_serializer("source_type")
-    def serialize_source_type(
-        self, source_type: Union[KnowledgeSourceEnum, str]
-    ) -> str:
-        if isinstance(source_type, KnowledgeSourceEnum):
-            return source_type.value
-        return str(source_type)
-
-    @field_serializer("embedding_model_name")
-    def serialize_embedding_model_name(
-        self, embedding_model_name: Union[EmbeddingModelEnum, str]
-    ) -> str:
-        if isinstance(embedding_model_name, EmbeddingModelEnum):
-            return embedding_model_name.value
-        return str(embedding_model_name)
-
-    @field_validator("enabled", mode="before")
-    @classmethod
-    def convert_tinyint_to_bool(cls, v: Any) -> bool:
-        return bool(v)
 
 
 class Knowledge(BaseModel):

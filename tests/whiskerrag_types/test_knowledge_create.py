@@ -68,9 +68,10 @@ class TestKnowledge:
         data = {
             "knowledge_name": "test_qa",
             "space_id": "test_space",
-            "source_type": KnowledgeSourceEnum.USER_UPLOAD_FILE,
+            "source_type": KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE,
             "knowledge_type": KnowledgeTypeEnum.IMAGE,
-            "source_config": {"id": "112233"},
+            "source_config": {"url": "112233"},
+            "split_config": {"type": "image"},
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
             "file_size": 122,
             "file_sha": "123213",

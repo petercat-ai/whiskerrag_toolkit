@@ -17,6 +17,7 @@ from whiskerrag_types.model.knowledge import (
 from whiskerrag_types.model.splitter import (
     BaseCharSplitConfig,
     GeaGraphSplitConfig,
+    ImageSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
@@ -192,6 +193,7 @@ class ImageCreate(KnowledgeCreateBase):
             description="source config of the knowledge",
         )
     )
+    split_config: Union[ImageSplitConfig]
     file_sha: str = Field(..., description="SHA of the file")
     file_size: int = Field(..., description="Byte size of the file")
 

@@ -112,3 +112,7 @@ class GeaGraphSplitConfig(BaseModel):
         default=None,
         description=""" The Kis platform business id  """,
     )
+
+
+class ImageSplitConfig(BaseModel):
+    type: Literal["image"] = "image"

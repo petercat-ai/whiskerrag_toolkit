@@ -1,6 +1,4 @@
-from typing import Dict, List
-
-from langchain_community.document_loaders.yuque import YuqueLoader
+from typing import List
 
 from whiskerrag_types.interface import BaseDecomposer
 from whiskerrag_types.model.knowledge import (
@@ -10,6 +8,7 @@ from whiskerrag_types.model.knowledge import (
     KnowledgeTypeEnum,
     YuqueSourceConfig,
 )
+from whiskerrag_utils.helper.yuque import ExtendedYuqueLoader
 from whiskerrag_utils.loader.github.repo_loader import (
     GitFileElementType,
     GithubRepoLoader,
@@ -82,76 +81,65 @@ class FolderDecomposer(BaseDecomposer):
         self,
         knowledge: Knowledge,
     ) -> List[Knowledge]:
-        if not isinstance(knowledge.source_config, YuqueSourceConfig):
+        source_config = knowledge.source_config
+        if not isinstance(source_config, YuqueSourceConfig):
             raise TypeError("source_config must be of type YuqueSourceConfig")
-
         knowledge_list: List[Knowledge] = []
-        loader = YuqueLoader(
-            access_token=knowledge.source_config.auth_info,
-            api_url=knowledge.source_config.api_url,
+        document_id = source_config.document_id
+        group_login = source_config.group_login
+        book_slug = source_config.book_slug
+        loader = ExtendedYuqueLoader(
+            access_token=source_config.auth_info,
+            api_url=source_config.api_url,
         )
-
-        def get_docs_by_book_id(book_id: int) -> List[Dict]:
-            document_ids = loader.get_document_ids(book_id=book_id)
-            documents = []
-            for doc_id in document_ids:
-                documents.append(
-                    loader.get_document(book_id=book_id, document_id=doc_id)
-                )
-            return documents
-
         try:
             # Case 1: If document_id is provided, create single knowledge
-            if knowledge.source_config.document_id:
-                if not knowledge.source_config.book_id:
+            if document_id:
+                if not book_slug:
                     raise ValueError("book_id is required when document_id is provided")
-                document = loader.get_document(
-                    int(knowledge.source_config.book_id),
-                    int(knowledge.source_config.document_id),
-                )
+                doc_detail = loader.get_doc_detail(group_login, book_slug, document_id)
                 knowledge_list.append(
                     Knowledge(
                         space_id=knowledge.space_id,
                         source_type=KnowledgeSourceEnum.YUQUE,
                         knowledge_type=KnowledgeTypeEnum.YUQUEDOC,
-                        knowledge_name=document.get("title", ""),
+                        knowledge_name=doc_detail["title"],
                         split_config=knowledge.split_config.model_dump(),
-                        source_config=YuqueSourceConfig(
-                            api_url=knowledge.source_config.api_url,
-                            group_id=knowledge.source_config.group_id,
-                            book_id=knowledge.source_config.book_id,
-                            document_id=knowledge.source_config.document_id,
-                            auth_info=knowledge.source_config.auth_info,
-                        ),
+                        source_config=source_config,
                         tenant_id=knowledge.tenant_id,
-                        file_size=0,  # You might want to calculate actual size
+                        file_size=doc_detail.get(
+                            "word_count"
+                        ),  # You might want to calculate actual size
                         file_sha="",  # You might want to calculate actual sha
-                        metadata={"document_id": document.get("id")},
+                        metadata={
+                            "document_id": doc_detail.get("id"),
+                            "format": doc_detail.get("format"),
+                            "word_count": doc_detail.get("word_count"),
+                        },
                         parent_id=knowledge.knowledge_id,
                         enabled=True,
                     )
                 )
 
             # Case 2: If only book_id is provided, create knowledge for each document in the book
-            elif knowledge.source_config.book_id:
-                documents = get_docs_by_book_id(int(knowledge.source_config.book_id))
-                for doc in documents:
-                    doc_id = doc.get("id")
+            elif book_slug:
+                book_toc = loader.get_book_documents_by_path(group_login, book_slug)
+                for doc_detail in book_toc:
+                    doc_id = doc_detail.get("slug")
                     if doc_id is None:
                         continue
-
                     knowledge_list.append(
                         Knowledge(
                             space_id=knowledge.space_id,
                             source_type=KnowledgeSourceEnum.YUQUE,
                             knowledge_type=KnowledgeTypeEnum.YUQUEDOC,
-                            knowledge_name=doc.get("title", ""),
+                            knowledge_name=doc_detail.get("title", doc_id),
                             source_config=YuqueSourceConfig(
-                                api_url=knowledge.source_config.api_url,
-                                group_id=knowledge.source_config.group_id,
-                                book_id=knowledge.source_config.book_id,
+                                api_url=source_config.api_url,
+                                group_login=group_login,
+                                book_slug=book_slug,
                                 document_id=doc_id,
-                                auth_info=knowledge.source_config.auth_info,
+                                auth_info=source_config.auth_info,
                             ),
                             split_config=knowledge.split_config.model_dump(),
                             tenant_id=knowledge.tenant_id,
@@ -167,39 +155,38 @@ class FolderDecomposer(BaseDecomposer):
             else:
                 books = loader.get_books(user_id=loader.get_user_id())
                 for book in books:
-                    book_id = book.get("id")
-                    if book_id is None:
+                    book_slug = book.get("slug")
+                    if book_slug is None:
                         raise Exception(
-                            f"can not get id from knowledge:{knowledge.source_config}"
+                            f"can not get book slug   from knowledge:{knowledge.source_config}"
                         )
-                    documents = documents = get_docs_by_book_id(book_id)
-                    for doc in documents:
-                        doc_id = doc.get("id")
-                        if doc_id is None:
-                            continue
-
-                        knowledge_list.append(
-                            Knowledge(
-                                space_id=knowledge.space_id,
-                                source_type=KnowledgeSourceEnum.YUQUE,
-                                knowledge_type=KnowledgeTypeEnum.YUQUEDOC,
-                                knowledge_name=doc.get("title", ""),
-                                split_config=knowledge.split_config.model_dump(),
-                                source_config=YuqueSourceConfig(
-                                    api_url=knowledge.source_config.api_url,
-                                    group_id=knowledge.source_config.group_id,
-                                    book_id=book_id,
-                                    document_id=doc_id,
-                                    auth_info=knowledge.source_config.auth_info,
-                                ),
-                                tenant_id=knowledge.tenant_id,
-                                file_size=0,
-                                file_sha="",
-                                metadata={"document_id": doc_id},
-                                parent_id=knowledge.knowledge_id,
-                                enabled=True,
-                            )
+                    book_toc = loader.get_book_documents_by_path(group_login, book_slug)
+                for doc_detail in book_toc:
+                    doc_id = doc_detail.get("slug")
+                    if doc_id is None:
+                        continue
+                    knowledge_list.append(
+                        Knowledge(
+                            space_id=knowledge.space_id,
+                            source_type=KnowledgeSourceEnum.YUQUE,
+                            knowledge_type=KnowledgeTypeEnum.YUQUEDOC,
+                            knowledge_name=doc_detail.get("title", doc_id),
+                            source_config=YuqueSourceConfig(
+                                api_url=source_config.api_url,
+                                group_login=group_login,
+                                book_slug=book_slug,
+                                document_id=doc_id,
+                                auth_info=source_config.auth_info,
+                            ),
+                            split_config=knowledge.split_config.model_dump(),
+                            tenant_id=knowledge.tenant_id,
+                            file_size=0,
+                            file_sha="",
+                            metadata={"document_id": doc_id},
+                            parent_id=knowledge.knowledge_id,
+                            enabled=True,
                         )
+                    )
 
             return knowledge_list
 
