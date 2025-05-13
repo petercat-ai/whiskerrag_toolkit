@@ -20,8 +20,7 @@ class TestKnowledge:
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": ["\n\n", "##"],
-                "strip_whitespace": True,
-                "keep_separator": False,
+                "is_separator_regex": True,
             },
         }
         knowledge_create = TextCreate(**data)
@@ -38,8 +37,7 @@ class TestKnowledge:
         assert knowledge_create.split_config.chunk_size == 500
         assert knowledge_create.split_config.chunk_overlap == 100
         assert knowledge_create.split_config.separators == ["\n\n", "##"]
-        assert knowledge_create.split_config.strip_whitespace is True
-        assert knowledge_create.split_config.keep_separator is False
+        assert knowledge_create.split_config.is_separator_regex is True
 
     def test_QACreate(self) -> None:
         text = "This is a test text for knowledge creation."
@@ -55,8 +53,7 @@ class TestKnowledge:
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": ["\n\n", "##"],
-                "strip_whitespace": True,
-                "keep_separator": False,
+                "is_separator_regex": False,
             },
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
         }

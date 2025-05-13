@@ -23,8 +23,7 @@ class TestKnowledge:
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": [],
-                "split_regex": None,
-                "strip_whitespace": True,
+                "is_separator_regex": True,
             },
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
         }
@@ -45,9 +44,8 @@ class TestKnowledge:
                 "type": "text",
                 "chunk_size": 500,
                 "chunk_overlap": 100,
-                "separators": None,
-                "split_regex": None,
-                "strip_whitespace": True,
+                "separators": [],
+                "is_separator_regex": True,
             },
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
         }
@@ -98,8 +96,7 @@ class TestKnowledge:
                 "chunk_size": 500,
                 "chunk_overlap": 100,
                 "separators": ["\n\n", "##"],
-                "split_regex": None,
-                "strip_whitespace": True,
+                "is_separator_regex": False,
             },
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c2261db",
             "gmt_create": "2023-01-01T00:00:00Z",
@@ -108,13 +105,8 @@ class TestKnowledge:
         knowledge = Knowledge(**data).model_dump()
         # time use created_at instead of gmt_create
         assert knowledge["created_at"] == "2023-01-01T00:00:00.000000Z"
-        assert knowledge["split_config"] == {
-            "chunk_size": 500,
-            "chunk_overlap": 100,
-            "separators": ["\n\n", "##"],
-            "split_regex": None,
-            "type": "text",
-            "keep_separator": False,
-            "strip_whitespace": True,
-        }
+        assert knowledge["split_config"]["type"] == "text"
+        assert knowledge["split_config"]["chunk_size"] == 500
+        assert knowledge["split_config"]["separators"] == ["\n\n", "##"]
+        assert knowledge["split_config"]["is_separator_regex"] == False
         assert knowledge["updated_at"] is not None

@@ -4,7 +4,7 @@ from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-class BaseCharSplitConfig(BaseModel):
+class BaseSplitConfig(BaseModel):
     """Base split configuration class"""
 
     chunk_size: int = Field(default=1500, ge=1, description="chunk max size")
@@ -13,6 +13,17 @@ class BaseCharSplitConfig(BaseModel):
         ge=0,
         description="chunk overlap size, must be less than chunk_size",
     )
+
+    @model_validator(mode="after")
+    def validate_config(self) -> "BaseSplitConfig":
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("chunk_overlap must be less than chunk_size")
+        return self
+
+
+class BaseCharSplitConfig(BaseSplitConfig):
+    """Base char split configuration class"""
+
     separators: Optional[List[str]] = Field(
         default=None, description="separator list, if None, use default separators"
     )
@@ -30,27 +41,32 @@ class BaseCharSplitConfig(BaseModel):
                 raise ValueError(f"Invalid regular expression: {str(e)}")
         return v
 
-    @model_validator(mode="after")
-    def validate_config(self) -> "BaseCharSplitConfig":
-        if self.chunk_overlap >= self.chunk_size:
-            raise ValueError("chunk_overlap must be less than chunk_size")
-        if self.separators and self.split_regex:
-            raise ValueError("Cannot specify both separators and split_regex")
-        return self
 
-
-class MarkdownSplitConfig(BaseCharSplitConfig):
+class MarkdownSplitConfig(BaseSplitConfig):
     type: Literal["markdown"] = "markdown"
+    separators: List[str] = Field(
+        ...,
+        description="""List of separators to split the text. If None, uses default separators""",
+    )
+    is_separator_regex: bool = Field(
+        ...,
+        description="""If true, the separators should be in regular expression format.""",
+    )
+    keep_separator: Optional[Union[bool, Literal["start", "end"]]] = Field(
+        default=False,
+        description="""Whether to keep the separator and where to place it in each corresponding chunk (True='start')""",
+    )
+    extract_header_first: Optional[bool] = Field(
+        default=False,
+        description="""If true, will split markdown by header first""",
+    )
+    # TODO :extract images,table,code
 
 
-class PDFSplitConfig(BaseCharSplitConfig):
+class PDFSplitConfig(BaseSplitConfig):
     """PDF document split configuration"""
 
     type: Literal["pdf"] = "pdf"
-    split_by_page: bool = Field(default=False, description="Whether to split by pages")
-    keep_layout: bool = Field(
-        default=True, description="Whether to preserve the original layout"
-    )
     extract_images: bool = Field(default=False, description="Whether to extract images")
     table_extract_mode: str = Field(
         default="text", description="Table extraction mode: 'text' or 'structure'"
@@ -62,20 +78,16 @@ class TextSplitConfig(BaseCharSplitConfig):
 
     type: Literal["text"] = "text"
     separators: List[str] = Field(
-        default=[
-            "\n",
-            "\n\n",
-            "\r",
-        ],
+        ...,
         description="""List of separators to split the text. If None, uses default separators""",
+    )
+    is_separator_regex: bool = Field(
+        ...,
+        description="""If true, the separators should be in regular expression format.""",
     )
     keep_separator: Optional[Union[bool, Literal["start", "end"]]] = Field(
         default=False,
         description="""Whether to keep the separator and where to place it in each corresponding chunk (True='start')""",
-    )
-    strip_whitespace: Optional[bool] = Field(
-        default=False,
-        description="""If `True`, strips whitespace from the start and end of every document""",
     )
 
 
