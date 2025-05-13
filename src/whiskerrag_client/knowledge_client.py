@@ -1,7 +1,7 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from whiskerrag_client.http_client import BaseClient
-from whiskerrag_types.model import Knowledge, KnowledgeCreate, PageParams, PageResponse
+from whiskerrag_types.model import Knowledge, PageParams, PageResponse
 from whiskerrag_types.model.knowledge_create import KnowledgeCreateUnion
 
 
@@ -10,9 +10,7 @@ class KnowledgeClient:
         self.http_client = http_client
         self.base_path = base_path
 
-    async def add_knowledge(
-        self, items: List[Union[KnowledgeCreate, KnowledgeCreateUnion]]
-    ) -> List[Knowledge]:
+    async def add_knowledge(self, items: List[KnowledgeCreateUnion]) -> List[Knowledge]:
         response = await self.http_client._request(
             method="POST",
             endpoint=f"{self.base_path}/add",

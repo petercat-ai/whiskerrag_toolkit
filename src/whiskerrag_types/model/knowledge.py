@@ -4,7 +4,6 @@ from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID, uuid4
 
-from deprecated import deprecated
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -161,93 +160,6 @@ KnowledgeSourceConfig = Union[
     TextSourceConfig,
     YuqueSourceConfig,
 ]
-
-
-@deprecated(
-    reason="Use TextCreate, ImageCreate, JSONCreate, MarkdownCreate, PDFCreate, GithubRepoCreate,QACreate instead"
-)
-class KnowledgeCreate(BaseModel):
-    """
-    KnowledgeCreate model for creating knowledge resources.
-    Attributes:
-        knowledge_type (ResourceType): Type of knowledge resource.
-        space_id (str): Space ID, example: petercat bot ID.
-        knowledge_name (str): Name of the knowledge resource.
-        file_sha (Optional[str]): SHA of the file.
-        file_size (Optional[int]): Size of the file.
-        split_config (Optional[dict]): Configuration for splitting the knowledge.
-        source_data (Optional[str]): Source data of the knowledge.
-        auth_info (Optional[str]): Authentication information.
-        embedding_model_name (Optional[str]): Name of the embedding model.
-        metadata (Optional[dict]): Additional metadata.
-    """
-
-    space_id: str = Field(
-        ...,
-        description="the space of knowledge, example: petercat bot id, github repo name",
-    )
-    knowledge_type: KnowledgeTypeEnum = Field(
-        KnowledgeTypeEnum.TEXT, description="type of knowledge resource"
-    )
-    knowledge_name: str = Field(
-        ..., max_length=255, description="name of the knowledge resource"
-    )
-    source_type: KnowledgeSourceEnum = Field(
-        KnowledgeSourceEnum.USER_INPUT_TEXT, description="source type"
-    )
-    source_config: KnowledgeSourceConfig = Field(
-        ...,
-        description="source config of the knowledge",
-    )
-    embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
-        EmbeddingModelEnum.OPENAI,
-        description="name of the embedding model. you can set any other model if target embedding service registered",
-    )
-    split_config: KnowledgeSplitConfig = Field(
-        ...,
-        description="configuration for splitting the knowledge",
-    )
-    file_sha: Optional[str] = Field(None, description="SHA of the file")
-    file_size: Optional[int] = Field(None, description="size of the file")
-    metadata: dict = Field({}, description="additional metadata, user can update it")
-    parent_id: Optional[str] = Field(None, description="parent knowledge id")
-    enabled: bool = Field(True, description="is knowledge enabled")
-
-    @field_serializer("metadata")
-    def serialize_metadata(self, metadata: dict) -> Optional[dict]:
-        if metadata is None:
-            return None
-        sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
-        return sorted_metadata if isinstance(sorted_metadata, dict) else None
-
-    @field_serializer("knowledge_type")
-    def serialize_knowledge_type(
-        self, knowledge_type: Union[KnowledgeTypeEnum, str]
-    ) -> str:
-        if isinstance(knowledge_type, KnowledgeTypeEnum):
-            return knowledge_type.value
-        return str(knowledge_type)
-
-    @field_serializer("source_type")
-    def serialize_source_type(
-        self, source_type: Union[KnowledgeSourceEnum, str]
-    ) -> str:
-        if isinstance(source_type, KnowledgeSourceEnum):
-            return source_type.value
-        return str(source_type)
-
-    @field_serializer("embedding_model_name")
-    def serialize_embedding_model_name(
-        self, embedding_model_name: Union[EmbeddingModelEnum, str]
-    ) -> str:
-        if isinstance(embedding_model_name, EmbeddingModelEnum):
-            return embedding_model_name.value
-        return str(embedding_model_name)
-
-    @field_validator("enabled", mode="before")
-    @classmethod
-    def convert_tinyint_to_bool(cls, v: Any) -> bool:
-        return bool(v)
 
 
 class Knowledge(BaseModel):
