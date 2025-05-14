@@ -115,7 +115,7 @@ class TextSourceConfig(BaseModel):
 
 class KnowledgeTypeEnum(str, Enum):
     """
-    mime type of the knowledge
+    mime type of the knowledge. If multiple files are included and require a decomposer, please set the type to 'folder'
     """
 
     TEXT = "text"
