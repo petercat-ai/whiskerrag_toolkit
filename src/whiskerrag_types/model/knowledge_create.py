@@ -167,6 +167,9 @@ class QACreate(KnowledgeCreateBase):
         ...,
         description="split config of the knowledge, used to split the question into chunks",
     )
+    source_type: Literal[KnowledgeSourceEnum.USER_INPUT_TEXT] = Field(
+        KnowledgeSourceEnum.USER_INPUT_TEXT, description="source type"
+    )
     source_config: Optional[TextSourceConfig] = Field(
         default=None,
         description="source config of the knowledge",
@@ -187,6 +190,9 @@ class ImageCreate(KnowledgeCreateBase):
     knowledge_type: Literal[KnowledgeTypeEnum.IMAGE] = Field(
         KnowledgeTypeEnum.IMAGE, description="type of knowledge resource"
     )
+    source_type: Literal[KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE] = Field(
+        KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE, description="source type"
+    )
     source_config: Union[OpenUrlSourceConfig, OpenIdSourceConfig, S3SourceConfig] = (
         Field(
             ...,
@@ -199,8 +205,13 @@ class ImageCreate(KnowledgeCreateBase):
 
 
 class YuqueCreate(KnowledgeCreateBase):
-    knowledge_type: Literal[KnowledgeTypeEnum.IMAGE] = Field(
-        KnowledgeTypeEnum.IMAGE, description="type of knowledge resource"
+    knowledge_type: Literal[KnowledgeTypeEnum.YUQUEDOC, KnowledgeTypeEnum.FOLDER] = (
+        Field(
+            default=KnowledgeTypeEnum.YUQUEDOC, description="type of knowledge resource"
+        )
+    )
+    source_type: Literal[KnowledgeSourceEnum.YUQUE] = Field(
+        KnowledgeSourceEnum.YUQUE, description="source type"
     )
     source_config: YuqueSourceConfig = Field(
         ...,
