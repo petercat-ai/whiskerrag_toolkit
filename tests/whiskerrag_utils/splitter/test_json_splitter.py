@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
