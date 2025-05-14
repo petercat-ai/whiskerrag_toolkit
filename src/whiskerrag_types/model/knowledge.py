@@ -108,8 +108,8 @@ class TextSourceConfig(BaseModel):
     text: str = Field(
         default="",
         min_length=1,
-        max_length=100000,
-        description="Text content, length range 1-100000 characters",
+        max_length=1000 * 10000,
+        description="Text content, length range 1-1000000 characters",
     )
 
 
