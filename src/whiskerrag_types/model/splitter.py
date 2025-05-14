@@ -109,8 +109,16 @@ class JSONSplitConfig(BaseModel):
     )
 
 
-class YuqueSplitConfig(BaseCharSplitConfig):
+class YuqueSplitConfig(BaseSplitConfig):
     type: Literal["yuque"] = "yuque"
+    separators: List[str] = Field(
+        ...,
+        description="""List of separators to split the text. If None, uses default separators""",
+    )
+    is_separator_regex: bool = Field(
+        ...,
+        description="""If true, the separators should be in regular expression format.""",
+    )
 
 
 class GeaGraphSplitConfig(BaseModel):

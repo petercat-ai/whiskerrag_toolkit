@@ -22,6 +22,7 @@ from whiskerrag_types.model.splitter import (
     MarkdownSplitConfig,
     PDFSplitConfig,
     TextSplitConfig,
+    YuqueSplitConfig,
 )
 
 
@@ -217,7 +218,7 @@ class YuqueCreate(KnowledgeCreateBase):
         ...,
         description="source config of the knowledge",
     )
-    split_config: Union[GeaGraphSplitConfig, BaseCharSplitConfig] = Field(
+    split_config: Union[GeaGraphSplitConfig, YuqueSplitConfig] = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -226,7 +227,7 @@ class YuqueCreate(KnowledgeCreateBase):
 # TODO: add more knowledge types
 # EXCEL = "excel"
 # PPTX = "pptx"
-# 定义一个类型变量来表示所有可能的知识创建类型
+
 KnowledgeCreateUnion = Union[
     TextCreate,
     ImageCreate,
