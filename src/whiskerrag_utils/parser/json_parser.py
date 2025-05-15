@@ -27,10 +27,10 @@ class JSONSplitter(BaseSplitter[JSONSplitConfig, Text]):
             max_chunk_size=split_config.max_chunk_size,
             min_chunk_size=split_config.min_chunk_size,
         )
-        split_texts = splitter.split_json(json_content)
-        return [
-            Text(content=str(text), metadata=content.metadata) for text in split_texts
-        ]
+        split_texts = splitter.split_text(
+            json_content, convert_lists=True, ensure_ascii=False
+        )
+        return [Text(content=text, metadata=content.metadata) for text in split_texts]
 
     def batch_split(
         self, content: List[Text], split_config: JSONSplitConfig

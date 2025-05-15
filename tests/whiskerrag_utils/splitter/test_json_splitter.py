@@ -45,15 +45,15 @@ class TestJSONSplitter:
         )
         assert res == [
             Text(
-                content="{'name': 'John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe'}",
+                content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
                 metadata={},
             ),
-            Text(content="{'age': 30}", metadata={}),
+            Text(content='{"age": 30}', metadata={}),
             Text(
-                content="{'email': 'johnjohnjohnjohnjohnjohnjohn@example.com'}",
+                content='{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
                 metadata={},
             ),
-            Text(content="{'is_active': True}", metadata={}),
+            Text(content='{"is_active": true}', metadata={}),
         ]
 
     @pytest.mark.asyncio
