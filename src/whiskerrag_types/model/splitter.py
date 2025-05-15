@@ -128,8 +128,8 @@ class GeaGraphSplitConfig(BaseModel):
     """
 
     type: Literal["geagraph"] = "geagraph"
-    kisId: Optional[int] = Field(
-        default=None,
+    kisId: int = Field(
+        ...,
         description=""" The Kis platform business id  """,
     )
 
