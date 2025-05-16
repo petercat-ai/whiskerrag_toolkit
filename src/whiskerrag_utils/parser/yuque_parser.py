@@ -9,7 +9,7 @@ from whiskerrag_types.model.splitter import YuqueSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "yuque")
+@register(RegisterTypeEnum.Parser, "yuque")
 class YuqueParser(BaseParser[Text]):
     def parse(
         self,

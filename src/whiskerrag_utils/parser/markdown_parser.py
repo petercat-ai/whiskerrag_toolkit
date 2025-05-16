@@ -9,7 +9,7 @@ from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "markdown")
+@register(RegisterTypeEnum.Parser, "markdown")
 class MarkdownSplitter(BaseParser[Text]):
     def parse(
         self,

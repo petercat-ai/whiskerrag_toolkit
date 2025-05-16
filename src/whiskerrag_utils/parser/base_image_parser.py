@@ -6,7 +6,7 @@ from whiskerrag_types.model.multi_modal import Image
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "image")
+@register(RegisterTypeEnum.Parser, "image")
 class BaseTextParser(BaseParser[Image]):
 
     def parse(
