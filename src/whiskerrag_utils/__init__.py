@@ -40,7 +40,7 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     contents = await LoaderCls(knowledge).load()
     parse_results = []
     for content in contents:
-        split_result = SplitterCls().split(content, knowledge.split_config)
+        split_result = SplitterCls().parse(knowledge, content)
         parse_results.extend(split_result)
     chunks = []
     for parseItem in parse_results:
@@ -51,9 +51,11 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
         else:
             print(f"[warn]: illegal split item :{parseItem}")
             continue
-        combined_metadata = {**knowledge.metadata, **(parseItem.metadata or {})}
+        combined_metadata = {**knowledge.metadata}
+        if isinstance(parseItem, Text) and parseItem.metadata:
+            combined_metadata.update(parseItem.metadata)
         chunk = Chunk(
-            context=parseItem.content,
+            context=parseItem.content if isinstance(parseItem, Text) else parseItem.url,
             metadata=combined_metadata,
             embedding=embedding,
             knowledge_id=knowledge.knowledge_id,

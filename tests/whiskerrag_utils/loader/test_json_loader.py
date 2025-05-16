@@ -44,7 +44,7 @@ class TestJSONLoader:
         res = await LoaderCls(knowledge).load()
         print("----len", len(res[0].content))
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "json")
-        res = SplitterCls().split(res[0], knowledge.split_config)
+        res = SplitterCls().parse(knowledge, res[0])
         print("----len", len(res))
 
     @pytest.mark.asyncio
@@ -82,7 +82,7 @@ class TestJSONLoader:
         )
         res = await LoaderCls(knowledge).load()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "json")
-        res = SplitterCls().split(res[0], knowledge.split_config)
+        res = SplitterCls().parse(knowledge, res[0])
         assert res == [
             Text(
                 content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',

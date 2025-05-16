@@ -1,3 +1,4 @@
+from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import MarkdownSplitConfig
 from whiskerrag_utils import RegisterTypeEnum, get_register
@@ -57,9 +58,22 @@ def hello():
     print("Hello, World!")
 """
 
+knowledge_data = {
+    "source_type": "user_input_text",
+    "knowledge_type": KnowledgeTypeEnum.MARKDOWN,
+    "space_id": "local_test",
+    "knowledge_name": "local_test_5",
+    "split_config": {},
+    "source_config": {"text": markdown_content},
+    "embedding_model_name": "openai",
+    "tenant_id": "38fbd78b-1869-482c-9142-e43a2c2s6e42",
+    "metadata": {},
+}
+
 
 class TestMarkdownSplitter:
     def test_split(self) -> None:
+        knowledge = Knowledge(**knowledge_data)
         split_config = MarkdownSplitConfig(
             type="markdown",
             chunk_size=100,
@@ -68,14 +82,16 @@ class TestMarkdownSplitter:
             keep_separator=False,
             is_separator_regex=False,
         )
+        knowledge.update(split_config=split_config)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "markdown")
-        res = SplitterCls().split(
-            Text(content=markdown_content, metadata={}), split_config
+        res = SplitterCls().parse(
+            knowledge, Text(content=markdown_content, metadata={})
         )
         assert len(res) == 6
 
     def test_split_extract_header(self) -> None:
+        knowledge = Knowledge(**knowledge_data)
         split_config = MarkdownSplitConfig(
             type="markdown",
             chunk_size=100,
@@ -85,9 +101,10 @@ class TestMarkdownSplitter:
             is_separator_regex=False,
             extract_header_first=True,
         )
+        knowledge.update(split_config=split_config)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "markdown")
-        res = SplitterCls().split(
-            Text(content=markdown_content, metadata={}), split_config
+        res = SplitterCls().parse(
+            knowledge, Text(content=markdown_content, metadata={})
         )
         assert len(res) == 9
