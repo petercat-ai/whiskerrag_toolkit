@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from whiskerrag_types.interface.parser_interface import BaseParser, SplitResult
+from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
 from whiskerrag_types.model.knowledge import Knowledge, MarkdownSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
@@ -15,7 +15,7 @@ class MarkdownSplitter(BaseParser[Text]):
         self,
         knowledge: Knowledge,
         content: Text,
-    ) -> SplitResult:
+    ) -> ParseResult:
         split_config = knowledge.split_config
         if not isinstance(split_config, MarkdownSplitConfig):
             raise TypeError(
@@ -26,7 +26,7 @@ class MarkdownSplitter(BaseParser[Text]):
             if split_config.extract_header_first
             else [content]
         )
-        final_chunks: SplitResult = []
+        final_chunks: ParseResult = []
         splitter = self._create_recursive_splitter(split_config)
 
         for text_item in texts_to_process:
@@ -119,5 +119,5 @@ class MarkdownSplitter(BaseParser[Text]):
         self,
         knowledge: Knowledge,
         content_list: List[Text],
-    ) -> List[SplitResult]:
+    ) -> List[ParseResult]:
         return [self.parse(knowledge, content) for content in content_list]

@@ -3,7 +3,7 @@ from typing import List
 
 from langchain_text_splitters import RecursiveJsonSplitter
 
-from whiskerrag_types.interface.parser_interface import BaseParser, SplitResult
+from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
 from whiskerrag_types.model.knowledge import JSONSplitConfig, Knowledge
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
@@ -15,7 +15,7 @@ class JSONSplitter(BaseParser[Text]):
         self,
         knowledge: Knowledge,
         content: Text,
-    ) -> SplitResult:
+    ) -> ParseResult:
         """Splits JSON content into smaller chunks based on the provided configuration."""
         json_content = {}
         split_config = knowledge.split_config
@@ -42,5 +42,5 @@ class JSONSplitter(BaseParser[Text]):
         self,
         knowledge: Knowledge,
         content_list: List[Text],
-    ) -> List[SplitResult]:
+    ) -> List[ParseResult]:
         return [self.parse(knowledge, content) for content in content_list]

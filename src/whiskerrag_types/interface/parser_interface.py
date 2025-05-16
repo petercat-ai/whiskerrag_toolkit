@@ -5,7 +5,7 @@ from whiskerrag_types.interface.embed_interface import Image
 from whiskerrag_types.model.knowledge import Knowledge
 from whiskerrag_types.model.multi_modal import Text
 
-SplitResult = List[Union[Image, Text]]
+ParseResult = List[Union[Image, Text]]
 ContentType = TypeVar("ContentType")
 
 
@@ -15,11 +15,11 @@ class BaseParser(Generic[ContentType], ABC):
         self,
         knowledge: Knowledge,
         content: ContentType,
-    ) -> SplitResult:
+    ) -> ParseResult:
         pass
 
     @abstractmethod
     def batch_parse(
         self, knowledge: Knowledge, content: List[ContentType]
-    ) -> List[SplitResult]:
+    ) -> List[ParseResult]:
         pass
