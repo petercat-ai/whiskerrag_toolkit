@@ -56,6 +56,7 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
             combined_metadata.update(parseItem.metadata)
         chunk = Chunk(
             context=parseItem.content if isinstance(parseItem, Text) else parseItem.url,
+            enabled=knowledge.enabled,
             metadata=combined_metadata,
             embedding=embedding,
             knowledge_id=knowledge.knowledge_id,
