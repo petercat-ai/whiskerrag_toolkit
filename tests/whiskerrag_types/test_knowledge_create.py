@@ -101,7 +101,6 @@ class TestKnowledge:
             },
         }
         knowledge = MarkdownCreate(**data)
-        print("-----", knowledge)
         assert knowledge.knowledge_type == KnowledgeTypeEnum.MARKDOWN
 
     def test_JSONCreate(self) -> None:

@@ -1,6 +1,10 @@
 import pytest
 
-from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
+from whiskerrag_types.model.knowledge import (
+    Knowledge,
+    KnowledgeTypeEnum,
+    TextSourceConfig,
+)
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import JSONSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, get_register, init_register
@@ -36,12 +40,12 @@ class TestJSONSplitter:
         knowledge = Knowledge(**knowledge_data)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "json")
-        res = SplitterCls().split(
+        res = SplitterCls().parse(
+            knowledge,
             Text(
                 content=json_str,
                 metadata=knowledge.metadata,
             ),
-            knowledge.split_config,
         )
         assert res == [
             Text(
@@ -60,17 +64,11 @@ class TestJSONSplitter:
     async def test_json_split_error(self) -> None:
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "json")
+        knowledge = Knowledge(**knowledge_data)
         with pytest.raises(ValueError) as excinfo:
-            SplitterCls().split(
-                Text(
-                    content="4",
-                    metadata={},
-                ),
-                JSONSplitConfig(
-                    type="json",
-                    max_chunk_size=10,
-                    min_chunk_size=5,
-                ),
+            SplitterCls().parse(
+                knowledge,
+                Text(content="4", metadata={}),
             )
         assert (
             str(excinfo.value)

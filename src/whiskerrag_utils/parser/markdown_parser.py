@@ -3,22 +3,30 @@ from typing import Dict, List
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from whiskerrag_types.interface.splitter_interface import BaseSplitter
-from whiskerrag_types.model.knowledge import MarkdownSplitConfig
+from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
+from whiskerrag_types.model.knowledge import Knowledge, MarkdownSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
 @register(RegisterTypeEnum.SPLITTER, "markdown")
-class MarkdownSplitter(BaseSplitter[MarkdownSplitConfig, Text]):
-    def split(self, content: Text, split_config: MarkdownSplitConfig) -> List[Text]:
+class MarkdownSplitter(BaseParser[Text]):
+    def parse(
+        self,
+        knowledge: Knowledge,
+        content: Text,
+    ) -> ParseResult:
+        split_config = knowledge.split_config
+        if not isinstance(split_config, MarkdownSplitConfig):
+            raise TypeError(
+                "knowledge.split_config must be of type MarkdownSplitConfig"
+            )
         texts_to_process = (
             self._split_by_headers(content)
             if split_config.extract_header_first
             else [content]
         )
-
-        final_chunks = []
+        final_chunks: ParseResult = []
         splitter = self._create_recursive_splitter(split_config)
 
         for text_item in texts_to_process:
@@ -28,7 +36,6 @@ class MarkdownSplitter(BaseSplitter[MarkdownSplitConfig, Text]):
                 for text in split_texts
             ]
             final_chunks.extend(chunks)
-
         return final_chunks
 
     def _split_by_headers(self, content: Text) -> List[Text]:
@@ -108,7 +115,9 @@ class MarkdownSplitter(BaseSplitter[MarkdownSplitConfig, Text]):
             keep_separator=config.keep_separator or False,
         )
 
-    def batch_split(
-        self, content_list: List[Text], split_config: MarkdownSplitConfig
-    ) -> List[List[Text]]:
-        return [self.split(text, split_config) for text in content_list]
+    def batch_parse(
+        self,
+        knowledge: Knowledge,
+        content_list: List[Text],
+    ) -> List[ParseResult]:
+        return [self.parse(knowledge, content) for content in content_list]

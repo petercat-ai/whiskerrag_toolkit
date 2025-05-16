@@ -1,18 +1,24 @@
 from typing import List
 
-from whiskerrag_types.interface.splitter_interface import BaseSplitter
+from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
+from whiskerrag_types.model.knowledge import Knowledge
 from whiskerrag_types.model.multi_modal import Image
-from whiskerrag_types.model.splitter import ImageSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
 @register(RegisterTypeEnum.SPLITTER, "image")
-class BaseTextParser(BaseSplitter[ImageSplitConfig, Image]):
+class BaseTextParser(BaseParser[Image]):
 
-    def split(self, content: Image, split_config: ImageSplitConfig) -> List[Image]:
+    def parse(
+        self,
+        knowledge: Knowledge,
+        content: Image,
+    ) -> ParseResult:
         return [content]
 
-    def batch_split(
-        self, content_list: List[Image], split_config: ImageSplitConfig
-    ) -> List[List[Image]]:
-        return [self.split(content, split_config) for content in content_list]
+    def batch_parse(
+        self,
+        knowledge: Knowledge,
+        content_list: List[Image],
+    ) -> List[ParseResult]:
+        return [self.parse(knowledge, content) for content in content_list]

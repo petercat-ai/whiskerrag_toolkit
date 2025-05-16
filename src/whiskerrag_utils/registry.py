@@ -18,8 +18,8 @@ from typing import (
 from whiskerrag_types.interface.decomposer_interface import BaseDecomposer
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
+from whiskerrag_types.interface.parser_interface import BaseParser
 from whiskerrag_types.interface.retriever_interface import BaseRetriever
-from whiskerrag_types.interface.splitter_interface import BaseSplitter
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,
     KnowledgeSourceEnum,
@@ -57,7 +57,7 @@ T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
 T_Retriever = TypeVar("T_Retriever", bound=BaseRetriever)
-T_Splitter = TypeVar("T_Splitter", bound=BaseSplitter)
+T_Splitter = TypeVar("T_Splitter", bound=BaseParser)
 T_Decomposer = TypeVar("T_Decomposer", bound=BaseDecomposer)
 
 RegisteredType = Union[
@@ -88,7 +88,7 @@ class RegisterDict(Generic[T]):
 EmbeddingRegistry = RegisterDict[BaseEmbedding]
 LoaderRegistry = RegisterDict[BaseLoader]
 RetrieverRegistry = RegisterDict[BaseRetriever]
-SplitterRegistry = RegisterDict[BaseSplitter]
+SplitterRegistry = RegisterDict[BaseParser]
 DecomposerRegistry = RegisterDict[BaseDecomposer]
 
 
@@ -105,7 +105,7 @@ _registry: Dict[
     RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
     RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
     RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
-    RegisterTypeEnum.SPLITTER: RegisterDict[BaseSplitter](),
+    RegisterTypeEnum.SPLITTER: RegisterDict[BaseParser](),
     RegisterTypeEnum.DECOMPOSER: RegisterDict[BaseDecomposer](),
 }
 
@@ -113,7 +113,7 @@ BaseRegisterClsType = Union[
     Type[BaseLoader],
     Type[BaseEmbedding],
     Type[BaseRetriever],
-    Type[BaseSplitter],
+    Type[BaseParser],
     Type[BaseDecomposer],
     None,
 ]
@@ -138,7 +138,7 @@ def register(
         elif register_type == RegisterTypeEnum.RETRIEVER:
             expected_base = BaseRetriever
         elif register_type == RegisterTypeEnum.SPLITTER:
-            expected_base = BaseSplitter
+            expected_base = BaseParser
         elif register_type == RegisterTypeEnum.DECOMPOSER:
             expected_base = BaseDecomposer
         else:
@@ -206,6 +206,13 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
 
 @overload
 def get_register(
+    register_type: Literal[RegisterTypeEnum.DECOMPOSER],
+    register_key: str,
+) -> Type[BaseDecomposer]: ...
+
+
+@overload
+def get_register(
     register_type: Literal[RegisterTypeEnum.KNOWLEDGE_LOADER],
     register_key: KnowledgeSourceEnum,
 ) -> Type[BaseLoader]: ...
@@ -229,7 +236,7 @@ def get_register(
 def get_register(
     register_type: Literal[RegisterTypeEnum.SPLITTER],
     register_key: str,
-) -> Type[BaseSplitter]: ...
+) -> Type[BaseParser]: ...
 
 
 def get_register(
@@ -239,7 +246,7 @@ def get_register(
     Type[BaseLoader],
     Type[BaseEmbedding],
     Type[BaseRetriever],
-    Type[BaseSplitter],
+    Type[BaseParser],
     Type[BaseDecomposer],
 ]:
     registry = _registry.get(register_type)

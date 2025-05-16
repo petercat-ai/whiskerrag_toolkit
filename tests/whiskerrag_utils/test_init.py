@@ -25,7 +25,7 @@ class MockSplitter:
     def __init__(self) -> None:
         pass
 
-    def split(self, content, config):
+    def parse(self, knowledge, content):
         return [
             Text(content="split1", metadata={"key1": "value11", "key2": "value22"}),
             Text(content="split2", metadata={"key1": "value11", "key2": "value22"}),
