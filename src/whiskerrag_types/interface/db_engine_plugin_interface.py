@@ -92,6 +92,12 @@ class DBPluginInterface(ABC):
     ) -> None:
         pass
 
+    @abstractmethod
+    async def update_knowledge_enabled_status(
+        self, tenant_id: str, knowledge_id: str, enabled: bool
+    ) -> None:
+        pass
+
     # =================== Space ===================
     @abstractmethod
     async def save_space(self, space: Space) -> Space:

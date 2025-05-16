@@ -1,5 +1,6 @@
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
+from deprecated import deprecated
 from pydantic import BaseModel, Field, model_validator
 
 T = TypeVar("T")
@@ -9,11 +10,6 @@ class OrCondition:
     field: str
     operator: str  # eq, neq, gt, gte, lt, lte, like, ilike etc.
     value: Any
-
-
-class BasePageParams(BaseModel):
-    page: int = Field(default=1, ge=1, description="page number")
-    page_size: int = Field(default=10, ge=1, le=1000, description="page size")
 
 
 class QueryParams(BaseModel, Generic[T]):
@@ -42,7 +38,10 @@ class QueryParams(BaseModel, Generic[T]):
         return self
 
 
-class PageParams(BasePageParams, QueryParams, Generic[T]):
+class PageQueryParams(QueryParams[T], Generic[T]):
+    page: int = Field(default=1, ge=1, description="page number")
+    page_size: int = Field(default=10, ge=1, le=1000, description="page size")
+
     @property
     def offset(self) -> int:
         return (self.page - 1) * self.page_size
@@ -50,6 +49,11 @@ class PageParams(BasePageParams, QueryParams, Generic[T]):
     @property
     def limit(self) -> int:
         return self.page_size
+
+
+@deprecated(reason="Use PageQueryParams instead")
+class PageParams(PageQueryParams[T], Generic[T]):
+    pass
 
 
 class PageResponse(BaseModel, Generic[T]):
