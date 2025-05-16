@@ -16,9 +16,7 @@ class BasePageParams(BaseModel):
     page_size: int = Field(default=10, ge=1, le=1000, description="page size")
 
 
-class PageParams(BaseModel, Generic[T]):
-    page: int = Field(default=1, ge=1, description="page number")
-    page_size: int = Field(default=10, ge=1, le=1000, description="page size")
+class QueryParams(BaseModel, Generic[T]):
     order_by: Optional[str] = Field(default=None, description="order by field")
     order_direction: Optional[str] = Field(default="asc", description="asc or desc")
     eq_conditions: Optional[Dict[str, Any]] = Field(
@@ -26,16 +24,8 @@ class PageParams(BaseModel, Generic[T]):
         description="list of equality conditions, each as a dict with key and value",
     )
 
-    @property
-    def offset(self) -> int:
-        return (self.page - 1) * self.page_size
-
-    @property
-    def limit(self) -> int:
-        return self.page_size
-
     @model_validator(mode="after")
-    def validate_eq_conditions(self) -> "PageParams[T]":
+    def validate_eq_conditions(self) -> "QueryParams[T]":
         if self.eq_conditions:
             args = self.__class__.__pydantic_generic_metadata__["args"]
             if not args:
@@ -50,6 +40,16 @@ class PageParams(BaseModel, Generic[T]):
             if invalid_keys:
                 raise ValueError(f"Invalid keys in eq_conditions: {invalid_keys}")
         return self
+
+
+class PageParams(BasePageParams, QueryParams, Generic[T]):
+    @property
+    def offset(self) -> int:
+        return (self.page - 1) * self.page_size
+
+    @property
+    def limit(self) -> int:
+        return self.page_size
 
 
 class PageResponse(BaseModel, Generic[T]):
