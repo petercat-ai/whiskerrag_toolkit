@@ -83,7 +83,7 @@ async def test_get_chunks_by_knowledge_text() -> None:
         "whiskerrag_utils.get_register",
         side_effect=lambda *args: {
             RegisterTypeEnum.KNOWLEDGE_LOADER: MockLoader,
-            RegisterTypeEnum.SPLITTER: MockSplitter,
+            RegisterTypeEnum.Parser: MockSplitter,
             RegisterTypeEnum.EMBEDDING: MockEmbedding,
         }[args[0]],
     ):

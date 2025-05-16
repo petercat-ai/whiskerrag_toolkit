@@ -46,9 +46,9 @@ class RegisterTypeEnum(str, Enum):
     """Retriever: Finds and retrieves relevant information
     Used for searching and accessing stored knowledge"""
 
-    SPLITTER = "splitter"
-    """Splitter: Processes and divides knowledge into smaller units
-    Example: Splitting text into chunks or segments"""
+    Parser = "parser"
+    """Parser: Processes and divides knowledge into smaller units
+    Example: parse text into chunks or segments"""
 
 
 RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
@@ -57,14 +57,14 @@ T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
 T_Retriever = TypeVar("T_Retriever", bound=BaseRetriever)
-T_Splitter = TypeVar("T_Splitter", bound=BaseParser)
+T_Parser = TypeVar("T_Parser", bound=BaseParser)
 T_Decomposer = TypeVar("T_Decomposer", bound=BaseDecomposer)
 
 RegisteredType = Union[
     Type[T_Embedding],
     Type[T_Loader],
     Type[T_Retriever],
-    Type[T_Splitter],
+    Type[T_Parser],
     Type[T_Decomposer],
 ]
 
@@ -88,7 +88,7 @@ class RegisterDict(Generic[T]):
 EmbeddingRegistry = RegisterDict[BaseEmbedding]
 LoaderRegistry = RegisterDict[BaseLoader]
 RetrieverRegistry = RegisterDict[BaseRetriever]
-SplitterRegistry = RegisterDict[BaseParser]
+ParserRegistry = RegisterDict[BaseParser]
 DecomposerRegistry = RegisterDict[BaseDecomposer]
 
 
@@ -98,14 +98,14 @@ _registry: Dict[
         LoaderRegistry,
         EmbeddingRegistry,
         RetrieverRegistry,
-        SplitterRegistry,
+        ParserRegistry,
         DecomposerRegistry,
     ],
 ] = {
     RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
     RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
     RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
-    RegisterTypeEnum.SPLITTER: RegisterDict[BaseParser](),
+    RegisterTypeEnum.Parser: RegisterDict[BaseParser](),
     RegisterTypeEnum.DECOMPOSER: RegisterDict[BaseDecomposer](),
 }
 
@@ -137,7 +137,7 @@ def register(
             expected_base = BaseLoader
         elif register_type == RegisterTypeEnum.RETRIEVER:
             expected_base = BaseRetriever
-        elif register_type == RegisterTypeEnum.SPLITTER:
+        elif register_type == RegisterTypeEnum.Parser:
             expected_base = BaseParser
         elif register_type == RegisterTypeEnum.DECOMPOSER:
             expected_base = BaseDecomposer
@@ -234,7 +234,7 @@ def get_register(
 
 @overload
 def get_register(
-    register_type: Literal[RegisterTypeEnum.SPLITTER],
+    register_type: Literal[RegisterTypeEnum.Parser],
     register_key: str,
 ) -> Type[BaseParser]: ...
 
@@ -259,8 +259,8 @@ def get_register(
         registry = cast(EmbeddingRegistry, registry)
     elif register_type == RegisterTypeEnum.RETRIEVER:
         registry = cast(RetrieverRegistry, registry)
-    elif register_type == RegisterTypeEnum.SPLITTER:
-        registry = cast(SplitterRegistry, registry)
+    elif register_type == RegisterTypeEnum.Parser:
+        registry = cast(ParserRegistry, registry)
     elif register_type == RegisterTypeEnum.DECOMPOSER:
         registry = cast(DecomposerRegistry, registry)
 
@@ -279,7 +279,7 @@ def get_registry_list() -> Dict[
         LoaderRegistry,
         EmbeddingRegistry,
         RetrieverRegistry,
-        SplitterRegistry,
+        ParserRegistry,
         DecomposerRegistry,
     ],
 ]:

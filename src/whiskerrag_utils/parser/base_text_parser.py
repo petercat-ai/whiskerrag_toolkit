@@ -9,7 +9,7 @@ from whiskerrag_types.model.splitter import BaseCharSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "base")
+@register(RegisterTypeEnum.Parser, "base")
 class BaseTextParser(BaseParser[Text]):
     def parse(
         self,

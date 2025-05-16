@@ -33,7 +33,7 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
         print(f"[warn]:can't get target from {knowledge.split_config} ")
         split_type = "base"
 
-    SplitterCls = get_register(RegisterTypeEnum.SPLITTER, split_type)
+    SplitterCls = get_register(RegisterTypeEnum.Parser, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )

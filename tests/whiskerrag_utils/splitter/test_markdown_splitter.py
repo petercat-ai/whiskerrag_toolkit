@@ -84,7 +84,7 @@ class TestMarkdownSplitter:
         )
         knowledge.update(split_config=split_config)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "markdown")
+        SplitterCls = get_register(RegisterTypeEnum.Parser, "markdown")
         res = SplitterCls().parse(
             knowledge, Text(content=markdown_content, metadata={})
         )
@@ -103,7 +103,7 @@ class TestMarkdownSplitter:
         )
         knowledge.update(split_config=split_config)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "markdown")
+        SplitterCls = get_register(RegisterTypeEnum.Parser, "markdown")
         res = SplitterCls().parse(
             knowledge, Text(content=markdown_content, metadata={})
         )

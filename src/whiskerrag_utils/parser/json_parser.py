@@ -9,7 +9,7 @@ from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "json")
+@register(RegisterTypeEnum.Parser, "json")
 class JSONSplitter(BaseParser[Text]):
     def parse(
         self,

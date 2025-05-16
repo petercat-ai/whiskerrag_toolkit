@@ -8,7 +8,7 @@ from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.SPLITTER, "text")
+@register(RegisterTypeEnum.Parser, "text")
 class TextSplitter(BaseParser[Text]):
     def parse(
         self,

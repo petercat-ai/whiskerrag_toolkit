@@ -27,7 +27,7 @@ class TestTextSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "text")
+        SplitterCls = get_register(RegisterTypeEnum.Parser, "text")
         res = SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
@@ -60,7 +60,7 @@ class TestTextSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.SPLITTER, "text")
+        SplitterCls = get_register(RegisterTypeEnum.Parser, "text")
         res = SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
