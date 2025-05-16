@@ -23,7 +23,7 @@ class Chunk(BaseModel):
     embedding: Optional[list[float]] = Field(None, description="chunk embedding")
     context: str = Field(..., description="chunk content")
     knowledge_id: str = Field(..., description="file source info")
-    enabled: bool = Field(True, description="is knowledge enabled")
+    enabled: bool = Field(True, description="is chunk enabled")
     embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
