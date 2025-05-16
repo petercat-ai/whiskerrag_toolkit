@@ -23,6 +23,7 @@ class Chunk(BaseModel):
     embedding: Optional[list[float]] = Field(None, description="chunk embedding")
     context: str = Field(..., description="chunk content")
     knowledge_id: str = Field(..., description="file source info")
+    enabled: bool = Field(True, description="is chunk enabled")
     embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
         EmbeddingModelEnum.OPENAI, description="name of the embedding model"
     )
@@ -85,6 +86,11 @@ class Chunk(BaseModel):
 
         self.updated_at = datetime.now(timezone.utc)
         return self
+
+    @field_validator("enabled", mode="before")
+    @classmethod
+    def convert_tinyint_to_bool(cls, v: Any) -> bool:
+        return bool(v)
 
     @model_validator(mode="before")
     def pre_process_data(cls, data: dict) -> dict:

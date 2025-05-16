@@ -4,6 +4,7 @@ from typing import Any, List, TypeVar, Union
 from pydantic import BaseModel
 
 from whiskerrag_types.model.chunk import Chunk
+from whiskerrag_types.model.page import QueryParams
 from whiskerrag_types.model.retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
@@ -128,6 +129,12 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def get_chunk_list(
         self, tenant_id: str, page_params: PageParams[Chunk]
+    ) -> PageResponse[Chunk]:
+        pass
+
+    @abstractmethod
+    async def get_all_chunk(
+        self, tenant_id: str, query_params: QueryParams[Chunk]
     ) -> List[Chunk]:
         pass
 

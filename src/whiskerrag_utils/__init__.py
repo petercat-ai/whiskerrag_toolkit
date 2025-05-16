@@ -53,6 +53,7 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
             continue
         combined_metadata = {**knowledge.metadata, **(parseItem.metadata or {})}
         chunk = Chunk(
+            enabled=knowledge.enabled,
             context=parseItem.content,
             metadata=combined_metadata,
             embedding=embedding,

@@ -3,7 +3,7 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from whiskerrag_types.model.page import PageParams
+from whiskerrag_types.model.page import BasePageParams, PageParams, QueryParams
 
 
 class DummyModel(BaseModel):
@@ -81,3 +81,14 @@ class TestPageParams:
         T = TypeVar("T")
         params = PageParams[T](eq_conditions={"field": "value"})
         assert params.eq_conditions == {"field": "value"}
+
+    def test_base_page_params(self):
+        params = BasePageParams()
+        assert params.page == 1
+        assert params.page_size == 10
+
+    def test_query_params(self):
+        params = QueryParams[DummyModel]()
+        assert params.order_by is None
+        assert params.order_direction == "asc"
+        assert params.eq_conditions is None
