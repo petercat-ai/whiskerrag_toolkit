@@ -25,6 +25,7 @@ from .page import (
     PageParams,
     PageQueryParams,
     PageResponse,
+    QueryParams,
     StatusStatisticsPageResponse,
 )
 from .retrieval import (
