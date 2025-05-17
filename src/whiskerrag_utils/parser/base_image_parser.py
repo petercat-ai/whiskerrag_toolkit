@@ -6,19 +6,19 @@ from whiskerrag_types.model.multi_modal import Image
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.Parser, "image")
+@register(RegisterTypeEnum.PARSER, "image")
 class BaseTextParser(BaseParser[Image]):
 
-    def parse(
+    async def parse(
         self,
         knowledge: Knowledge,
         content: Image,
     ) -> ParseResult:
         return [content]
 
-    def batch_parse(
+    async def batch_parse(
         self,
         knowledge: Knowledge,
         content_list: List[Image],
     ) -> List[ParseResult]:
-        return [self.parse(knowledge, content) for content in content_list]
+        return [await self.parse(knowledge, content) for content in content_list]

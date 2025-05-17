@@ -1,3 +1,5 @@
+import pytest
+
 from whiskerrag_types.model.knowledge import Knowledge
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils import RegisterTypeEnum, get_register
@@ -5,7 +7,8 @@ from whiskerrag_utils.registry import init_register
 
 
 class TestTextSplitter:
-    def test_text_split(self) -> None:
+    @pytest.mark.asyncio
+    async def test_text_split(self) -> None:
         knowledge_data = {
             "source_type": "user_input_text",
             "knowledge_type": "text",
@@ -27,8 +30,8 @@ class TestTextSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "text")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "text")
+        res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
 
@@ -38,7 +41,8 @@ class TestTextSplitter:
             Text(content="~", metadata={}),
         ]
 
-    def test_text_split_regex(self) -> None:
+    @pytest.mark.asyncio
+    async def test_text_split_regex(self) -> None:
         knowledge_data = {
             "source_type": "user_input_text",
             "knowledge_type": "text",
@@ -60,8 +64,8 @@ class TestTextSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "text")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "text")
+        res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
 

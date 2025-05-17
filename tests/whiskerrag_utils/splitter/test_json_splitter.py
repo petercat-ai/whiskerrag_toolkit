@@ -36,11 +36,13 @@ knowledge_data = {
 
 
 class TestJSONSplitter:
-    def test_json_split(self) -> None:
+
+    @pytest.mark.asyncio
+    async def test_json_split(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "json")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
+        res = await SplitterCls().parse(
             knowledge,
             Text(
                 content=json_str,
@@ -63,10 +65,10 @@ class TestJSONSplitter:
     @pytest.mark.asyncio
     async def test_json_split_error(self) -> None:
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "json")
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
         knowledge = Knowledge(**knowledge_data)
         with pytest.raises(ValueError) as excinfo:
-            SplitterCls().parse(
+            await SplitterCls().parse(
                 knowledge,
                 Text(content="4", metadata={}),
             )
