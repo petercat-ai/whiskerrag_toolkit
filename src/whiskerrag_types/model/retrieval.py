@@ -1,13 +1,7 @@
 from typing import List, Optional, Union
 
 from deprecated import deprecated
-from pydantic import (
-    BaseModel,
-    Field,
-    field_serializer,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
@@ -61,6 +55,7 @@ class RetrievalConfig(BaseModel):
         ...,
         description="The retrieval type. Each retrieval type corresponds to a specific retriever.",
     )
+    model_config = ConfigDict(extra="allow")
 
 
 class RetrievalRequest(BaseModel):
@@ -73,15 +68,6 @@ class RetrievalRequest(BaseModel):
         ...,
         description="The configuration for the retrieval request. Must inherit from RetrievalConfig and have a 'type' attribute.",
     )
-
-    @model_validator(mode="after")
-    def validate_config(self) -> "RetrievalRequest":
-        if (
-            not isinstance(self.config, RetrievalConfig)
-            or type(self.config) is RetrievalConfig
-        ):
-            raise ValueError("config must be a subclass of RetrievalConfig")
-        return self
 
     @field_validator("content")
     def content_must_not_be_empty(cls, v: str) -> str:

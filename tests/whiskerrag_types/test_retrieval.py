@@ -12,6 +12,34 @@ class AnotherConfig(RetrievalConfig):
     other_field: int = 42
 
 
+def test_valid_request() -> None:
+    """Test creating a valid request"""
+    request = RetrievalRequest(
+        content="test query",
+        config={"type": "deep_retrieval", "embedding_model_name": "test-model"},
+    )
+    assert request.content == "test query"
+    assert request.config.type == "deep_retrieval"
+    assert request.config.model_dump()["embedding_model_name"] == "test-model"
+
+
+def test_request_with_image() -> None:
+    """Test request with image URL"""
+    request = RetrievalRequest(
+        content="test with image",
+        image_url="https://example.com/image.jpg",
+        config={"type": "deep_retrieval"},
+    )
+    assert request.image_url == "https://example.com/image.jpg"
+
+
+def test_empty_content():
+    """Test request with empty content should fail"""
+    with pytest.raises(ValidationError) as exc_info:
+        RetrievalRequest(content="", config={"type": "deep_retrieval"})
+    assert "content must not be empty" in str(exc_info.value)
+
+
 def test_retrieval_request_with_valid_subclass() -> None:
     """Test RetrievalRequest with valid config subclass."""
     # 测试有效的子类配置
@@ -22,16 +50,6 @@ def test_retrieval_request_with_valid_subclass() -> None:
     assert isinstance(request.config, TestConfig)
     assert request.config.type == "test_type"
     assert request.config.additional_field == "test"
-
-
-def test_retrieval_request_with_base_class() -> None:
-    """Test RetrievalRequest with base config class should fail."""
-    # 测试基类配置应该失败
-    with pytest.raises(ValueError) as exc_info:
-        RetrievalRequest(
-            content="test question", config=RetrievalConfig(type="base_type")
-        )
-    assert "config must be a subclass of RetrievalConfig" in str(exc_info.value)
 
 
 def test_retrieval_request_with_image() -> None:
