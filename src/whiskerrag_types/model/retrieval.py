@@ -1,12 +1,19 @@
-from typing import List, Optional, Union
+from typing import Generic, List, Optional, TypeVar, Union
 
 from deprecated import deprecated
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import (
+    BaseModel,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
 
 
+@deprecated("RetrievalConfig is deprecated, please use RetrievalRequest instead.")
 class RetrievalBaseConfig(BaseModel):
     embedding_model_name: Union[EmbeddingModelEnum, str] = Field(
         ..., description="The name of the embedding model"
@@ -33,38 +40,6 @@ class RetrievalBaseConfig(BaseModel):
             return None
 
 
-class QueryBySpaceConfig(RetrievalBaseConfig):
-    type: str = Field(
-        "query_in_space_list",
-        description="The type of the request, should be 'query_in_space_list'.",
-    )
-    space_id_list: List[str] = Field(..., description="space id list")
-
-
-class QueryByKnowledgeConfig(RetrievalBaseConfig):
-    type: str = Field(
-        "query_in_knowledge_list",
-        description="The type of the request, should be 'query_in_knowledge_list'.",
-    )
-    embedding_model_name: str = Field(
-        ..., description="The name of the embedding model"
-    )
-    space_id_list: List[str] = Field(..., description="knowledge id list")
-
-
-class QueryByDeepRetrieval(RetrievalBaseConfig):
-    type: str = Field(
-        "deep_retrieval",
-        description="The type of the request, should be 'deep_retrieval'.",
-    )
-    space_name_list: List[str] = Field(..., description="space name list")
-
-
-RetrievalConfig = Union[
-    QueryBySpaceConfig, QueryByKnowledgeConfig, QueryByDeepRetrieval, dict
-]
-
-
 @deprecated(
     "RetrievalBySpaceRequest is deprecated, please use RetrievalRequest instead."
 )
@@ -81,11 +56,41 @@ class RetrievalByKnowledgeRequest(RetrievalBaseConfig):
     knowledge_id_list: List[str] = Field(..., description="knowledge id list")
 
 
-class RetrievalRequest(BaseModel):
-    question: str = Field(..., description="The query question")
-    config: RetrievalConfig = Field(
-        ..., description="The configuration for the retrieval request"
+class RetrievalConfig(BaseModel):
+    type: str = Field(
+        ...,
+        description="The retrieval type. Each retrieval type corresponds to a specific retriever.",
     )
+
+
+TConfig = TypeVar("TConfig", bound="RetrievalConfig")
+
+
+class RetrievalRequest(BaseModel, Generic[TConfig]):
+    content: str = Field(
+        ...,
+        description="The content to be searched, such as a question, text, or any other query string.",
+    )
+    image_url: Optional[str] = Field(default=None, description="image")
+    config: TConfig = Field(
+        ...,
+        description="The configuration for the retrieval request. Must inherit from RetrievalConfig and have a 'type' attribute.",
+    )
+
+    @model_validator(mode="after")
+    def validate_config(self) -> "RetrievalRequest":
+        if (
+            not isinstance(self.config, RetrievalConfig)
+            or type(self.config) is RetrievalConfig
+        ):
+            raise ValueError("config must be a subclass of RetrievalConfig")
+        return self
+
+    @field_validator("content")
+    def content_must_not_be_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("content must not be empty")
+        return v
 
 
 class RetrievalChunk(Chunk):
