@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Generic, List, TypeVar
 
-from whiskerrag_types.model.retrieval import RetrievalChunk, RetrievalConfig
+from whiskerrag_types.model.retrieval import RetrievalChunk, RetrievalRequest
 
-T = TypeVar("T", bound=RetrievalConfig)
+T = TypeVar("T", bound=RetrievalRequest)
 R = TypeVar("R", bound=RetrievalChunk)
 
 
