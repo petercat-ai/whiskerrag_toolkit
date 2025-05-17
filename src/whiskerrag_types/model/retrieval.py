@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, TypeVar, Union
+from typing import List, Optional, Union
 
 from deprecated import deprecated
 from pydantic import (
@@ -63,16 +63,13 @@ class RetrievalConfig(BaseModel):
     )
 
 
-TConfig = TypeVar("TConfig", bound="RetrievalConfig")
-
-
-class RetrievalRequest(BaseModel, Generic[TConfig]):
+class RetrievalRequest(BaseModel):
     content: str = Field(
         ...,
         description="The content to be searched, such as a question, text, or any other query string.",
     )
     image_url: Optional[str] = Field(default=None, description="image")
-    config: TConfig = Field(
+    config: RetrievalConfig = Field(
         ...,
         description="The configuration for the retrieval request. Must inherit from RetrievalConfig and have a 'type' attribute.",
     )
