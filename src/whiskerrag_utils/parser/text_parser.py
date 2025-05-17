@@ -8,9 +8,9 @@ from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.Parser, "text")
+@register(RegisterTypeEnum.PARSER, "text")
 class TextSplitter(BaseParser[Text]):
-    def parse(
+    async def parse(
         self,
         knowledge: Knowledge,
         content: Text,
@@ -49,9 +49,9 @@ class TextSplitter(BaseParser[Text]):
         split_texts = splitter.split_text(content.content)
         return [Text(content=text, metadata=content.metadata) for text in split_texts]
 
-    def batch_parse(
+    async def batch_parse(
         self,
         knowledge: Knowledge,
         content_list: List[Text],
     ) -> List[ParseResult]:
-        return [self.parse(knowledge, content) for content in content_list]
+        return [await self.parse(knowledge, content) for content in content_list]

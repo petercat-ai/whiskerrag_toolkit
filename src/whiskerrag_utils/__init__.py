@@ -33,14 +33,14 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
         print(f"[warn]:can't get target from {knowledge.split_config} ")
         split_type = "base"
 
-    SplitterCls = get_register(RegisterTypeEnum.Parser, split_type)
+    SplitterCls = get_register(RegisterTypeEnum.PARSER, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )
     contents = await LoaderCls(knowledge).load()
     parse_results = []
     for content in contents:
-        split_result = SplitterCls().parse(knowledge, content)
+        split_result = await SplitterCls().parse(knowledge, content)
         parse_results.extend(split_result)
     chunks = []
     for parseItem in parse_results:

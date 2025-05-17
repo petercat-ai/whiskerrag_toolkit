@@ -25,7 +25,7 @@ class MockSplitter:
     def __init__(self) -> None:
         pass
 
-    def parse(self, knowledge, content):
+    async def parse(self, knowledge, content):
         return [
             Text(content="split1", metadata={"key1": "value11", "key2": "value22"}),
             Text(content="split2", metadata={"key1": "value11", "key2": "value22"}),
@@ -83,7 +83,7 @@ async def test_get_chunks_by_knowledge_text() -> None:
         "whiskerrag_utils.get_register",
         side_effect=lambda *args: {
             RegisterTypeEnum.KNOWLEDGE_LOADER: MockLoader,
-            RegisterTypeEnum.Parser: MockSplitter,
+            RegisterTypeEnum.PARSER: MockSplitter,
             RegisterTypeEnum.EMBEDDING: MockEmbedding,
         }[args[0]],
     ):

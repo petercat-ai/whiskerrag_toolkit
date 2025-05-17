@@ -9,9 +9,9 @@ from whiskerrag_types.model.splitter import YuqueSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
-@register(RegisterTypeEnum.Parser, "yuque")
+@register(RegisterTypeEnum.PARSER, "yuque")
 class YuqueParser(BaseParser[Text]):
-    def parse(
+    async def parse(
         self,
         knowledge: Knowledge,
         content: Text,
@@ -49,9 +49,9 @@ class YuqueParser(BaseParser[Text]):
         split_texts = splitter.split_text(content.content)
         return [Text(content=text, metadata=content.metadata) for text in split_texts]
 
-    def batch_parse(
+    async def batch_parse(
         self,
         knowledge: Knowledge,
         content_list: List[Text],
     ) -> List[ParseResult]:
-        return [self.parse(knowledge, content) for content in content_list]
+        return [await self.parse(knowledge, content) for content in content_list]

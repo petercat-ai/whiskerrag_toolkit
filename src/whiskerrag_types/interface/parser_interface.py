@@ -11,7 +11,7 @@ ContentType = TypeVar("ContentType")
 
 class BaseParser(Generic[ContentType], ABC):
     @abstractmethod
-    def parse(
+    async def parse(
         self,
         knowledge: Knowledge,
         content: ContentType,
@@ -19,7 +19,7 @@ class BaseParser(Generic[ContentType], ABC):
         pass
 
     @abstractmethod
-    def batch_parse(
+    async def batch_parse(
         self, knowledge: Knowledge, content: List[ContentType]
     ) -> List[ParseResult]:
         pass

@@ -46,7 +46,7 @@ class RegisterTypeEnum(str, Enum):
     """Retriever: Finds and retrieves relevant information
     Used for searching and accessing stored knowledge"""
 
-    Parser = "parser"
+    PARSER = "parser"
     """Parser: Processes and divides knowledge into smaller units
     Example: parse text into chunks or segments"""
 
@@ -105,7 +105,7 @@ _registry: Dict[
     RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
     RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
     RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
-    RegisterTypeEnum.Parser: RegisterDict[BaseParser](),
+    RegisterTypeEnum.PARSER: RegisterDict[BaseParser](),
     RegisterTypeEnum.DECOMPOSER: RegisterDict[BaseDecomposer](),
 }
 
@@ -137,7 +137,7 @@ def register(
             expected_base = BaseLoader
         elif register_type == RegisterTypeEnum.RETRIEVER:
             expected_base = BaseRetriever
-        elif register_type == RegisterTypeEnum.Parser:
+        elif register_type == RegisterTypeEnum.PARSER:
             expected_base = BaseParser
         elif register_type == RegisterTypeEnum.DECOMPOSER:
             expected_base = BaseDecomposer
@@ -234,7 +234,7 @@ def get_register(
 
 @overload
 def get_register(
-    register_type: Literal[RegisterTypeEnum.Parser],
+    register_type: Literal[RegisterTypeEnum.PARSER],
     register_key: str,
 ) -> Type[BaseParser]: ...
 
@@ -259,7 +259,7 @@ def get_register(
         registry = cast(EmbeddingRegistry, registry)
     elif register_type == RegisterTypeEnum.RETRIEVER:
         registry = cast(RetrieverRegistry, registry)
-    elif register_type == RegisterTypeEnum.Parser:
+    elif register_type == RegisterTypeEnum.PARSER:
         registry = cast(ParserRegistry, registry)
     elif register_type == RegisterTypeEnum.DECOMPOSER:
         registry = cast(DecomposerRegistry, registry)

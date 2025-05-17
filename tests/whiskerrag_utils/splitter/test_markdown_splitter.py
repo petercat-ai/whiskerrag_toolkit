@@ -1,3 +1,5 @@
+import pytest
+
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import MarkdownSplitConfig
@@ -72,7 +74,9 @@ knowledge_data = {
 
 
 class TestMarkdownSplitter:
-    def test_split(self) -> None:
+
+    @pytest.mark.asyncio
+    async def test_split(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         split_config = MarkdownSplitConfig(
             type="markdown",
@@ -84,13 +88,14 @@ class TestMarkdownSplitter:
         )
         knowledge.update(split_config=split_config)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "markdown")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "markdown")
+        res = await SplitterCls().parse(
             knowledge, Text(content=markdown_content, metadata={})
         )
         assert len(res) == 6
 
-    def test_split_extract_header(self) -> None:
+    @pytest.mark.asyncio
+    async def test_split_extract_header(self) -> None:
         knowledge = Knowledge(**knowledge_data)
         split_config = MarkdownSplitConfig(
             type="markdown",
@@ -103,8 +108,8 @@ class TestMarkdownSplitter:
         )
         knowledge.update(split_config=split_config)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "markdown")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "markdown")
+        res = await SplitterCls().parse(
             knowledge, Text(content=markdown_content, metadata={})
         )
         assert len(res) == 9

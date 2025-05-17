@@ -1,3 +1,5 @@
+import pytest
+
 from whiskerrag_types.model.knowledge import Knowledge
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils import RegisterTypeEnum, get_register
@@ -5,7 +7,9 @@ from whiskerrag_utils.registry import init_register
 
 
 class TestBaseSplitter:
-    def test_base_split(self) -> None:
+
+    @pytest.mark.asyncio
+    async def test_base_split(self) -> None:
         knowledge_data = {
             "source_type": "user_input_text",
             "knowledge_type": "text",
@@ -23,13 +27,14 @@ class TestBaseSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "base")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "base")
+        res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
         assert res == [Text(content="hello world \n ~", metadata={})]
 
-    def test_base_split_small_chunk(self) -> None:
+    @pytest.mark.asyncio
+    async def test_base_split_small_chunk(self) -> None:
         knowledge_data = {
             "source_type": "user_input_text",
             "knowledge_type": "text",
@@ -47,8 +52,8 @@ class TestBaseSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "base")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "base")
+        res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
         assert res == [
@@ -57,7 +62,8 @@ class TestBaseSplitter:
             Text(content="~", metadata={}),
         ]
 
-    def test_base_split_2(self) -> None:
+    @pytest.mark.asyncio
+    async def test_base_split_2(self) -> None:
         knowledge_data = {
             "source_type": "user_input_text",
             "knowledge_type": "text",
@@ -86,8 +92,8 @@ class TestBaseSplitter:
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
-        SplitterCls = get_register(RegisterTypeEnum.Parser, "base")
-        res = SplitterCls().parse(
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "base")
+        res = await SplitterCls().parse(
             knowledge,
             Text(content="hello world \n ~", metadata={}),
         )
