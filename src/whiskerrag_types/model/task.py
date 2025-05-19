@@ -21,6 +21,8 @@ class TaskStatus(str, Enum):
     SKIPPED = "skipped"
     CANCELED = "canceled"
     PENDING_RETRY = "pending_retry"
+    # user delete task
+    DELETED = "deleted"
 
 
 class Task(BaseModel):

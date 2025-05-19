@@ -20,6 +20,11 @@ class SpaceCreate(BaseModel):
     space_name: str = Field(
         ..., max_length=64, description="name of the space resource"
     )
+    space_id: Optional[str] = Field(
+        default=None,
+        description="id of the space resource (letters, numbers, hyphens and underscores allowed, max 36 chars)",
+        pattern=r"^[a-zA-Z0-9\-_]{1,36}$",
+    )
     description: str = Field(..., max_length=255, description="descrition of the space")
     metadata: Dict[str, Any] = Field(
         default={},
