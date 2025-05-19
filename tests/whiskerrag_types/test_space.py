@@ -33,8 +33,12 @@ class TestSpace:
             "description": "This is a test space",
             "metadata": {},
         }
-        space = SpaceCreate(**data)
-        assert space.space_id is None
+        space_create = SpaceCreate(**data)
+        space = Space(
+            **space_create.model_dump(),
+            tenant_id="38fbd88b-e869-489c-9142-e4ea2c2261db"
+        )
+        assert space.space_id is not None
 
     def test_space_create_invalid_space_id(self) -> None:
         # 测试无效的 space_id

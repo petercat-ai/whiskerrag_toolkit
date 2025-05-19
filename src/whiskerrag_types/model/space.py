@@ -77,6 +77,8 @@ class Space(SpaceCreate):
         for field, value in data.items():
             if isinstance(value, UUID):
                 data[field] = str(value)
+        if isinstance(data, dict) and not data.get("space_id"):
+            data["space_id"] = str(uuid4())
         field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
         for field, alias_name in field_mappings.items():
             val = data.get(field) or data.get(alias_name)
