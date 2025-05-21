@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
+from pydantic import BaseModel, Field, model_validator
 
-from whiskerrag_types.model.utils import parse_datetime
+from whiskerrag_types.model.timeStampedModel import TimeStampedModel
 
 
 class SpaceCreate(BaseModel):
@@ -32,35 +32,8 @@ class SpaceCreate(BaseModel):
     )
 
 
-class Space(SpaceCreate):
-    """
-    Space model class that extends SpaceCreate.
-    Attributes:
-        space_id (str): Space ID.
-        tenant_id (str): Tenant ID.
-        created_at (Optional[datetime]): Creation time, defaults to current time in ISO format.
-        updated_at (Optional[datetime]): Update time, defaults to current time in ISO format.
-    Methods:
-        serialize_created_at(created_at: Optional[datetime]) -> Optional[str]:
-            Serializes the created_at attribute to ISO format.
-        serialize_updated_at(updated_at: Optional[datetime]) -> Optional[str]:
-            Serializes the updated_at attribute to ISO format.
-        update(**kwargs) -> 'Space':
-            Updates the attributes of the instance with the provided keyword arguments and sets updated_at to the current time.
-    """
-
+class Space(SpaceCreate, TimeStampedModel):
     space_id: str = Field(default_factory=lambda: str(uuid4()), description="space id")
-    created_at: Optional[datetime] = Field(
-        default=None,
-        alias="gmt_create",
-        description="creation time",
-    )
-    updated_at: Optional[datetime] = Field(
-        default=None,
-        alias="gmt_modified",
-        description="update time",
-    )
-
     tenant_id: str = Field(..., description="tenant id")
 
     def __init__(self, **data: Any) -> None:
@@ -79,40 +52,7 @@ class Space(SpaceCreate):
                 data[field] = str(value)
         if isinstance(data, dict) and not data.get("space_id"):
             data["space_id"] = str(uuid4())
-        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
-        for field, alias_name in field_mappings.items():
-            val = data.get(field) or data.get(alias_name)
-            if val is None:
-                continue
-
-            if isinstance(val, str):
-                dt = parse_datetime(val)
-                data[field] = dt
-                data[alias_name] = dt
-            else:
-                if val and val.tzinfo is None:
-                    dt = val.replace(tzinfo=timezone.utc)
-                    data[field] = dt
-                    data[alias_name] = dt
-
         return data
-
-    @model_validator(mode="after")
-    def set_defaults(self) -> "Space":
-        now = datetime.now(timezone.utc)
-        if self.created_at is None:
-            self.created_at = now
-        if self.updated_at is None:
-            self.updated_at = now
-        return self
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
-
-    @field_serializer("created_at", "updated_at")
-    def serialize_datetime(self, dt: datetime) -> str:
-        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class SpaceResponse(Space):

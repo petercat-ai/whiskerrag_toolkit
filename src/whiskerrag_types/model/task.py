@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
-from whiskerrag_types.model.utils import parse_datetime
+from whiskerrag_types.model.timeStampedModel import TimeStampedModel
 
 
 class TaskRestartRequest(BaseModel):
@@ -25,7 +25,7 @@ class TaskStatus(str, Enum):
     DELETED = "deleted"
 
 
-class Task(BaseModel):
+class Task(TimeStampedModel):
     task_id: str = Field(
         default_factory=lambda: str(uuid4()),
         description="Unique identifier for the task",
@@ -55,17 +55,6 @@ class Task(BaseModel):
         ..., description="Identifier for the tenant", alias="tenant_id"
     )
 
-    created_at: Optional[datetime] = Field(
-        default=None,
-        description="Task creation time",
-        alias="gmt_create",
-    )
-    updated_at: Optional[datetime] = Field(
-        default=None,
-        description="Last update time",
-        alias="gmt_modified",
-    )
-
     def update(self, **kwargs: Any) -> "Task":
         if "created_at" in kwargs:
             raise ValueError("created_at is a read-only field and cannot be modified")
@@ -82,32 +71,8 @@ class Task(BaseModel):
                 data[field] = str(value)
             if field == "metadata" and isinstance(value, str):
                 data[field] = json.loads(value)
-        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
-        for field, alias_name in field_mappings.items():
-            val = data.get(field) or data.get(alias_name)
-            if val is None:
-                continue
-
-            if isinstance(val, str):
-                dt = parse_datetime(val)
-                data[field] = dt
-                data[alias_name] = dt
-            else:
-                if val and val.tzinfo is None:
-                    dt = val.replace(tzinfo=timezone.utc)
-                    data[field] = dt
-                    data[alias_name] = dt
 
         return data
-
-    @model_validator(mode="after")
-    def set_defaults(self) -> "Task":
-        now = datetime.now(timezone.utc)
-        if self.created_at is None:
-            self.created_at = now
-        if self.updated_at is None:
-            self.updated_at = now
-        return self
 
     model_config = ConfigDict(
         populate_by_name=True,

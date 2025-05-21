@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, TypeVar, Union
+from typing import Any, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel
 
@@ -11,10 +11,12 @@ from whiskerrag_types.model.retrieval import (
     RetrievalChunk,
     RetrievalRequest,
 )
+from whiskerrag_types.model.rule import GlobalRule, SpaceRule
 from whiskerrag_types.model.space import Space
 from whiskerrag_types.model.task import TaskStatus
+from whiskerrag_types.model.wiki import Wiki
 
-from ..model import Knowledge, PageParams, PageResponse, Task, Tenant
+from ..model import Knowledge, PageQueryParams, PageResponse, Task, Tenant
 from .logger_interface import LoggerManagerInterface
 from .settings_interface import SettingsInterface
 
@@ -68,7 +70,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_knowledge_list(
-        self, tenant_id: str, page_params: PageParams[Knowledge]
+        self, tenant_id: str, page_params: PageQueryParams[Knowledge]
     ) -> PageResponse[Knowledge]:
         pass
 
@@ -109,7 +111,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_space_list(
-        self, tenant_id: str, page_params: PageParams[Space]
+        self, tenant_id: str, page_params: PageQueryParams[Space]
     ) -> PageResponse[Space]:
         pass
 
@@ -134,7 +136,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_chunk_list(
-        self, tenant_id: str, page_params: PageParams[Chunk]
+        self, tenant_id: str, page_params: PageQueryParams[Chunk]
     ) -> PageResponse[Chunk]:
         pass
 
@@ -198,7 +200,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_task_list(
-        self, tenant_id: str, page_params: PageParams[Task]
+        self, tenant_id: str, page_params: PageQueryParams[Task]
     ) -> PageResponse[Task]:
         pass
 
@@ -234,7 +236,7 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def update_tenant(self, tenant: Tenant) -> None:
+    async def update_tenant(self, tenant: Tenant) -> Union[Tenant, None]:
         pass
 
     @abstractmethod
@@ -247,10 +249,36 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def get_tenant_list(
-        self, page_params: PageParams[Tenant]
+        self, page_params: PageQueryParams[Tenant]
     ) -> PageResponse[Tenant]:
         pass
 
     @abstractmethod
     async def delete_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
+        pass
+
+    # =================== rule ===================
+    @abstractmethod
+    async def create_rule(
+        self, tenant_id: str, rule: Union[GlobalRule, SpaceRule]
+    ) -> None:
+        pass
+
+    @abstractmethod
+    async def update_rule(
+        self, tenant_id: str, rule_id: str, rule: Union[GlobalRule, SpaceRule]
+    ) -> Union[GlobalRule, SpaceRule]:
+        pass
+
+    @abstractmethod
+    async def get_tenant_rule(self, tenant_id: str) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    async def get_space_rule(self, space_id: str) -> Optional[str]:
+        pass
+
+    # =================== wiki ===================
+    @abstractmethod
+    async def create_wiki(self, wiki: Wiki) -> None:
         pass

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
@@ -21,7 +21,8 @@ from whiskerrag_types.model.splitter import (
     PDFSplitConfig,
     TextSplitConfig,
 )
-from whiskerrag_types.model.utils import calculate_sha256, parse_datetime
+from whiskerrag_types.model.timeStampedModel import TimeStampedModel
+from whiskerrag_types.model.utils import calculate_sha256
 
 
 class MetadataSerializer:
@@ -108,8 +109,8 @@ class TextSourceConfig(BaseModel):
     text: str = Field(
         default="",
         min_length=1,
-        max_length=1000 * 10000,
-        description="Text content, length range 1-1000000 characters",
+        max_length=30000,
+        description="Text content, length range 1-30000 characters",
     )
 
 
@@ -162,7 +163,7 @@ KnowledgeSourceConfig = Union[
 ]
 
 
-class Knowledge(BaseModel):
+class Knowledge(TimeStampedModel):
     knowledge_id: str = Field(
         default_factory=lambda: str(uuid4()), description="knowledge id"
     )
@@ -198,16 +199,6 @@ class Knowledge(BaseModel):
     retrieval_count: int = Field(default=0, description="count of the retrieval")
     parent_id: Optional[str] = Field(None, description="parent knowledge id")
     enabled: bool = Field(True, description="is knowledge enabled")
-    created_at: Optional[datetime] = Field(
-        default=None,
-        alias="gmt_create",
-        description="creation time",
-    )
-    updated_at: Optional[datetime] = Field(
-        default=None,
-        alias="gmt_modified",
-        description="update time",
-    )
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -242,32 +233,8 @@ class Knowledge(BaseModel):
                 data[field] = str(value)
         if isinstance(data, dict) and not data.get("knowledge_id"):
             data["knowledge_id"] = str(uuid4())
-        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
-        for field, alias_name in field_mappings.items():
-            val = data.get(field) or data.get(alias_name)
-            if val is None:
-                continue
-
-            if isinstance(val, str):
-                dt = parse_datetime(val)
-                data[field] = dt
-                data[alias_name] = dt
-            else:
-                if val and val.tzinfo is None:
-                    dt = val.replace(tzinfo=timezone.utc)
-                    data[field] = dt
-                    data[alias_name] = dt
 
         return data
-
-    @model_validator(mode="after")
-    def set_defaults(self) -> "Knowledge":
-        now = datetime.now(timezone.utc)
-        if self.created_at is None:
-            self.created_at = now
-        if self.updated_at is None:
-            self.updated_at = now
-        return self
 
     @field_serializer("metadata")
     def serialize_metadata(self, metadata: dict) -> Optional[dict]:
@@ -299,7 +266,3 @@ class Knowledge(BaseModel):
         if isinstance(embedding_model_name, EmbeddingModelEnum):
             return embedding_model_name.value
         return str(embedding_model_name)
-
-    @field_serializer("created_at", "updated_at")
-    def serialize_datetime(self, dt: datetime) -> str:
-        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
