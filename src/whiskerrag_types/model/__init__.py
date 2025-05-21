@@ -21,6 +21,7 @@ from .knowledge_create import (
     QACreate,
     TextCreate,
 )
+from .language import LanguageEnum
 from .page import (
     PageParams,
     PageQueryParams,
@@ -34,6 +35,7 @@ from .retrieval import (
     RetrievalChunk,
     RetrievalRequest,
 )
+from .rule import GlobalRule, Rule, SpaceRule
 from .space import Space, SpaceCreate, SpaceResponse
 from .splitter import (
     BaseCharSplitConfig,
@@ -47,9 +49,13 @@ from .splitter import (
 )
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
+from .wiki import Wiki
 
 __all__ = [
     "Chunk",
+    "Rule",
+    "GlobalRule",
+    "SpaceRule",
     "KnowledgeSourceEnum",
     "KnowledgeTypeEnum",
     "EmbeddingModelEnum",
@@ -70,6 +76,7 @@ __all__ = [
     "Space",
     "SpaceCreate",
     "SpaceResponse",
+    "LanguageEnum",
     "PageQueryParams",
     "PageParams",
     "QueryParams",
@@ -92,4 +99,5 @@ __all__ = [
     "GeaGraphSplitConfig",
     "YuqueSplitConfig",
     "ImageSplitConfig",
+    "Wiki",
 ]
