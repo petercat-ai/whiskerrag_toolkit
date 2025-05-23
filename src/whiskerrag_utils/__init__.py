@@ -16,7 +16,6 @@ async def process_parse_item(
     EmbeddingCls: type[BaseEmbedding],
     semaphore: asyncio.Semaphore,
 ) -> Optional[Chunk]:
-    """处理单个解析项的异步函数"""
     async with semaphore:
         try:
             if isinstance(parse_item, Text):
@@ -65,40 +64,35 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
 
     Process flow:
     1. Get corresponding loader based on knowledge source type
-    2. Get text splitter
+    2. Get parser
     3. Get embedding model
     4. Load content as Text or Image
     5. Split content
     6. Vectorize each split content
     7. Generate final list of Chunk objects
     """
+    parse_type = getattr(knowledge.split_config, "type", "base")
+    ParserCls = get_register(RegisterTypeEnum.PARSER, parse_type)
+    # dirty logic : thirdly platform
+    if parse_type == "geagraph":
+        await ParserCls().parse(knowledge, None)
+        return []
     LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type)
-    split_type = getattr(knowledge.split_config, "type", "base")
-
-    SplitterCls = get_register(RegisterTypeEnum.PARSER, split_type)
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )
-
     contents = await LoaderCls(knowledge).load()
     parse_results: ParseResult = []
     for content in contents:
-        split_result = await SplitterCls().parse(knowledge, content)
+        split_result = await ParserCls().parse(knowledge, content)
         parse_results.extend(split_result)
 
-    # 创建信号量控制并发
-    semaphore = asyncio.Semaphore(3)  # 限制并发数为3
-
-    # 创建所有任务
+    semaphore = asyncio.Semaphore(3)
     tasks = [
         process_parse_item(parse_item, knowledge, EmbeddingCls, semaphore)
         for parse_item in parse_results
     ]
-
-    # 并发执行所有任务
     chunks = await asyncio.gather(*tasks)
-
-    # 过滤掉None值并返回结果
     return [chunk for chunk in chunks if chunk is not None]
 
 

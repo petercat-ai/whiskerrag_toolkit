@@ -26,11 +26,11 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
             group_login = self.knowledge.source_config.group_login
             book_slug = self.knowledge.source_config.book_slug
             document_id = self.knowledge.source_config.document_id
-            if group_login is None:
+            if not group_login:
                 raise ValueError("group_login is needed for WhiskerYuqueLoader")
-            if book_slug is None:
+            if not book_slug:
                 raise ValueError("book_slug is needed for WhiskerYuqueLoader")
-            if document_id is None:
+            if not document_id:
                 raise ValueError("document_id is needed for WhiskerYuqueLoader")
 
             try:
