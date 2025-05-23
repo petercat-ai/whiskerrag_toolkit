@@ -51,13 +51,16 @@ async def process_parse_item(
             return None
 
 
-async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
+async def get_chunks_by_knowledge(
+    knowledge: Knowledge, semaphore_num: int = 4
+) -> List[Chunk]:
     """
     Convert knowledge into vectorized chunks with controlled concurrency
 
     Args:
         knowledge (Knowledge): Knowledge object containing source type, split configuration,
                              embedding model and other information
+        semaphore_num (int, optional): Maximum number of concurrent tasks. Defaults to 4.
 
     Returns:
         List[Chunk]: List of vectorized chunks
@@ -87,7 +90,7 @@ async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
         split_result = await ParserCls().parse(knowledge, content)
         parse_results.extend(split_result)
 
-    semaphore = asyncio.Semaphore(3)
+    semaphore = asyncio.Semaphore(semaphore_num)
     tasks = [
         process_parse_item(parse_item, knowledge, EmbeddingCls, semaphore)
         for parse_item in parse_results
