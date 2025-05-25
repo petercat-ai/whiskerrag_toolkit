@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, TypeVar
+from typing import Any, Generic, List, TypeVar
 
 from whiskerrag_types.model.retrieval import RetrievalChunk, RetrievalRequest
 
@@ -9,6 +9,9 @@ R = TypeVar("R", bound=RetrievalChunk)
 
 class BaseRetriever(Generic[T, R], ABC):
     """Retriever interface."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        pass
 
     @abstractmethod
     async def retrieve(self, params: T, tenant_id: str) -> List[R]:

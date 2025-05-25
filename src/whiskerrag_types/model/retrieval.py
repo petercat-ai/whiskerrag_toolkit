@@ -77,6 +77,7 @@ class RetrievalRequest(BaseModel):
 
 
 class RetrievalChunk(Chunk):
+
     similarity: float = Field(
         ..., description="The similarity of the chunk, ranging from 0.0 to 1.0."
     )
