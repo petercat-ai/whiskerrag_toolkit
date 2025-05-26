@@ -31,11 +31,6 @@ class KnowledgeCreateBase(BaseModel):
         ...,
         description="the space of knowledge, example: petercat bot id, github repo name",
     )
-    knowledge_id: Optional[str] = Field(
-        default=None,
-        description="id of the knowledge resource (letters, numbers, hyphens and underscores allowed, max 36 chars)",
-        pattern=r"^[a-zA-Z0-9\-_]{1,36}$",
-    )
     knowledge_type: KnowledgeTypeEnum = Field(
         KnowledgeTypeEnum.TEXT, description="type of knowledge resource"
     )
