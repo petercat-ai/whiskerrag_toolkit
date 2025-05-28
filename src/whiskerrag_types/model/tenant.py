@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
@@ -23,7 +23,7 @@ class Tenant(TimeStampedModel):
     def update(self, **kwargs: Any) -> "Tenant":
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
         return self
 
     @field_validator("is_active", mode="before")

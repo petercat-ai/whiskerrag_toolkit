@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field, model_validator
 T = TypeVar("T")
 
 
-class OrCondition:
+class OrConditionItem:
     field: str
-    operator: str  # eq, neq, gt, gte, lt, lte, like, ilike etc.
+    operator: str  # eq, neq, gt, gte, lt, lte, like, ilike.
     value: Any
 
 

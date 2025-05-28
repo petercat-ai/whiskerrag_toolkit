@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Union
@@ -218,7 +218,7 @@ class Knowledge(TimeStampedModel):
     def update(self, **kwargs: Dict[str, Any]) -> "Knowledge":
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
         return self
 
     @field_validator("enabled", mode="before")
