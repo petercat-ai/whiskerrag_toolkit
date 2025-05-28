@@ -1,3 +1,4 @@
+from .api_key import APIKey
 from .chunk import Chunk
 from .converter import GenericConverter
 from .knowledge import (
@@ -29,6 +30,7 @@ from .page import (
     QueryParams,
     StatusStatisticsPageResponse,
 )
+from .permission import Action, Permission, Resource
 from .retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
@@ -52,6 +54,10 @@ from .tenant import Tenant
 from .wiki import Wiki
 
 __all__ = [
+    "APIKey",
+    "Action",
+    "Resource",
+    "Permission",
     "Chunk",
     "Rule",
     "GlobalRule",

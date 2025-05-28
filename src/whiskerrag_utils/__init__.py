@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.parser_interface import ParseResult
 from whiskerrag_types.model.chunk import Chunk
-from whiskerrag_types.model.knowledge import Knowledge
+from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Image, Text
 
 from .registry import RegisterTypeEnum, get_register, init_register, register
@@ -74,7 +74,12 @@ async def get_chunks_by_knowledge(
     6. Vectorize each split content
     7. Generate final list of Chunk objects
     """
-    parse_type = getattr(knowledge.split_config, "type", "base")
+    knowledge_type = knowledge.knowledge_type
+    parse_type = getattr(
+        knowledge.split_config,
+        "type",
+        "base_image" if knowledge_type is KnowledgeTypeEnum.IMAGE else "base_text",
+    )
     ParserCls = get_register(RegisterTypeEnum.PARSER, parse_type)
     # dirty logic : thirdly platform
     if parse_type == "geagraph":

@@ -3,6 +3,19 @@ from typing import Any, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel
 
+from whiskerrag_types.model import (
+    APIKey,
+    GlobalRule,
+    Knowledge,
+    PageQueryParams,
+    PageResponse,
+    Space,
+    SpaceRule,
+    Task,
+    TaskStatus,
+    Tenant,
+    Wiki,
+)
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.page import QueryParams
 from whiskerrag_types.model.retrieval import (
@@ -11,12 +24,7 @@ from whiskerrag_types.model.retrieval import (
     RetrievalChunk,
     RetrievalRequest,
 )
-from whiskerrag_types.model.rule import GlobalRule, SpaceRule
-from whiskerrag_types.model.space import Space
-from whiskerrag_types.model.task import TaskStatus
-from whiskerrag_types.model.wiki import Wiki
 
-from ..model import Knowledge, PageQueryParams, PageResponse, Task, Tenant
 from .logger_interface import LoggerManagerInterface
 from .settings_interface import SettingsInterface
 
@@ -255,6 +263,39 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def delete_tenant_by_id(self, tenant_id: str) -> Union[Tenant, None]:
+        pass
+
+    # =================== api-key ===================
+    @abstractmethod
+    async def get_api_key_by_value(self, key_value: str) -> Union[APIKey, None]:
+        pass
+
+    @abstractmethod
+    async def get_api_key_by_id(
+        self, tenant_id: str, key_id: str
+    ) -> Union[APIKey, None]:
+        pass
+
+    @abstractmethod
+    async def get_tenant_api_keys(
+        self, tenant_id: str, page_params: PageQueryParams[APIKey]
+    ) -> PageResponse[APIKey]:
+        pass
+
+    @abstractmethod
+    async def save_api_key(self, create_params: APIKey) -> APIKey:
+        pass
+
+    @abstractmethod
+    async def update_api_key(self, update_params: APIKey) -> Union[APIKey, None]:
+        pass
+
+    @abstractmethod
+    async def delete_api_key(self, key_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def get_all_expired_api_keys(self, tenant_id: str) -> List[APIKey]:
         pass
 
     # =================== rule ===================

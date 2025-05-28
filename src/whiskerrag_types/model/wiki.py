@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
@@ -22,5 +22,5 @@ class Wiki(TimeStampedModel):
     def update(self, **kwargs: Dict[str, Any]) -> "Wiki":
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
         return self

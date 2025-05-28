@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
@@ -30,7 +30,7 @@ class Rule(TimeStampedModel):
     def update(self, **kwargs: Dict[str, Any]) -> "Rule":
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
         return self
 
 

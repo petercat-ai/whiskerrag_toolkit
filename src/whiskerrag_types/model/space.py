@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
@@ -42,7 +42,7 @@ class Space(SpaceCreate, TimeStampedModel):
     def update(self, **kwargs: Dict[str, Any]) -> "Space":
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
         return self
 
     @model_validator(mode="before")

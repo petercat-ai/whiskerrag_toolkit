@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from whiskerrag_types.model.task import Task, TaskStatus
 
@@ -56,7 +56,7 @@ class TestTask:
         )
 
     def test_update(self) -> None:
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         metadata = """
 {"task_name": "test", "task_desc": "this is test"}
 """

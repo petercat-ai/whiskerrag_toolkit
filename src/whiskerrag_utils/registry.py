@@ -52,7 +52,6 @@ class RegisterTypeEnum(str, Enum):
 
 
 RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
-
 T = TypeVar("T")
 T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
@@ -72,6 +71,9 @@ RegisteredType = Union[
 class RegisterDict(Generic[T]):
     def __init__(self) -> None:
         self._dict: Dict[RegisterKeyType, Type[T]] = {}
+
+    def __contains__(self, key: RegisterKeyType) -> bool:
+        return key in self._dict
 
     def __getitem__(self, key: RegisterKeyType) -> Type[T]:
         return self._dict[key]
@@ -124,6 +126,7 @@ _loaded_packages = set()
 def register(
     register_type: RegisterTypeEnum,
     register_key: RegisterKeyType,
+    order: int = 0,
 ) -> Callable[[RegisteredType], RegisteredType]:
     def decorator(cls: RegisteredType) -> RegisteredType:
         setattr(cls, "_is_register_item", True)
@@ -158,6 +161,22 @@ def register(
                 )
                 return cls
         print(f"Registering {cls.__name__} as {register_type} with key {register_key}")
+        if register_key in _registry[register_type]:
+            existing_cls = _registry[register_type][register_key]
+            existing_order = getattr(existing_cls, "_register_order", 0)
+            if order <= existing_order:
+                print(
+                    f"Skipping registration of {cls.__name__}: "
+                    f"existing implementation {existing_cls.__name__} "
+                    f"has higher or equal priority ({existing_order} >= {order})"
+                )
+                return cls
+
+            print(
+                f"Overriding {existing_cls.__name__} (order={existing_order}) "
+                f"with {cls.__name__} (order={order})"
+            )
+
         _registry[register_type][register_key] = cls
         return cls
 
