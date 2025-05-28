@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from whiskerrag_types.model.language import LanguageEnum
 from whiskerrag_types.model.timeStampedModel import TimeStampedModel
@@ -32,6 +32,11 @@ class Rule(TimeStampedModel):
             setattr(self, key, value)
         self.updated_at = datetime.now(timezone.utc)
         return self
+
+    @field_validator("is_active", mode="before")
+    @classmethod
+    def convert_tinyint_to_bool(cls, v: Any) -> bool:
+        return bool(v)
 
 
 class GlobalRule(Rule):

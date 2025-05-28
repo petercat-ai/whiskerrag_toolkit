@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from whiskerrag_types.model.permission import Permission
 from whiskerrag_types.model.timeStampedModel import TimeStampedModel
@@ -50,3 +50,8 @@ class APIKey(TimeStampedModel):
         if self.expires_at and self.expires_at < datetime.now():
             raise ValueError("expires_at must be future time")
         return self
+
+    @field_validator("is_active", mode="before")
+    @classmethod
+    def convert_tinyint_to_bool(cls, v: Any) -> bool:
+        return bool(v)
