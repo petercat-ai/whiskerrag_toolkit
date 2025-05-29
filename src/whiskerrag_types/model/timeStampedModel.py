@@ -30,13 +30,17 @@ class TimeStampedModel(BaseModel):
 
             if isinstance(val, str):
                 dt = parse_datetime(val)
-                data[field] = dt
-                data[alias_name] = dt
             else:
-                if val and val.tzinfo is None:
-                    dt = val.replace(tzinfo=timezone.utc)
-                    data[field] = dt
-                    data[alias_name] = dt
+                dt = val
+
+            if dt and dt.tzinfo:
+                dt = dt.astimezone(timezone.utc)
+            elif dt:
+                dt = dt.replace(tzinfo=timezone.utc)
+
+            data[field] = dt
+            data[alias_name] = dt
+
         return data
 
     @model_validator(mode="after")
