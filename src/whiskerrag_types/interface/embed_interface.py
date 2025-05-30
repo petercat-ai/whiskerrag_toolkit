@@ -36,7 +36,7 @@ class BaseEmbedding(ABC):
         pass
 
     @abstractmethod
-    async def embed_query(self, text: str, timeout: Optional[int]) -> List[float]:
+    async def embed_text_query(self, text: str, timeout: Optional[int]) -> List[float]:
         pass
 
     @abstractmethod
