@@ -27,6 +27,9 @@ class OpenAIEmbedding(BaseEmbedding):
         embedding = embedding_client.embed_query(text)
         return embedding
 
+    async def embed_query(self, text: str, timeout: Optional[int]) -> List[float]:
+        return await self.embed_text(text, timeout)
+
     async def embed_image(self, image: Image, timeout: Optional[int]) -> List[float]:
         raise NotImplementedError("OpenAI does not support image embedding")
         return []
