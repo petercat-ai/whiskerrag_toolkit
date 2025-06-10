@@ -37,14 +37,7 @@ class GithubFileLoader(BaseLoader[Text]):
         return [
             Text(
                 content=file_element.content,
-                metadata={
-                    "path": file_element.path,
-                    "url": file_element.url,
-                    "branch": file_element.branch,
-                    "repo_name": file_element.repo_name,
-                    "size": file_element.size,
-                    "sha": file_element.sha,
-                },
+                metadata=self.knowledge.metadata,
             )
         ]
 

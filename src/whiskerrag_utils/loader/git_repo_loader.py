@@ -334,7 +334,12 @@ class GithubRepoLoader(BaseLoader):
                         split_config=self.knowledge.split_config,
                         parent_id=self.knowledge.knowledge_id,
                         enabled=True,
-                        metadata={"_reference_url": file_url},
+                        metadata={
+                            "_reference_url": file_url,
+                            "branch": self.branch_name,
+                            "repo_name": self.repo_name,
+                            "path": relative_path,
+                        },
                     )
                     github_repo_list.append(knowledge)
 
@@ -385,6 +390,7 @@ class GithubRepoLoader(BaseLoader):
             Text(
                 content=tree_str,
                 metadata={
+                    **self.knowledge.metadata,
                     "repo_name": self.repo_name,
                     "author_name": author_name,
                     "author_email": author_email,

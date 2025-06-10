@@ -15,7 +15,12 @@ class TextLoader(BaseLoader[Text]):
 
     async def load(self) -> List[Text]:
         if isinstance(self.knowledge.source_config, TextSourceConfig):
-            return [Text(content=self.knowledge.source_config.text, metadata={})]
+            return [
+                Text(
+                    content=self.knowledge.source_config.text,
+                    metadata=self.knowledge.metadata,
+                )
+            ]
         raise AttributeError(
             "source_config does not have a 'text' attribute for the current type."
         )

@@ -84,12 +84,18 @@ class TestJSONLoader:
         assert res == [
             Text(
                 content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
-                metadata={},
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
             ),
-            Text(content='{"age": 30}', metadata={}),
+            Text(
+                content='{"age": 30}',
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
+            ),
             Text(
                 content='{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
-                metadata={},
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
             ),
-            Text(content='{"is_active": true}', metadata={}),
+            Text(
+                content='{"is_active": true}',
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
+            ),
         ]
