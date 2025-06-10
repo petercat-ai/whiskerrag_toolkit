@@ -59,11 +59,17 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
+extend-exclude = '''
+/(
+    \.cursor
+)/
+'''
 
 [tool.isort]
 profile = "black"
 multi_line_output = 3
 line_length = 88
+skip_glob = [".cursor/*"]
 
 [tool.mypy]
 python_version = "3.9"
@@ -78,7 +84,7 @@ check_untyped_defs = true
 ignore_missing_imports = false
 follow_imports = "silent"
 show_error_codes = true
-exclude = ["tests/", "docs/", "examples/"]
+exclude = ["tests/", "docs/", "examples/", ".cursor/"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -113,7 +119,7 @@ exclude_lines = [
 ]
 ignore_errors = true
 source = ["src"]
-omit = ["tests/*", "setup.py", "scripts/*", "workflows/*"]
+omit = ["tests/*", "setup.py", "scripts/*", "workflows/*", ".cursor/*"]
 
 [tool.coverage.run]
 branch = true

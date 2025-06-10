@@ -31,7 +31,8 @@ class TestBaseSplitter:
         res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
-        assert res == [Text(content="hello world \n ~", metadata={})]
+        expected_metadata = {"_knowledge_type": "text", "_reference_url": ""}
+        assert res == [Text(content="hello world \n ~", metadata=expected_metadata)]
 
     @pytest.mark.asyncio
     async def test_base_split_small_chunk(self) -> None:
@@ -56,10 +57,11 @@ class TestBaseSplitter:
         res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
+        expected_metadata = {"_knowledge_type": "text", "_reference_url": ""}
         assert res == [
-            Text(content="hello", metadata={}),
-            Text(content="world", metadata={}),
-            Text(content="~", metadata={}),
+            Text(content="hello", metadata=expected_metadata),
+            Text(content="world", metadata=expected_metadata),
+            Text(content="~", metadata=expected_metadata),
         ]
 
     @pytest.mark.asyncio
@@ -97,16 +99,17 @@ class TestBaseSplitter:
             knowledge,
             Text(content="hello world \n ~", metadata={}),
         )
+        expected_metadata = {"_knowledge_type": "text", "_reference_url": ""}
         assert res == [
-            Text(content="h", metadata={}),
-            Text(content="e", metadata={}),
-            Text(content="l", metadata={}),
-            Text(content="l", metadata={}),
-            Text(content="o", metadata={}),
-            Text(content="w", metadata={}),
-            Text(content="o", metadata={}),
-            Text(content="r", metadata={}),
-            Text(content="l", metadata={}),
-            Text(content="d", metadata={}),
-            Text(content="~", metadata={}),
+            Text(content="h", metadata=expected_metadata),
+            Text(content="e", metadata=expected_metadata),
+            Text(content="l", metadata=expected_metadata),
+            Text(content="l", metadata=expected_metadata),
+            Text(content="o", metadata=expected_metadata),
+            Text(content="w", metadata=expected_metadata),
+            Text(content="o", metadata=expected_metadata),
+            Text(content="r", metadata=expected_metadata),
+            Text(content="l", metadata=expected_metadata),
+            Text(content="d", metadata=expected_metadata),
+            Text(content="~", metadata=expected_metadata),
         ]

@@ -30,6 +30,15 @@ class Chunk(BaseModel):
     metadata: Optional[dict] = Field(
         None, description="Arbitrary metadata associated with the content."
     )
+    # Add specific fields as required by metadata rules
+    tags: Optional[List[str]] = Field(
+        None, description="Tags from knowledge.metadata._tags"
+    )
+    f1: Optional[str] = Field(None, description="Field 1 from knowledge.metadata._f1")
+    f2: Optional[str] = Field(None, description="Field 2 from knowledge.metadata._f2")
+    f3: Optional[str] = Field(None, description="Field 3 from knowledge.metadata._f3")
+    f4: Optional[str] = Field(None, description="Field 4 from knowledge.metadata._f4")
+    f5: Optional[str] = Field(None, description="Field 5 from knowledge.metadata._f5")
     created_at: Optional[datetime] = Field(
         default=None,
         alias="gmt_create",

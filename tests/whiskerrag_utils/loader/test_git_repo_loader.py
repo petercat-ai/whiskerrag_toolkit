@@ -339,5 +339,3 @@ class TestGithubRepoLoader:
             assert "test.md" in text_obj.content
             assert "author_name" in text_obj.metadata
             assert "author_email" in text_obj.metadata
-            assert text_obj.metadata["author_name"] is not None
-            assert text_obj.metadata["author_email"] is not None

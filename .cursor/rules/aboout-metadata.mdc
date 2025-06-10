@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+metadata 是在 knowledge、chunk、task、Text 中的一个一字段设计，用于自由扩展字段。它有以下特性：
+- 从 knowledge 处理后得到 chunk，通常作为一个文本的片段，存入向量数据库。为了检索召回方便，chunk.metadata 会从 knowledge.metadata 中继承过来。
+- knowledge.metadata 字段中 _reference_url, _knowledge_type, _tags, _f1, _f2, _f3, _f4, _f5 为保留字段。
+- Text.metadata 在 knowledge.metadata 的基础上还需要添加在加载（loader）过程中、处理（parser）过程中产生的信息。
+- chunk.metadata 继承来自 Text 的 metadata 即可。
+- knowledge.metadata._tags 、_f1,_f2,_f3,_f4,_f5 需要赋予 chunk 的具体字段 ， chunk.tags, chunk.f1, chunk.f2, chunk.f3 ...

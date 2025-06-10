@@ -39,6 +39,14 @@ async def _process_parse_item(
             if isinstance(parse_item, Text) and parse_item.metadata:
                 combined_metadata.update(parse_item.metadata)
 
+            # Extract specific fields from metadata according to rules
+            # knowledge.metadata._tags, _f1, _f2, _f3, _f4, _f5 -> chunk.tags, chunk.f1, chunk.f2, etc.
+            tags = combined_metadata.get("_tags")
+            if isinstance(tags, str):
+                tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
+            elif not isinstance(tags, list):
+                tags = None
+
             return Chunk(
                 context=(
                     parse_item.content
@@ -47,6 +55,13 @@ async def _process_parse_item(
                 ),
                 enabled=knowledge.enabled,
                 metadata=combined_metadata,
+                # Assign specific fields from metadata
+                tags=tags,
+                f1=combined_metadata.get("_f1"),
+                f2=combined_metadata.get("_f2"),
+                f3=combined_metadata.get("_f3"),
+                f4=combined_metadata.get("_f4"),
+                f5=combined_metadata.get("_f5"),
                 embedding=embedding,
                 knowledge_id=knowledge.knowledge_id,
                 embedding_model_name=knowledge.embedding_model_name,
