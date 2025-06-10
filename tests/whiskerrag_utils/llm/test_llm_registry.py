@@ -26,8 +26,6 @@ async def test_llm_registry():
     print("\n1. 初始化注册器...")
     init_register("whiskerrag_utils")
 
-    # 获取注册的LLM
-    print("\n2. 获取注册的LLM...")
     try:
         ExampleLLM = get_register(RegisterTypeEnum.LLM, "example")
         print(f"成功获取LLM: {ExampleLLM.__name__}")

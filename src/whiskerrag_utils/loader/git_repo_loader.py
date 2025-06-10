@@ -2,11 +2,12 @@ import logging
 import os
 import shutil
 import subprocess
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from git import Repo
 from git.exc import GitCommandNotFound, InvalidGitRepositoryError
+from langchain_text_splitters import Language
 from openai import BaseModel
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
@@ -17,6 +18,14 @@ from whiskerrag_types.model.knowledge import (
 )
 from whiskerrag_types.model.knowledge_source import GithubRepoSourceConfig
 from whiskerrag_types.model.multi_modal import Text
+from whiskerrag_types.model.splitter import (
+    BaseCodeSplitConfig,
+    BaseSplitConfig,
+    JSONSplitConfig,
+    MarkdownSplitConfig,
+    PDFSplitConfig,
+    TextSplitConfig,
+)
 from whiskerrag_utils.loader.file_pattern_manager import FilePatternManager
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
@@ -32,10 +41,11 @@ class GitFileElementType(BaseModel):
     repo_name: str
     size: int
     sha: str
+    position: dict = {}  # VSCode position information
 
 
 def _check_git_installation() -> bool:
-    """检查 git 是否安装"""
+    """check git installation"""
     try:
         subprocess.run(["git", "--version"], check=True, capture_output=True, text=True)
         return True
@@ -45,7 +55,7 @@ def _check_git_installation() -> bool:
 
 def _get_temp_git_env() -> Dict[str, str]:
     """
-    获取临时的 git 环境配置
+    get temporary git environment configuration
 
     Returns:
         Dict[str, str]: git config
@@ -107,7 +117,8 @@ class GithubRepoLoader(BaseLoader):
         except Exception as e:
             logger.error(f"Failed to load repo: {e}")
             raise ValueError(
-                f"Failed to load repo {self.repo_name} with branch {self.branch_name}. Error: {str(e)}"
+                f"Failed to load repo {self.repo_name} with branch "
+                f"{self.branch_name}. Error: {str(e)}"
             )
 
     def _load_repo(self) -> None:
@@ -121,7 +132,8 @@ class GithubRepoLoader(BaseLoader):
             parsed_url = urlparse(self.base_url)
             if not parsed_url.scheme or parsed_url.scheme != "https":
                 raise ValueError(
-                    f"Invalid URL scheme: {self.base_url}. Only HTTPS URLs are supported"
+                    f"Invalid URL scheme: {self.base_url}. "
+                    "Only HTTPS URLs are supported"
                 )
 
             clone_url = f"{self.base_url}/{self.repo_name}.git"
@@ -159,8 +171,8 @@ class GithubRepoLoader(BaseLoader):
 
         except Exception as e:
             raise ValueError(
-                f"Failed to load repo {self.repo_name} with branch {self.branch_name}. "
-                f"Error: {str(e)}"
+                f"Failed to load repo {self.repo_name} with branch "
+                f"{self.branch_name}. Error: {str(e)}"
             )
 
     def _clone_repo(self, clone_url: str, git_env: Dict[str, str]) -> None:
@@ -247,20 +259,192 @@ class GithubRepoLoader(BaseLoader):
         }
         return ext_to_type.get(ext, KnowledgeTypeEnum.TEXT)
 
-    async def decompose(self) -> List[Knowledge]:
+    def _get_split_config_for_knowledge_type(
+        self, knowledge_type: KnowledgeTypeEnum
+    ) -> Union[
+        MarkdownSplitConfig,
+        JSONSplitConfig,
+        PDFSplitConfig,
+        BaseCodeSplitConfig,
+        TextSplitConfig,
+        BaseSplitConfig,
+    ]:
         """
-        分解仓库内的知识单元
+        Generate appropriate split_config based on knowledge type
+
+        Args:
+            knowledge_type: The type of knowledge
 
         Returns:
-            List[Knowledge]: 知识列表
+            Appropriate split configuration for the knowledge type
+        """
+        # Use default chunk_size and chunk_overlap from GithubRepoParseConfig
+        default_chunk_size = 1500
+        default_chunk_overlap = 200
+
+        if knowledge_type == KnowledgeTypeEnum.MARKDOWN:
+            return MarkdownSplitConfig(
+                chunk_size=default_chunk_size,
+                chunk_overlap=default_chunk_overlap,
+                separators=[
+                    "\n#{1,6} ",
+                    "```\n",
+                    "\n\\*\\*\\*+\n",
+                    "\n---+\n",
+                    "\n___+\n",
+                    "\n\n",
+                    "\n",
+                    " ",
+                    "",
+                ],
+                is_separator_regex=True,
+                keep_separator="start",
+                extract_header_first=True,
+            )
+        elif knowledge_type == KnowledgeTypeEnum.JSON:
+            return JSONSplitConfig(
+                max_chunk_size=default_chunk_size,
+                min_chunk_size=min(200, default_chunk_size - 200),
+            )
+        elif knowledge_type == KnowledgeTypeEnum.PDF:
+            return PDFSplitConfig(
+                chunk_size=default_chunk_size,
+                chunk_overlap=default_chunk_overlap,
+                extract_images=False,
+                table_extract_mode="text",
+            )
+        elif knowledge_type in [
+            KnowledgeTypeEnum.PYTHON,
+            KnowledgeTypeEnum.JS,
+            KnowledgeTypeEnum.TS,
+            KnowledgeTypeEnum.GO,
+            KnowledgeTypeEnum.JAVA,
+            KnowledgeTypeEnum.CPP,
+            KnowledgeTypeEnum.C,
+            KnowledgeTypeEnum.CSHARP,
+            KnowledgeTypeEnum.KOTLIN,
+            KnowledgeTypeEnum.SWIFT,
+            KnowledgeTypeEnum.PHP,
+            KnowledgeTypeEnum.RUBY,
+            KnowledgeTypeEnum.RUST,
+            KnowledgeTypeEnum.SCALA,
+            KnowledgeTypeEnum.SOL,
+            KnowledgeTypeEnum.LUA,
+        ]:
+            # Map knowledge types to Language enum
+            language_map = {
+                KnowledgeTypeEnum.PYTHON: Language.PYTHON,
+                KnowledgeTypeEnum.JS: Language.JS,
+                KnowledgeTypeEnum.TS: Language.TS,
+                KnowledgeTypeEnum.GO: Language.GO,
+                KnowledgeTypeEnum.JAVA: Language.JAVA,
+                KnowledgeTypeEnum.CPP: Language.CPP,
+                KnowledgeTypeEnum.C: Language.C,
+                KnowledgeTypeEnum.CSHARP: Language.CSHARP,
+                KnowledgeTypeEnum.KOTLIN: Language.KOTLIN,
+                KnowledgeTypeEnum.SWIFT: Language.SWIFT,
+                KnowledgeTypeEnum.PHP: Language.PHP,
+                KnowledgeTypeEnum.RUBY: Language.RUBY,
+                KnowledgeTypeEnum.RUST: Language.RUST,
+                KnowledgeTypeEnum.SCALA: Language.SCALA,
+                KnowledgeTypeEnum.SOL: Language.SOL,
+                KnowledgeTypeEnum.LUA: Language.LUA,
+            }
+            return BaseCodeSplitConfig(
+                language=language_map.get(knowledge_type, Language.MARKDOWN),
+                chunk_size=default_chunk_size,
+                chunk_overlap=default_chunk_overlap,
+            )
+        elif knowledge_type == KnowledgeTypeEnum.TEXT:
+            return TextSplitConfig(
+                chunk_size=default_chunk_size,
+                chunk_overlap=default_chunk_overlap,
+                separators=["\n\n", "\n", " ", ""],
+                is_separator_regex=False,
+                keep_separator=False,
+            )
+        else:
+            # For other types (HTML, RST, LATEX, etc.), use BaseSplitConfig
+            return BaseSplitConfig(
+                chunk_size=default_chunk_size,
+                chunk_overlap=default_chunk_overlap,
+            )
+
+    def _get_file_position_info(self, file_path: str, relative_path: str) -> dict:
+        """
+        Get position information that can be used for URL construction and remote jumping
+
+        Args:
+            file_path: Full path to the file
+            relative_path: Relative path from repo root
+
+        Returns:
+            dict: Position information for remote repository jumping
+        """
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                lines = f.readlines()
+                total_lines = len(lines)
+
+            return {
+                "file_path": relative_path,
+                "start_line": 1,
+                "end_line": total_lines,
+                "total_lines": total_lines,
+            }
+        except Exception as e:
+            logger.warning(
+                f"Could not read file for position info {relative_path}: {e}"
+            )
+            return {
+                "file_path": relative_path,
+                "start_line": 1,
+                "end_line": None,
+                "total_lines": None,
+            }
+
+    def generate_jump_url(
+        self,
+        relative_path: str,
+        line: Optional[int] = None,
+        end_line: Optional[int] = None,
+    ) -> str:
+        """
+        Generate a jump URL for external systems to create clickable links
+
+        Args:
+            relative_path: Relative path to the file
+            line: Optional line number to jump to
+            end_line: Optional end line for range jumping
+
+        Returns:
+            str: Complete URL that can be used for jumping to the file/line
+        """
+        base_url = (
+            f"{self.base_url}/{self.repo_name}/blob/{self.branch_name}/{relative_path}"
+        )
+
+        if line is not None:
+            if end_line is not None and end_line != line:
+                return f"{base_url}#L{line}-L{end_line}"
+            else:
+                return f"{base_url}#L{line}"
+        return base_url
+
+    async def decompose(self) -> List[Knowledge]:
+        """
+        decompose knowledge units in the repository
+
+        Returns:
+            List[Knowledge]: knowledge list
 
         Raises:
-            ValueError: 当仓库未正确初始化时
+            ValueError: when the repository is not properly initialized
         """
         if not self.local_repo or not self.repo_path:
             raise ValueError("Repository not properly initialized")
 
-        # 统计整个 repo 的总文件大小
+        # count the total file size of the repo
         total_size = 0
         for root, _, files in os.walk(self.repo_path):
             if ".git" in root:
@@ -272,7 +456,7 @@ class GithubRepoLoader(BaseLoader):
                 except Exception:
                     continue
 
-        # 初始化文件模式管理器
+        # initialize file pattern manager
         split_config = getattr(self.knowledge, "split_config", None)
         if split_config and getattr(split_config, "type", None) == "github_repo":
             pattern_manager = FilePatternManager(
@@ -284,7 +468,7 @@ class GithubRepoLoader(BaseLoader):
                     "Pattern configuration warnings:\n" + "\n".join(warnings)
                 )
         else:
-            # 创建一个兼容的配置字典
+            # create a compatible configuration dictionary
             dummy_config = {
                 "include_patterns": ["*.md", "*.mdx"],
                 "ignore_patterns": [],
@@ -317,7 +501,19 @@ class GithubRepoLoader(BaseLoader):
                     file_sha = blob.hexsha
                     ext = os.path.splitext(relative_path)[1].lower()
                     knowledge_type = self.get_knowledge_type_by_ext(ext)
-                    file_url = f"{self.base_url}/{self.repo_name}/blob/{self.branch_name}/{relative_path}"
+                    file_url = (
+                        f"{self.base_url}/{self.repo_name}/blob/"
+                        f"{self.branch_name}/{relative_path}"
+                    )
+                    # Generate appropriate split_config for this knowledge type
+                    knowledge_split_config = self._get_split_config_for_knowledge_type(
+                        knowledge_type
+                    )
+                    # Get accurate position information
+                    position_info = self._get_file_position_info(
+                        file_path, relative_path
+                    )
+
                     knowledge = Knowledge(
                         source_type=KnowledgeSourceEnum.GITHUB_FILE,
                         knowledge_type=knowledge_type,
@@ -331,7 +527,7 @@ class GithubRepoLoader(BaseLoader):
                         file_size=file_size,
                         file_sha=file_sha,
                         space_id=self.knowledge.space_id,
-                        split_config=self.knowledge.split_config,
+                        split_config=knowledge_split_config,
                         parent_id=self.knowledge.knowledge_id,
                         enabled=True,
                         metadata={
@@ -339,6 +535,8 @@ class GithubRepoLoader(BaseLoader):
                             "branch": self.branch_name,
                             "repo_name": self.repo_name,
                             "path": relative_path,
+                            # Position information for remote jumping
+                            "position": position_info,
                         },
                     )
                     github_repo_list.append(knowledge)
@@ -399,7 +597,7 @@ class GithubRepoLoader(BaseLoader):
         ]
 
     async def on_load_finished(self) -> None:
-        """清理临时资源"""
+        """clean resource"""
         try:
             if self.repo_path and os.path.exists(self.repo_path):
                 shutil.rmtree(self.repo_path)
@@ -422,18 +620,18 @@ class GithubRepoLoader(BaseLoader):
 
         try:
             blob = self.local_repo.head.commit.tree[path]
-            # 类型检查确保source_config是GithubRepoSourceConfig
+            # type check to ensure source_config is GithubRepoSourceConfig
             if not isinstance(self.knowledge.source_config, GithubRepoSourceConfig):
                 raise ValueError("Invalid source config type")
             base_url = self.knowledge.source_config.url.rstrip("/")
             file_url = f"{base_url}/{self.repo_name}/blob/{self.branch_name}/{path}"
 
-            # 读取文件内容
+            # read file content
             try:
                 with open(full_path, "r", encoding="utf-8") as f:
                     content = f.read()
             except UnicodeDecodeError:
-                # 如果不是文本文件，尝试二进制读取并转换为base64
+                # if not a text file, try binary reading and convert to base64
                 with open(full_path, "rb") as f:
                     import base64
 
