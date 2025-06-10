@@ -1,6 +1,7 @@
 import re
 from typing import List, Literal, Optional, Union
 
+from langchain_text_splitters import Language
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
@@ -134,5 +135,55 @@ class GeaGraphSplitConfig(BaseModel):
     )
 
 
+class GithubRepoParseConfig(BaseSplitConfig):
+    type: Literal["github_repo"] = "github_repo"
+    include_patterns: Optional[list[str]] = Field(
+        default=None,
+        description="List of include patterns (comma-separated) to filter files in the repo.Only files matching these patterns will be included, unless excluded by ignore_patterns or .gitignore. Lower priority than ignore_patterns and .gitignore.",
+    )
+    ignore_patterns: Optional[list[str]] = Field(
+        default=None,
+        description="Additional ignore patterns (comma-separated) to exclude files in the repo. Highest priority, overrides include_patterns and .gitignore.",
+    )
+    use_gitignore: Optional[bool] = Field(
+        default=True,
+        description="Whether to respect .gitignore rules when filtering files. Priority is lower than ignore_patterns, higher than include_patterns.",
+    )
+    use_default_ignore: Optional[bool] = Field(
+        default=True,
+        description="Whether to use default ignore patterns (e.g. .git/*, *.pyc, etc). Lowest priority.",
+    )
+
+
+class BaseCodeSplitConfig(BaseModel):
+    """
+    Code document split configuration
+    """
+
+    type: Literal["base_code"] = "base_code"
+    language: Language = Field(
+        ...,
+        description="""The programming language of the code.""",
+    )
+    chunk_size: int = Field(default=1500, ge=1, description="chunk max size for code")
+    chunk_overlap: int = Field(
+        default=150,
+        ge=0,
+        description="chunk overlap size for code, must be less than chunk_size",
+    )
+
+
 class ImageSplitConfig(BaseModel):
     type: Literal["image"] = "image"
+
+
+KnowledgeSplitConfig = Union[
+    BaseCharSplitConfig,
+    MarkdownSplitConfig,
+    TextSplitConfig,
+    JSONSplitConfig,
+    PDFSplitConfig,
+    GeaGraphSplitConfig,
+    GithubRepoParseConfig,
+    BaseCodeSplitConfig,
+]

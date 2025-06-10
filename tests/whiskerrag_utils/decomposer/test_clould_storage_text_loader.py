@@ -11,8 +11,8 @@ from whiskerrag_types.model.knowledge import (
     Knowledge,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
-    OpenUrlSourceConfig,
 )
+from whiskerrag_types.model.knowledge_source import OpenUrlSourceConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.loader.cloud_storage_text_loader import CloudStorageTextLoader
 

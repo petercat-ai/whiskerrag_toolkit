@@ -9,8 +9,8 @@ from whiskerrag_types.model.knowledge import (
     Knowledge,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
-    YuqueSourceConfig,
 )
+from whiskerrag_types.model.knowledge_source import YuqueSourceConfig
 from whiskerrag_utils import RegisterTypeEnum, get_register
 from whiskerrag_utils.registry import init_register
 

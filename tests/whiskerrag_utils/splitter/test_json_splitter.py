@@ -1,12 +1,7 @@
 import pytest
 
-from whiskerrag_types.model.knowledge import (
-    Knowledge,
-    KnowledgeTypeEnum,
-    TextSourceConfig,
-)
+from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Text
-from whiskerrag_types.model.splitter import JSONSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, get_register, init_register
 
 json_str = """
@@ -52,14 +47,20 @@ class TestJSONSplitter:
         assert res == [
             Text(
                 content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
-                metadata={},
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
             ),
-            Text(content='{"age": 30}', metadata={}),
+            Text(
+                content='{"age": 30}',
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
+            ),
             Text(
                 content='{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
-                metadata={},
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
             ),
-            Text(content='{"is_active": true}', metadata={}),
+            Text(
+                content='{"is_active": true}',
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
+            ),
         ]
 
     @pytest.mark.asyncio

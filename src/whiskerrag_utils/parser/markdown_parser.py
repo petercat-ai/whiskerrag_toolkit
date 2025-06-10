@@ -4,13 +4,13 @@ from typing import Dict, List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
-from whiskerrag_types.model.knowledge import Knowledge, MarkdownSplitConfig
+from whiskerrag_types.model import Knowledge, MarkdownSplitConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
 @register(RegisterTypeEnum.PARSER, "markdown")
-class MarkdownSplitter(BaseParser[Text]):
+class MarkdownParser(BaseParser[Text]):
     async def parse(
         self,
         knowledge: Knowledge,

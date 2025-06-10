@@ -15,8 +15,8 @@ from typing import (
     overload,
 )
 
-from whiskerrag_types.interface.decomposer_interface import BaseDecomposer
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
+from whiskerrag_types.interface.llm_interface import BaseLLM
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.interface.parser_interface import BaseParser
 from whiskerrag_types.interface.retriever_interface import BaseRetriever
@@ -50,6 +50,10 @@ class RegisterTypeEnum(str, Enum):
     """Parser: Processes and divides knowledge into smaller units
     Example: parse text into chunks or segments"""
 
+    LLM = "llm"
+    """LLM: Large Language Model for text generation and conversation
+    Example: GPT-4, Claude, LLaMA for chat and text generation"""
+
 
 RegisterKeyType = Union[KnowledgeSourceEnum, KnowledgeTypeEnum, EmbeddingModelEnum, str]
 T = TypeVar("T")
@@ -57,14 +61,14 @@ T_Embedding = TypeVar("T_Embedding", bound=BaseEmbedding)
 T_Loader = TypeVar("T_Loader", bound=BaseLoader)
 T_Retriever = TypeVar("T_Retriever", bound=BaseRetriever)
 T_Parser = TypeVar("T_Parser", bound=BaseParser)
-T_Decomposer = TypeVar("T_Decomposer", bound=BaseDecomposer)
+T_LLM = TypeVar("T_LLM", bound=BaseLLM)
 
 RegisteredType = Union[
     Type[T_Embedding],
     Type[T_Loader],
     Type[T_Retriever],
     Type[T_Parser],
-    Type[T_Decomposer],
+    Type[T_LLM],
 ]
 
 
@@ -91,7 +95,7 @@ EmbeddingRegistry = RegisterDict[BaseEmbedding]
 LoaderRegistry = RegisterDict[BaseLoader]
 RetrieverRegistry = RegisterDict[BaseRetriever]
 ParserRegistry = RegisterDict[BaseParser]
-DecomposerRegistry = RegisterDict[BaseDecomposer]
+LLMRegistry = RegisterDict[BaseLLM]
 
 
 _registry: Dict[
@@ -101,14 +105,14 @@ _registry: Dict[
         EmbeddingRegistry,
         RetrieverRegistry,
         ParserRegistry,
-        DecomposerRegistry,
+        LLMRegistry,
     ],
 ] = {
     RegisterTypeEnum.EMBEDDING: RegisterDict[BaseEmbedding](),
     RegisterTypeEnum.KNOWLEDGE_LOADER: RegisterDict[BaseLoader](),
     RegisterTypeEnum.RETRIEVER: RegisterDict[BaseRetriever](),
     RegisterTypeEnum.PARSER: RegisterDict[BaseParser](),
-    RegisterTypeEnum.DECOMPOSER: RegisterDict[BaseDecomposer](),
+    RegisterTypeEnum.LLM: RegisterDict[BaseLLM](),
 }
 
 BaseRegisterClsType = Union[
@@ -116,7 +120,7 @@ BaseRegisterClsType = Union[
     Type[BaseEmbedding],
     Type[BaseRetriever],
     Type[BaseParser],
-    Type[BaseDecomposer],
+    Type[BaseLLM],
     None,
 ]
 
@@ -142,8 +146,8 @@ def register(
             expected_base = BaseRetriever
         elif register_type == RegisterTypeEnum.PARSER:
             expected_base = BaseParser
-        elif register_type == RegisterTypeEnum.DECOMPOSER:
-            expected_base = BaseDecomposer
+        elif register_type == RegisterTypeEnum.LLM:
+            expected_base = BaseLLM
         else:
             raise ValueError(f"Unknown register type: {register_type}")
 
@@ -225,13 +229,6 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
 
 @overload
 def get_register(
-    register_type: Literal[RegisterTypeEnum.DECOMPOSER],
-    register_key: str,
-) -> Type[BaseDecomposer]: ...
-
-
-@overload
-def get_register(
     register_type: Literal[RegisterTypeEnum.KNOWLEDGE_LOADER],
     register_key: KnowledgeSourceEnum,
 ) -> Type[BaseLoader]: ...
@@ -258,6 +255,13 @@ def get_register(
 ) -> Type[BaseParser]: ...
 
 
+@overload
+def get_register(
+    register_type: Literal[RegisterTypeEnum.LLM],
+    register_key: str,
+) -> Type[BaseLLM]: ...
+
+
 def get_register(
     register_type: RegisterTypeEnum,
     register_key: RegisterKeyType,
@@ -266,7 +270,7 @@ def get_register(
     Type[BaseEmbedding],
     Type[BaseRetriever],
     Type[BaseParser],
-    Type[BaseDecomposer],
+    Type[BaseLLM],
 ]:
     registry = _registry.get(register_type)
     if registry is None:
@@ -280,8 +284,8 @@ def get_register(
         registry = cast(RetrieverRegistry, registry)
     elif register_type == RegisterTypeEnum.PARSER:
         registry = cast(ParserRegistry, registry)
-    elif register_type == RegisterTypeEnum.DECOMPOSER:
-        registry = cast(DecomposerRegistry, registry)
+    elif register_type == RegisterTypeEnum.LLM:
+        registry = cast(LLMRegistry, registry)
 
     cls = registry.get(register_key)
 
@@ -299,7 +303,7 @@ def get_registry_list() -> Dict[
         EmbeddingRegistry,
         RetrieverRegistry,
         ParserRegistry,
-        DecomposerRegistry,
+        LLMRegistry,
     ],
 ]:
     return _registry
