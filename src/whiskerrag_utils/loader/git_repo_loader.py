@@ -2,11 +2,9 @@ import logging
 import os
 import shutil
 import subprocess
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
-from git import Repo
-from git.exc import GitCommandNotFound, InvalidGitRepositoryError
 from langchain_text_splitters import Language
 from openai import BaseModel
 
@@ -69,12 +67,28 @@ def _get_temp_git_env() -> Dict[str, str]:
     }
 
 
+def _lazy_import_git() -> Tuple[Any, Any, Any]:
+    """Lazy import git modules to avoid direct dependency"""
+    try:
+        from git import Repo
+        from git.exc import GitCommandNotFound, InvalidGitRepositoryError
+
+        return Repo, GitCommandNotFound, InvalidGitRepositoryError
+    except ImportError as e:
+        raise ImportError(
+            "GitPython is required for Git repository loading. "
+            "Please install it with: pip install GitPython"
+        ) from e
+
+
 @register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_REPO)
 class GithubRepoLoader(BaseLoader):
     repo_name: str
     branch_name: Optional[str] = None
     token: Optional[str] = None
-    local_repo: Optional[Repo] = None
+    local_repo: Optional[Any] = (
+        None  # Use Any instead of object to avoid mypy attr-defined errors
+    )
     knowledge: Knowledge
 
     @property
@@ -122,6 +136,8 @@ class GithubRepoLoader(BaseLoader):
             )
 
     def _load_repo(self) -> None:
+        Repo, GitCommandNotFound, InvalidGitRepositoryError = _lazy_import_git()
+
         if not _check_git_installation():
             raise ValueError("Git is not installed in the system")
 
@@ -176,6 +192,8 @@ class GithubRepoLoader(BaseLoader):
             )
 
     def _clone_repo(self, clone_url: str, git_env: Dict[str, str]) -> None:
+        Repo, GitCommandNotFound, InvalidGitRepositoryError = _lazy_import_git()
+
         if not self.repo_path:
             raise ValueError("Repository path not initialized")
 
@@ -207,6 +225,10 @@ class GithubRepoLoader(BaseLoader):
             raise
 
     def _update_repo(self) -> None:
+        # Ensure git is available before proceeding
+        if not _check_git_installation():
+            raise ValueError("Git is not installed in the system")
+
         if not self.local_repo:
             raise ValueError("Repository not initialized")
 
@@ -444,6 +466,10 @@ class GithubRepoLoader(BaseLoader):
         if not self.local_repo or not self.repo_path:
             raise ValueError("Repository not properly initialized")
 
+        # Ensure git is available before proceeding with git operations
+        if not _check_git_installation():
+            raise ValueError("Git is not installed in the system")
+
         # count the total file size of the repo
         total_size = 0
         for root, _, files in os.walk(self.repo_path):
@@ -573,6 +599,10 @@ class GithubRepoLoader(BaseLoader):
             if not self.local_repo:
                 raise ValueError("Repository not initialized")
 
+            # Ensure git is available before accessing git objects
+            if not _check_git_installation():
+                raise ValueError("Git is not installed in the system")
+
             first_commit = next(
                 self.local_repo.iter_commits(
                     rev=self.branch_name, max_count=1, reverse=True
@@ -613,6 +643,10 @@ class GithubRepoLoader(BaseLoader):
 
         if not self.repo_path:
             raise ValueError("Repository path not initialized")
+
+        # Ensure git is available before accessing git objects
+        if not _check_git_installation():
+            raise ValueError("Git is not installed in the system")
 
         full_path = os.path.join(self.repo_path, path)
         if not os.path.exists(full_path):

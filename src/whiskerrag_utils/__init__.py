@@ -1,7 +1,5 @@
 import asyncio
-from typing import List, Optional, TypedDict, Union
-
-from git import Tuple
+from typing import List, Optional, Tuple, TypedDict, Union
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.model.chunk import Chunk
