@@ -1,4 +1,5 @@
 import importlib
+import logging
 import os
 from enum import Enum
 from pathlib import Path
@@ -25,6 +26,8 @@ from whiskerrag_types.model.knowledge import (
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
 )
+
+logger = logging.getLogger("whisker")
 
 
 class RegisterTypeEnum(str, Enum):
@@ -160,23 +163,25 @@ def register(
         if hasattr(cls, "health_check") and callable(getattr(cls, "health_check")):
             health_check_result = cls.sync_health_check()
             if not health_check_result:
-                print(
+                logger.info(
                     f"Health check failed for class {cls.__name__}. Registration aborted."
                 )
                 return cls
-        print(f"Registering {cls.__name__} as {register_type} with key {register_key}")
+        logger.info(
+            f"Registering {cls.__name__} as {register_type} with key {register_key}"
+        )
         if register_key in _registry[register_type]:
             existing_cls = _registry[register_type][register_key]
             existing_order = getattr(existing_cls, "_register_order", 0)
             if order <= existing_order:
-                print(
+                logger.debug(
                     f"Skipping registration of {cls.__name__}: "
                     f"existing implementation {existing_cls.__name__} "
                     f"has higher or equal priority ({existing_order} >= {order})"
                 )
                 return cls
 
-            print(
+            logger.info(
                 f"Overriding {existing_cls.__name__} (order={existing_order}) "
                 f"with {cls.__name__} (order={order})"
             )
@@ -219,12 +224,12 @@ def init_register(package_name: str = "whiskerrag_utils") -> None:
                 try:
                     importlib.import_module(f"{package_name}.{module_name}")
                 except ImportError as e:
-                    print(f"Error importing module {module_name}: {e}")
+                    logger.error(f"Error importing module {module_name}: {e}")
 
         _loaded_packages.add(package_name)
 
     except ImportError as e:
-        print(f"Error importing package {package_name}: {e}")
+        logger.error(f"Error importing package {package_name}: {e}")
 
 
 @overload
