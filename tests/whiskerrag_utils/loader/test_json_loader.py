@@ -6,9 +6,9 @@ from whiskerrag_types.model.knowledge import (
     Knowledge,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
-    OpenUrlSourceConfig,
     TextSourceConfig,
 )
+from whiskerrag_types.model.knowledge_source import OpenUrlSourceConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils import RegisterTypeEnum, get_register
 from whiskerrag_utils.registry import init_register
@@ -42,10 +42,8 @@ class TestJSONLoader:
             RegisterTypeEnum.KNOWLEDGE_LOADER, knowledge.source_type
         )
         res = await LoaderCls(knowledge).load()
-        print("----len", len(res[0].content))
         SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
         res = await SplitterCls().parse(knowledge, res[0])
-        print("----len", len(res))
 
     @pytest.mark.asyncio
     async def test_user_input_json(self) -> None:
@@ -86,12 +84,18 @@ class TestJSONLoader:
         assert res == [
             Text(
                 content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
-                metadata={},
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
             ),
-            Text(content='{"age": 30}', metadata={}),
+            Text(
+                content='{"age": 30}',
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
+            ),
             Text(
                 content='{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
-                metadata={},
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
             ),
-            Text(content='{"is_active": true}', metadata={}),
+            Text(
+                content='{"is_active": true}',
+                metadata={"_knowledge_type": "json", "_reference_url": ""},
+            ),
         ]

@@ -13,4 +13,24 @@ class BaseLoader(ABC, Generic[T]):
 
     @abstractmethod
     async def load(self) -> List[T]:
+        """
+        Load the knowledge into a list of items.
+        This method should be implemented by subclasses to define how the knowledge is loaded.
+        """
+        pass
+
+    @abstractmethod
+    async def decompose(self) -> List[Knowledge]:
+        """
+        Decompose the knowledge into smaller parts.
+        This method should be implemented by subclasses to define how the knowledge is decomposed.
+        """
+        pass
+
+    @abstractmethod
+    async def on_load_finished(self) -> None:
+        """
+        Lifecycle method called when the loading task is finished.
+        Subclasses can implement this to perform any cleanup or post-processing.
+        """
         pass

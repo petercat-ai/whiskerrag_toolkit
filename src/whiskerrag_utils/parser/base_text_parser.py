@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Union
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
 from whiskerrag_types.model.knowledge import Knowledge
-from whiskerrag_types.model.multi_modal import Text
+from whiskerrag_types.model.multi_modal import Image, Text
 from whiskerrag_types.model.splitter import BaseCharSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
@@ -49,7 +49,23 @@ class BaseTextParser(BaseParser[Text]):
             keep_separator=False,
         )
         split_texts = splitter.split_text(content.content)
-        return [Text(content=text, metadata=content.metadata) for text in split_texts]
+
+        # Create Text objects with proper metadata inheritance
+        results: List[Union[Text, Image]] = []
+        for text in split_texts:
+            # Start with knowledge.metadata as base
+            combined_metadata = {**knowledge.metadata}
+
+            # Add Text.metadata from content (loader/previous parser stage)
+            if content.metadata:
+                combined_metadata.update(content.metadata)
+
+            parser_metadata: dict[str, str] = {}
+
+            combined_metadata.update(parser_metadata)
+            results.append(Text(content=text, metadata=combined_metadata))
+
+        return results
 
     async def batch_parse(
         self,

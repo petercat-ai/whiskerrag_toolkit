@@ -1,5 +1,4 @@
 from .db_engine_plugin_interface import DBPluginInterface
-from .decomposer_interface import BaseDecomposer
 from .embed_interface import BaseEmbedding
 from .loader_interface import BaseLoader
 from .logger_interface import LoggerManagerInterface
@@ -17,6 +16,5 @@ __all__ = [
     "LoggerManagerInterface",
     "SettingsInterface",
     "TaskEnginPluginInterface",
-    "BaseDecomposer",
     "ParseResult",
 ]

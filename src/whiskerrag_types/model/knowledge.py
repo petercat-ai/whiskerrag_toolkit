@@ -1,11 +1,9 @@
 from datetime import datetime, timezone
 from enum import Enum
-from functools import lru_cache
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 from uuid import UUID, uuid4
 
 from pydantic import (
-    BaseModel,
     ConfigDict,
     Field,
     field_serializer,
@@ -13,154 +11,74 @@ from pydantic import (
     model_validator,
 )
 
-from whiskerrag_types.model.splitter import (
-    BaseCharSplitConfig,
-    GeaGraphSplitConfig,
-    JSONSplitConfig,
-    MarkdownSplitConfig,
-    PDFSplitConfig,
-    TextSplitConfig,
+from whiskerrag_types.model.knowledge_source import (
+    KnowledgeSourceConfig,
+    KnowledgeSourceEnum,
+    TextSourceConfig,
 )
+from whiskerrag_types.model.splitter import KnowledgeSplitConfig
 from whiskerrag_types.model.timeStampedModel import TimeStampedModel
-from whiskerrag_types.model.utils import calculate_sha256
-
-
-class MetadataSerializer:
-    @staticmethod
-    def deep_sort_dict(data: Union[Dict, List, Any]) -> Union[Dict, List, Any]:
-        if isinstance(data, dict):
-            return {
-                k: MetadataSerializer.deep_sort_dict(data[k])
-                for k in sorted(data.keys())
-            }
-        elif isinstance(data, list):
-            return [MetadataSerializer.deep_sort_dict(item) for item in data]
-        return data
-
-    @staticmethod
-    @lru_cache(maxsize=1024)
-    def serialize(metadata: Optional[Dict]) -> Optional[Dict]:
-        if metadata is None:
-            return None
-        sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
-        return sorted_metadata if isinstance(sorted_metadata, dict) else None
-
-
-class KnowledgeSourceEnum(str, Enum):
-    """
-    Specifies the source of knowledge, which influences the behavior of the resource loader
-    """
-
-    GITHUB_REPO = "github_repo"
-    GITHUB_FILE = "github_file"
-    USER_INPUT_TEXT = "user_input_text"
-    CLOUD_STORAGE_TEXT = "cloud_storage_text"
-    CLOUD_STORAGE_IMAGE = "cloud_storage_image"
-    YUQUE = "yuque"
-
-
-class GithubRepoSourceConfig(BaseModel):
-    repo_name: str = Field(..., description="github repo url")
-    branch: Optional[str] = Field(None, description="branch name of the repo")
-    commit_id: Optional[str] = Field(None, description="commit id of the repo")
-    auth_info: Optional[str] = Field(None, description="authentication information")
-
-
-class GithubFileSourceConfig(GithubRepoSourceConfig):
-    path: str = Field(..., description="path of the file in the repo")
-
-
-class S3SourceConfig(BaseModel):
-    bucket: str = Field(..., description="s3 bucket name")
-    key: str = Field(..., description="s3 key")
-    version_id: Optional[str] = Field(None, description="s3 version id")
-    region: Optional[str] = Field(None, description="s3 region")
-    access_key: Optional[str] = Field(None, description="s3 access key")
-    secret_key: Optional[str] = Field(None, description="s3 secret key")
-    auth_info: Optional[str] = Field(None, description="s3 session token")
-
-
-class OpenUrlSourceConfig(BaseModel):
-    url: str = Field(..., description="cloud storage url, such as oss, cos, etc.")
-
-
-class OpenIdSourceConfig(BaseModel):
-    id: str = Field(..., description="cloud storage file id, used for afts")
-
-
-class YuqueSourceConfig(BaseModel):
-    api_url: str = Field(
-        default="https://www.yuque.com",
-        description="the yuque api url",
-    )
-    group_login: str = Field(..., description="the yuque group id")
-    book_slug: Optional[str] = Field(
-        default=None,
-        description="the yuque book id, if not set, will use the group all book",
-    )
-    document_id: Optional[Union[str, int]] = Field(
-        default=None,
-        description="the yuque document id in book, if not set, will use the book all doc",
-    )
-    auth_info: str = Field(..., description="authentication information")
-
-
-class TextSourceConfig(BaseModel):
-    text: str = Field(
-        default="",
-        min_length=1,
-        max_length=30000,
-        description="Text content, length range 1-30000 characters",
-    )
+from whiskerrag_types.model.utils import MetadataSerializer, calculate_sha256
 
 
 class KnowledgeTypeEnum(str, Enum):
     """
-    mime type of the knowledge. If multiple files are included and require a decomposer, please set the type to 'folder'
+    mime type of the knowledge. The type is used to determine how to process the knowledge and
+    is also used to determine the type of the knowledge resource.
+    different types of knowledge will be processed differently and have different load、split configurations.
+    For example, text will be processed by splitter, while code will be processed by language parser.
     """
 
     TEXT = "text"
     IMAGE = "image"
     MARKDOWN = "markdown"
+    LATEX = "latex"
     JSON = "json"
     DOCX = "docx"
     PDF = "pdf"
     QA = "qa"
-    YUQUEDOC = "yuquedoc"
     FOLDER = "folder"
+    YUQUEDOC = "yuquedoc"
+    YUQUE_BOOK = "yuque_book"
+    GITHUB_REPO = "github_repo"
+    # Code types， same as the language types
+    CPP = "cpp"
+    GO = "go"
+    JAVA = "java"
+    KOTLIN = "kotlin"
+    JS = "js"
+    TS = "ts"
+    PHP = "php"
+    PROTO = "proto"
+    PYTHON = "python"
+    RST = "rst"
+    RUBY = "ruby"
+    RUST = "rust"
+    SCALA = "scala"
+    SWIFT = "swift"
+    HTML = "html"
+    SOL = "sol"
+    CSHARP = "csharp"
+    COBOL = "cobol"
+    C = "c"
+    LUA = "lua"
+    PERL = "perl"
+    HASKELL = "haskell"
+    ELIXIR = "elixir"
+    POWERSHELL = "powershell"
 
 
 class EmbeddingModelEnum(str, Enum):
     OPENAI = "openai"
-    # 轻量级
+    # lightweight
     ALL_MINILM_L6_V2 = "sentence-transformers/all-MiniLM-L6-v2"
-    # 通用性能
     all_mpnet_base_v2 = "sentence-transformers/all-mpnet-base-v2"
-    # 多语言
+    # multi languge
     PARAPHRASE_MULTILINGUAL_MINILM_L12_V2 = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
-    # 中文
+    # chinese
     TEXT2VEC_BASE_CHINESE = "shibing624/text2vec-base-chinese"
-
-
-KnowledgeSplitConfig = Union[
-    BaseCharSplitConfig,
-    MarkdownSplitConfig,
-    TextSplitConfig,
-    JSONSplitConfig,
-    PDFSplitConfig,
-    GeaGraphSplitConfig,
-]
-
-KnowledgeSourceConfig = Union[
-    GithubRepoSourceConfig,
-    GithubFileSourceConfig,
-    S3SourceConfig,
-    OpenUrlSourceConfig,
-    TextSourceConfig,
-    YuqueSourceConfig,
-]
 
 
 class Knowledge(TimeStampedModel):
@@ -234,14 +152,35 @@ class Knowledge(TimeStampedModel):
         if isinstance(data, dict) and not data.get("knowledge_id"):
             data["knowledge_id"] = str(uuid4())
 
+        if "metadata" not in data:
+            data["metadata"] = {}
+
+        if "knowledge_type" in data:
+            knowledge_type = data["knowledge_type"]
+            if isinstance(knowledge_type, KnowledgeTypeEnum):
+                knowledge_type_str = knowledge_type.value
+            else:
+                knowledge_type_str = str(knowledge_type)
+            data["metadata"]["_knowledge_type"] = knowledge_type_str
+
+        if "_reference_url" not in data.get("metadata", {}):
+            data["metadata"]["_reference_url"] = ""
+
         return data
 
     @field_serializer("metadata")
-    def serialize_metadata(self, metadata: dict) -> Optional[dict]:
-        if metadata is None:
-            return None
+    def serialize_metadata(self, metadata: dict) -> dict:
+        metadata = dict(metadata or {})
+        knowledge_type = getattr(self, "knowledge_type", None)
+        if knowledge_type:
+            metadata["_knowledge_type"] = (
+                knowledge_type.value
+                if isinstance(knowledge_type, KnowledgeTypeEnum)
+                else str(knowledge_type)
+            )
+        metadata.setdefault("_reference_url", "")
         sorted_metadata = MetadataSerializer.deep_sort_dict(metadata)
-        return sorted_metadata if isinstance(sorted_metadata, dict) else None
+        return sorted_metadata if isinstance(sorted_metadata, dict) else {}
 
     @field_serializer("knowledge_type")
     def serialize_knowledge_type(

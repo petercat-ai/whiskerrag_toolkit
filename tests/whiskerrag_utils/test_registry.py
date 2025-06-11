@@ -1,4 +1,6 @@
+import importlib
 import os
+import sys
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.interface.loader_interface import BaseLoader
@@ -24,7 +26,19 @@ class TestRegister:
         assert issubclass(text_loader, BaseLoader)
 
     def test_get_openai_embedding(self) -> None:
+        # Set environment variable before any registration
         os.environ["OPENAI_API_KEY"] = "test_openai_api_key"
+
+        # Force re-registration by clearing the loaded packages and reimporting
+        from whiskerrag_utils.registry import _loaded_packages
+
+        _loaded_packages.discard("whiskerrag_utils.embedding")
+
+        # Force reimport of the embedding module
+        module_name = "whiskerrag_utils.embedding.openai"
+        if module_name in sys.modules:
+            importlib.reload(sys.modules[module_name])
+
         init_register("whiskerrag_utils.embedding")
         embedding = get_register(RegisterTypeEnum.EMBEDDING, EmbeddingModelEnum.OPENAI)
         assert issubclass(embedding, BaseEmbedding)

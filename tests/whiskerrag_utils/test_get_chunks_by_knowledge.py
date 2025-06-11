@@ -90,4 +90,9 @@ async def test_get_chunks_by_knowledge_text() -> None:
         chunks = await get_chunks_by_knowledge(knowledge)
         assert len(chunks) == 4
         assert chunks[0].context == "split1"
-        assert chunks[0].metadata == {"key1": "value11", "key2": "value22"}
+        assert chunks[0].metadata == {
+            "key1": "value11",
+            "key2": "value22",
+            "_knowledge_type": "markdown",
+            "_reference_url": "",
+        }

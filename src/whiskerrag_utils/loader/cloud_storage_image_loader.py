@@ -5,11 +5,11 @@ from botocore.client import Config  # type: ignore
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.model.knowledge import (
+    Knowledge,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
-    OpenUrlSourceConfig,
-    S3SourceConfig,
 )
+from whiskerrag_types.model.knowledge_source import OpenUrlSourceConfig, S3SourceConfig
 from whiskerrag_types.model.multi_modal import Image
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
@@ -88,3 +88,10 @@ class CloudStorageTextLoader(BaseLoader[Image]):
 
         except Exception as e:
             raise Exception(f"Failed to load content from cloud storage: {e}")
+
+    async def decompose(self) -> List[Knowledge]:
+        return []
+
+    async def on_load_finished(self) -> None:
+        # No specific cleanup needed for CloudStorageTextLoader
+        pass

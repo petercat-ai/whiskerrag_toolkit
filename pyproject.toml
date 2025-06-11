@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "whiskerrag"
-version = "0.0.77"
+version = "0.1.0"
 description = "A utility package for RAG operations"
 authors = ["petercat.ai <antd.antgroup@gmail.com>"]
 readme = "README.md"
@@ -27,12 +27,13 @@ langchain-community = ">=0.2.11"
 langchain-core = ">=0.2.28"
 langchain-openai = ">=0.1.20"
 pydantic = ">=2.0.0,<3.0.0"
-PyGithub = "2.3.0"
 python-dateutil = ">=2.8.2"
 requests = ">=2.32.3"
 typing-extensions = ">=4.12.2"
 urllib3 = ">=1.25.3,<3.0.0"
 boto3 = "^1.38.13"
+gitpython = "^3.1.44"
+deprecated = "^1.2.18"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3.4"
@@ -58,11 +59,17 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
+extend-exclude = '''
+/(
+    \.cursor
+)/
+'''
 
 [tool.isort]
 profile = "black"
 multi_line_output = 3
 line_length = 88
+skip_glob = [".cursor/*"]
 
 [tool.mypy]
 python_version = "3.9"
@@ -77,7 +84,7 @@ check_untyped_defs = true
 ignore_missing_imports = false
 follow_imports = "silent"
 show_error_codes = true
-exclude = ["tests/", "docs/", "examples/"]
+exclude = ["tests/", "docs/", "examples/", ".cursor/"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -112,7 +119,7 @@ exclude_lines = [
 ]
 ignore_errors = true
 source = ["src"]
-omit = ["tests/*", "setup.py", "scripts/*", "workflows/*"]
+omit = ["tests/*", "setup.py", "scripts/*", "workflows/*", ".cursor/*"]
 
 [tool.coverage.run]
 branch = true

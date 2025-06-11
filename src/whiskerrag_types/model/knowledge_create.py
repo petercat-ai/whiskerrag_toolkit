@@ -4,10 +4,12 @@ from pydantic import BaseModel, Field, field_serializer, model_validator
 
 from whiskerrag_types.model.knowledge import (
     EmbeddingModelEnum,
+    Knowledge,
+    KnowledgeTypeEnum,
+)
+from whiskerrag_types.model.knowledge_source import (
     GithubRepoSourceConfig,
     KnowledgeSourceEnum,
-    KnowledgeTypeEnum,
-    MetadataSerializer,
     OpenIdSourceConfig,
     OpenUrlSourceConfig,
     S3SourceConfig,
@@ -15,8 +17,8 @@ from whiskerrag_types.model.knowledge import (
     YuqueSourceConfig,
 )
 from whiskerrag_types.model.splitter import (
-    BaseCharSplitConfig,
     GeaGraphSplitConfig,
+    GithubRepoParseConfig,
     ImageSplitConfig,
     JSONSplitConfig,
     MarkdownSplitConfig,
@@ -24,6 +26,8 @@ from whiskerrag_types.model.splitter import (
     TextSplitConfig,
     YuqueSplitConfig,
 )
+from whiskerrag_types.model.tenant import Tenant
+from whiskerrag_types.model.utils import MetadataSerializer
 
 
 class KnowledgeCreateBase(BaseModel):
@@ -145,14 +149,14 @@ class PDFCreate(KnowledgeCreateBase):
 
 
 class GithubRepoCreate(KnowledgeCreateBase):
-    knowledge_type: Literal[KnowledgeTypeEnum.FOLDER] = Field(
-        KnowledgeTypeEnum.FOLDER, description="type of knowledge resource"
+    knowledge_type: Literal[KnowledgeTypeEnum.GITHUB_REPO] = Field(
+        KnowledgeTypeEnum.GITHUB_REPO, description="type of knowledge resource"
     )
     source_config: GithubRepoSourceConfig = Field(
         ...,
         description="source config of the knowledge",
     )
-    split_config: BaseCharSplitConfig = Field(
+    split_config: GithubRepoParseConfig = Field(
         ...,
         description="split config of the knowledge",
     )
@@ -206,10 +210,10 @@ class ImageCreate(KnowledgeCreateBase):
 
 
 class YuqueCreate(KnowledgeCreateBase):
-    knowledge_type: Literal[KnowledgeTypeEnum.YUQUEDOC, KnowledgeTypeEnum.FOLDER] = (
-        Field(
-            default=KnowledgeTypeEnum.YUQUEDOC, description="type of knowledge resource"
-        )
+    knowledge_type: Literal[
+        KnowledgeTypeEnum.YUQUEDOC, KnowledgeTypeEnum.GITHUB_REPO
+    ] = Field(
+        default=KnowledgeTypeEnum.YUQUEDOC, description="type of knowledge resource"
     )
     source_type: Literal[KnowledgeSourceEnum.YUQUE] = Field(
         KnowledgeSourceEnum.YUQUE, description="source type"
@@ -227,7 +231,6 @@ class YuqueCreate(KnowledgeCreateBase):
 # TODO: add more knowledge types
 # EXCEL = "excel"
 # PPTX = "pptx"
-
 KnowledgeCreateUnion = Union[
     TextCreate,
     ImageCreate,
@@ -238,3 +241,73 @@ KnowledgeCreateUnion = Union[
     QACreate,
     YuqueCreate,
 ]
+
+
+def text_create_to_knowledge(record: TextCreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def image_create_to_knowledge(record: ImageCreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def json_create_to_knowledge(record: JSONCreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def markdown_create_to_knowledge(record: MarkdownCreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def pdf_create_to_knowledge(record: PDFCreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def github_repo_create_to_knowledge(
+    record: GithubRepoCreate, tenant: Tenant
+) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def qa_create_to_knowledge(record: QACreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+def yuque_create_to_knowledge(record: YuqueCreate, tenant: Tenant) -> Knowledge:
+    return Knowledge(
+        **record.model_dump(),
+        tenant_id=tenant.tenant_id,
+    )
+
+
+KNOWLEDGE_CREATE_2_KNOWLEDGE_STRATEGY_MAP = {
+    TextCreate: text_create_to_knowledge,
+    ImageCreate: image_create_to_knowledge,
+    JSONCreate: json_create_to_knowledge,
+    MarkdownCreate: markdown_create_to_knowledge,
+    PDFCreate: pdf_create_to_knowledge,
+    GithubRepoCreate: github_repo_create_to_knowledge,
+    QACreate: qa_create_to_knowledge,
+    YuqueCreate: yuque_create_to_knowledge,
+}

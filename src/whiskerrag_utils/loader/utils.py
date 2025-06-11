@@ -7,7 +7,7 @@ import requests  # type: ignore
 from botocore.client import Config  # type: ignore
 from botocore.exceptions import ClientError  # type: ignore
 
-from whiskerrag_types.model.knowledge import S3SourceConfig
+from whiskerrag_types.model.knowledge_source import S3SourceConfig
 
 _MAX_FILE_SIZE = 250 * 1024 * 1024
 

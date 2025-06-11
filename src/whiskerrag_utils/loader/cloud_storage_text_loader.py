@@ -3,11 +3,11 @@ from typing import List, Tuple
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.model.knowledge import (
+    Knowledge,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
-    OpenUrlSourceConfig,
-    S3SourceConfig,
 )
+from whiskerrag_types.model.knowledge_source import OpenUrlSourceConfig, S3SourceConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_utils.loader.utils import (
     download_from_s3_to_local,
@@ -100,3 +100,9 @@ class CloudStorageTextLoader(BaseLoader[Text]):
 
         except Exception as e:
             raise Exception(f"Failed to load content from cloud storage: {e}")
+
+    async def decompose(self) -> List[Knowledge]:
+        return []
+
+    async def on_load_finished(self) -> None:
+        pass

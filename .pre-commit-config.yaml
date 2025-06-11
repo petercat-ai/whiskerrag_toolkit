@@ -3,6 +3,7 @@ repos:
     rev: 5.12.0
     hooks:
     -   id: isort
+        exclude: '^\.cursor/.*'
 
 - repo: local
   hooks:
@@ -18,8 +19,14 @@ repos:
     rev: v4.5.0
     hooks:
     -   id: trailing-whitespace
+        exclude: '^\.cursor/.*'
     -   id: end-of-file-fixer
+        exclude: '^\.cursor/.*'
     -   id: check-yaml
+        exclude: '^\.cursor/.*'
     -   id: check-added-large-files
+        exclude: '^\.cursor/.*'
     -   id: check-toml
+        exclude: '^\.cursor/.*'
     -   id: check-merge-conflict
+        exclude: '^\.cursor/.*'

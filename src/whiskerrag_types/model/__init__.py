@@ -3,16 +3,13 @@ from .chunk import Chunk
 from .converter import GenericConverter
 from .knowledge import (
     EmbeddingModelEnum,
-    GithubFileSourceConfig,
-    GithubRepoSourceConfig,
     Knowledge,
     KnowledgeSourceEnum,
-    KnowledgeSplitConfig,
     KnowledgeTypeEnum,
-    S3SourceConfig,
     TextSourceConfig,
 )
 from .knowledge_create import (
+    KNOWLEDGE_CREATE_2_KNOWLEDGE_STRATEGY_MAP,
     GithubRepoCreate,
     ImageCreate,
     JSONCreate,
@@ -21,6 +18,11 @@ from .knowledge_create import (
     PDFCreate,
     QACreate,
     TextCreate,
+)
+from .knowledge_source import (
+    GithubFileSourceConfig,
+    GithubRepoSourceConfig,
+    S3SourceConfig,
 )
 from .language import LanguageEnum
 from .page import (
@@ -41,9 +43,12 @@ from .rule import GlobalRule, Rule, SpaceRule
 from .space import Space, SpaceCreate, SpaceResponse
 from .splitter import (
     BaseCharSplitConfig,
+    BaseCodeSplitConfig,
     GeaGraphSplitConfig,
+    GithubRepoParseConfig,
     ImageSplitConfig,
     JSONSplitConfig,
+    KnowledgeSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
     TextSplitConfig,
@@ -105,5 +110,8 @@ __all__ = [
     "GeaGraphSplitConfig",
     "YuqueSplitConfig",
     "ImageSplitConfig",
+    "BaseCodeSplitConfig",
+    "GithubRepoParseConfig",
     "Wiki",
+    "KNOWLEDGE_CREATE_2_KNOWLEDGE_STRATEGY_MAP",
 ]
