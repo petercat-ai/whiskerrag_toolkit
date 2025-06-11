@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, TypeVar, Union
 
@@ -25,7 +26,6 @@ from whiskerrag_types.model.retrieval import (
     RetrievalRequest,
 )
 
-from .logger_interface import LoggerManagerInterface
 from .settings_interface import SettingsInterface
 
 T = TypeVar("T", bound=BaseModel)
@@ -33,13 +33,10 @@ T = TypeVar("T", bound=BaseModel)
 
 class DBPluginInterface(ABC):
     settings: SettingsInterface
-    logger: LoggerManagerInterface
 
-    def __init__(
-        self, logger: LoggerManagerInterface, settings: SettingsInterface
-    ) -> None:
+    def __init__(self, settings: SettingsInterface) -> None:
         self.settings = settings
-        self.logger = logger
+        self.logger = logging.getLogger("whisker")
         self._initialized: bool = False
 
     async def ensure_initialized(self) -> None:

@@ -1,7 +1,7 @@
 from .db_engine_plugin_interface import DBPluginInterface
 from .embed_interface import BaseEmbedding
+from .fastapi_plugin_interface import FastAPIPluginInterface
 from .loader_interface import BaseLoader
-from .logger_interface import LoggerManagerInterface
 from .parser_interface import BaseParser, ParseResult
 from .retriever_interface import BaseRetriever
 from .settings_interface import SettingsInterface
@@ -13,8 +13,8 @@ __all__ = [
     "BaseParser",
     "BaseRetriever",
     "BaseLoader",
-    "LoggerManagerInterface",
     "SettingsInterface",
     "TaskEnginPluginInterface",
     "ParseResult",
+    "FastAPIPluginInterface",
 ]
