@@ -1,22 +1,21 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from ..interface import DBPluginInterface, LoggerManagerInterface, SettingsInterface
+from ..interface import DBPluginInterface, SettingsInterface
 from ..model import Knowledge, Task, Tenant
 
 
 class TaskEnginPluginInterface(ABC):
     settings: SettingsInterface
-    logger: LoggerManagerInterface
     db_plugin: Optional[DBPluginInterface] = None
 
     def __init__(
         self,
-        logger: LoggerManagerInterface,
         settings: SettingsInterface,
     ):
         self.settings = settings
-        self.logger = logger
+        self.logger = logging.getLogger("whisker")
         self._initialized: bool = False
 
     async def ensure_initialized(self, db_plugin: Optional[DBPluginInterface]) -> None:
