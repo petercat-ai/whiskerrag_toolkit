@@ -1,7 +1,7 @@
 import os
 import tempfile
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from git import Repo
@@ -22,17 +22,17 @@ from whiskerrag_utils.loader.git_repo_loader import GithubRepoLoader
 
 @pytest.fixture
 def sample_repo() -> Any:
-    """创建一个临时的 Git 仓库用于测试"""
+    """create a temporary git repo for testing"""
     repo_path = tempfile.mkdtemp()
     repo = Repo.init(repo_path)
 
-    # 创建测试文件
+    # create test files
     md_content = "# Test Markdown\nThis is a test."
     os.makedirs(os.path.join(repo_path, "docs"))
     with open(os.path.join(repo_path, "docs/test.md"), "w") as f:
         f.write(md_content)
 
-    # 添加并提交文件
+    # add and commit files
     repo.index.add(["docs/test.md"])
     repo.index.commit("Initial commit")
 
@@ -48,7 +48,7 @@ def sample_repo() -> Any:
 
 @pytest.fixture
 def mock_knowledge() -> Knowledge:
-    """创建测试用的 Knowledge 实例"""
+    """create a test Knowledge instance"""
     return Knowledge(
         knowledge_name="petercat-ai/petercat",
         source_type=KnowledgeSourceEnum.GITHUB_REPO,
@@ -78,19 +78,28 @@ class TestGithubRepoLoader:
 
     @pytest.mark.asyncio
     async def test_initialization(self, mock_knowledge) -> None:
-        """测试加载器初始化"""
+        """test loader initialization"""
+        # Mock the lazy import function to return mock git classes
+        mock_repo_class = MagicMock()
+        mock_clone_from = MagicMock()
+        mock_repo_class.clone_from = mock_clone_from
+
         with patch(
-            "whiskerrag_utils.loader.git_repo_loader.Repo.clone_from"
-        ) as mock_clone:
+            "whiskerrag_utils.loader.git_repo_loader._lazy_import_git",
+            return_value=(mock_repo_class, Exception, Exception),
+        ), patch(
+            "whiskerrag_utils.loader.git_repo_loader._check_git_installation",
+            return_value=True,
+        ):
             loader = GithubRepoLoader(mock_knowledge)
             assert loader.repo_name == "petercat-ai/petercat"
             assert loader.branch_name == "main"
             assert loader.token == "mock_token"
-            assert mock_clone.called
+            assert mock_clone_from.called
 
     @pytest.mark.asyncio
     async def test_get_file_list(self, sample_repo, mock_knowledge) -> None:
-        """测试文件列表获取"""
+        """test file list retrieval"""
 
         def fake_load_repo(self):
             self.repo_path = sample_repo
@@ -120,9 +129,18 @@ class TestGithubRepoLoader:
 
     @pytest.mark.asyncio
     async def test_cleanup(self, mock_knowledge) -> None:
+        # Mock the lazy import function to return mock git classes
+        mock_repo_class = MagicMock()
+        mock_clone_from = MagicMock()
+        mock_repo_class.clone_from = mock_clone_from
+
         with patch(
-            "whiskerrag_utils.loader.git_repo_loader.Repo.clone_from"
-        ) as mock_clone:
+            "whiskerrag_utils.loader.git_repo_loader._lazy_import_git",
+            return_value=(mock_repo_class, Exception, Exception),
+        ), patch(
+            "whiskerrag_utils.loader.git_repo_loader._check_git_installation",
+            return_value=True,
+        ):
             loader = GithubRepoLoader(mock_knowledge)
             repo_path = loader.repo_path
 
@@ -142,7 +160,7 @@ class TestGithubRepoLoader:
                 auth_info="test_token",
                 commit_id=None,
                 path="docs/test.md",
-            ),  # 有 path 但依然无效（比如 repo 不存在）
+            ),  # has path but still invalid (e.g. repo does not exist)
             knowledge_name="test",
             space_id="test_space",
             tenant_id="test",
@@ -175,10 +193,18 @@ class TestGithubRepoLoader:
             assert "_knowledge_type" in metadata
 
     def test_error_handling(self, mock_knowledge) -> None:
-        """测试错误处理"""
+        """test error handling"""
+        # Mock the lazy import function and make clone_from raise an exception
+        mock_repo_class = MagicMock()
+        mock_clone_from = MagicMock(side_effect=Exception("Test error"))
+        mock_repo_class.clone_from = mock_clone_from
+
         with patch(
-            "whiskerrag_utils.loader.git_repo_loader.Repo.clone_from",
-            side_effect=Exception("Test error"),
+            "whiskerrag_utils.loader.git_repo_loader._lazy_import_git",
+            return_value=(mock_repo_class, Exception, Exception),
+        ), patch(
+            "whiskerrag_utils.loader.git_repo_loader._check_git_installation",
+            return_value=True,
         ):
             with pytest.raises(ValueError) as exc_info:
                 GithubRepoLoader(mock_knowledge)
@@ -188,8 +214,8 @@ class TestGithubRepoLoader:
     async def test_pattern_include_and_ignore(
         self, sample_repo, mock_knowledge
     ) -> None:
-        """测试 include_patterns 和 ignore_patterns 的优先级和效果"""
-        # 新增多种文件
+        """test include_patterns and ignore_patterns priority and effect"""
+        # add more files
         with open(os.path.join(sample_repo, "docs/test2.txt"), "w") as f:
             f.write("plain text")
         with open(os.path.join(sample_repo, "docs/ignore.md"), "w") as f:
@@ -205,7 +231,7 @@ class TestGithubRepoLoader:
             self.repo_path = sample_repo
             self.local_repo = Repo(sample_repo)
 
-        # 只包含 .md 文件，忽略 ignore.md
+        # only include .md files, ignore ignore.md
         split_config = GithubRepoParseConfig(
             type="github_repo",
             include_patterns=["*.md"],
@@ -220,7 +246,6 @@ class TestGithubRepoLoader:
             loader = GithubRepoLoader(knowledge)
             file_list = await loader.decompose()
             names = [f.knowledge_name for f in file_list]
-            # 只包含 test.md 和 keep.md
             assert any("test.md" in n for n in names)
             assert any("keep.md" in n for n in names)
             assert not any("ignore.md" in n for n in names)
@@ -230,8 +255,8 @@ class TestGithubRepoLoader:
     async def test_pattern_no_gitignore_and_default(
         self, sample_repo, mock_knowledge
     ) -> None:
-        """测试 no_gitignore 和 no_default_ignore_patterns 的效果"""
-        # 新增 .gitignore 和默认忽略文件
+        """test no_gitignore and no_default_ignore_patterns effect"""
+        # add .gitignore and default ignore files
         with open(os.path.join(sample_repo, ".gitignore"), "w") as f:
             f.write("*.log\n")
         with open(os.path.join(sample_repo, "docs/should.log"), "w") as f:
@@ -264,7 +289,7 @@ class TestGithubRepoLoader:
             assert any("should.log" in n for n in names)
             assert any("should_keep.log" in n for n in names)
 
-        # 使用默认忽略，所有 .log 文件都应被排除
+        # use default ignore, all .log files should be excluded
         split_config.use_gitignore = True
         split_config.use_default_ignore = True
         knowledge.split_config = split_config
@@ -275,7 +300,7 @@ class TestGithubRepoLoader:
             assert not any("should.log" in n for n in names)
             assert not any("should_keep.log" in n for n in names)
 
-        # 使用 .gitignore，use_default_ignore
+        # use .gitignore, use_default_ignore
         split_config.use_gitignore = True
         split_config.use_default_ignore = False
         knowledge.split_config = split_config
@@ -288,7 +313,7 @@ class TestGithubRepoLoader:
 
     @pytest.mark.asyncio
     async def test_real_github_repo_loader(self):
-        """真实场景：用真实 access_token 拉取 petercat-ai/petercat 仓库"""
+        """real scenario: use real access_token to pull petercat-ai/petercat repo"""
         repo_name = "petercat-ai/petercat"
         knowledge = Knowledge(
             knowledge_name=repo_name,

@@ -37,7 +37,6 @@ class KnowledgeTypeEnum(str, Enum):
     DOCX = "docx"
     PDF = "pdf"
     QA = "qa"
-    FOLDER = "folder"
     YUQUEDOC = "yuquedoc"
     YUQUE_BOOK = "yuque_book"
     GITHUB_REPO = "github_repo"
