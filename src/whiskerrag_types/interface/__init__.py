@@ -1,5 +1,6 @@
 from .db_engine_plugin_interface import DBPluginInterface
 from .embed_interface import BaseEmbedding
+from .fastapi_plugin_interface import FastAPIPluginInterface
 from .loader_interface import BaseLoader
 from .parser_interface import BaseParser, ParseResult
 from .retriever_interface import BaseRetriever
@@ -15,4 +16,5 @@ __all__ = [
     "SettingsInterface",
     "TaskEnginPluginInterface",
     "ParseResult",
+    "FastAPIPluginInterface",
 ]
