@@ -6,7 +6,6 @@ from .knowledge import (
     Knowledge,
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
-    TextSourceConfig,
 )
 from .knowledge_create import (
     KNOWLEDGE_CREATE_2_KNOWLEDGE_STRATEGY_MAP,
@@ -22,7 +21,10 @@ from .knowledge_create import (
 from .knowledge_source import (
     GithubFileSourceConfig,
     GithubRepoSourceConfig,
+    OpenUrlSourceConfig,
     S3SourceConfig,
+    TextSourceConfig,
+    YuqueSourceConfig,
 )
 from .language import LanguageEnum
 from .page import (
@@ -75,6 +77,7 @@ __all__ = [
     "ImageCreate",
     "JSONCreate",
     "MarkdownCreate",
+    "OpenUrlSourceConfig",
     "PDFCreate",
     "GithubRepoCreate",
     "QACreate",
@@ -83,6 +86,7 @@ __all__ = [
     "GithubFileSourceConfig",
     "S3SourceConfig",
     "TextSourceConfig",
+    "YuqueSourceConfig",
     "Knowledge",
     "Space",
     "SpaceCreate",
