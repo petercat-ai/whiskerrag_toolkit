@@ -276,10 +276,12 @@ def get_register(
     Type[BaseRetriever],
     Type[BaseParser],
     Type[BaseLLM],
+    None,
 ]:
     registry = _registry.get(register_type)
     if registry is None:
-        raise KeyError(f"No registry for type: {register_type}")
+        logger.warn(f"No registry for type: {register_type}")
+        return None
 
     if register_type == RegisterTypeEnum.KNOWLEDGE_LOADER:
         registry = cast(LoaderRegistry, registry)

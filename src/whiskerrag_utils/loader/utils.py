@@ -13,7 +13,7 @@ _MAX_FILE_SIZE = 250 * 1024 * 1024
 
 
 def download_from_s3_to_local(config: S3SourceConfig) -> Tuple[str, dict]:
-    """从S3下载文件到本地临时目录"""
+    """download s3 to tempdir"""
     temp_dir = tempfile.gettempdir()
     temp_file = os.path.join(temp_dir, f"s3_{os.urandom(8).hex()}")
 

@@ -593,7 +593,9 @@ class GithubRepoLoader(BaseLoader):
             return "\n".join(tree_lines)
 
         root_name = os.path.basename(self.repo_path.rstrip(os.sep))
-        tree_str = f"{root_name}\n" + build_tree(self.repo_path)
+        tree_str = (
+            f"repo: {root_name}\n" + "project tree: " + build_tree(self.repo_path)
+        )
 
         try:
             if not self.local_repo:
