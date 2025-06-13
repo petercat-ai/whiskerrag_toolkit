@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import List, Optional, Tuple, TypedDict, Union
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
@@ -7,6 +8,8 @@ from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Image, Text
 
 from .registry import RegisterTypeEnum, get_register, init_register, register
+
+logger = logging.getLogger("whisker")
 
 
 class DiffResult(TypedDict):
@@ -67,7 +70,7 @@ async def _process_parse_item(
                 tenant_id=knowledge.tenant_id,
             )
         except Exception as e:
-            print(f"Error processing parse item: {e}")
+            logger.error(f"Error processing parse item: {e}")
             return None
 
 
@@ -111,45 +114,42 @@ async def get_chunks_by_knowledge(
     Convert knowledge into vectorized chunks with controlled concurrency
     """
     source_type = knowledge.source_type
-    LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, source_type)
     knowledge_type = knowledge.knowledge_type
     parse_type = getattr(
         knowledge.split_config,
         "type",
         "base_image" if knowledge_type is KnowledgeTypeEnum.IMAGE else "base_text",
     )
+    LoaderCls = get_register(RegisterTypeEnum.KNOWLEDGE_LOADER, source_type)
     ParserCls = get_register(RegisterTypeEnum.PARSER, parse_type)
-    # If no parser, return empty list
-    if ParserCls is None:
-        print(f"[warn]: No parser found for type: {parse_type}")
-        return []
-
     EmbeddingCls = get_register(
         RegisterTypeEnum.EMBEDDING, knowledge.embedding_model_name
     )
+    # If no parser, return empty list
+    if ParserCls is None:
+        logger.warn(f"No parser found for type: {parse_type}")
+        return []
     # If no embedding model, return empty list
     if EmbeddingCls is None:
-        print(
+        logger.warn(
             f"[warn]: No embedding model found for name: {knowledge.embedding_model_name}"
         )
         return []
-
     loaded_contents = []
     if LoaderCls is None:
         # If no loader, directly parse the knowledge object itself
-        print(
-            f"[warn]: No loader found for source type: {knowledge.source_type}, attempting to parse knowledge directly."
+        logger.warn(
+            f"No loader found for source type: {knowledge.source_type}, attempting to parse knowledge directly."
         )
         parse_results = await ParserCls().parse(knowledge, None)
     else:
         # Use loader to load contents
         loaded_contents = await LoaderCls(knowledge).load()
         if not loaded_contents:
-            print(
-                f"[warn]: Loader returned no content for source type: {knowledge.source_type}."
+            logger.warn(
+                f"Loader returned no content for source type: {knowledge.source_type}."
             )
             return []
-
         # Parse loaded contents
         parse_results = []
         for content in loaded_contents:
@@ -193,7 +193,7 @@ def get_diff_knowledge_by_sha(
 
         return {"to_add": to_add, "to_delete": to_delete, "unchanged": unchanged}
     except Exception as error:
-        print(f"Error in _get_diff_knowledge_by_sha: {error}")
+        logger.error(f"Error in _get_diff_knowledge_by_sha: {error}")
         return {"to_add": [], "to_delete": [], "unchanged": []}
 
 
