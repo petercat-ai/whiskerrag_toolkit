@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import subprocess
+import tempfile
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
@@ -94,9 +95,8 @@ class GithubRepoLoader(BaseLoader):
     @property
     def repos_dir(self) -> str:
         """get runtime root folder path"""
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        repos_dir = os.path.join(current_dir, "repo_download")
-        return repos_dir
+        # use system tempdir instead of current dir
+        return os.path.join(tempfile.gettempdir(), "repo_download")
 
     def __init__(
         self,
