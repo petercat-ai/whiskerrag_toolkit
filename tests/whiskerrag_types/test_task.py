@@ -14,6 +14,7 @@ class TestTask:
             "created_at": "2025-02-26T04:23:11.550164+00:00",
             "updated_at": "2025-03-06T13:02:44.383539+00:00",
             "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c226e42",
+            "task_type": "knowledge_chunk",
             "error_message": "",
         }
         task = Task(**data)
@@ -23,12 +24,28 @@ class TestTask:
         assert task.space_id == "ant-design/ant-design-charts"
         assert task.user_id is None
         assert task.metadata is None
+        assert task.task_type == "knowledge_chunk"
         assert task.created_at == datetime.fromisoformat(
             "2025-02-26T04:23:11.550164+00:00"
         )
         assert task.updated_at == datetime.fromisoformat(
             "2025-03-06T13:02:44.383539+00:00"
         )
+
+    def test_task_type(self) -> None:
+        data = {
+            "task_id": "8db89531-0a67-44e8-88f9-3616d9a49c8a",
+            "status": "failed",
+            "knowledge_id": "8cbfc366-cfb9-4c27-8273-494c97b7464a",
+            "space_id": "ant-design/ant-design-charts",
+            "user_id": None,
+            "created_at": "2025-02-26T04:23:11.550164+00:00",
+            "updated_at": "2025-03-06T13:02:44.383539+00:00",
+            "tenant_id": "38fbd88b-e869-489c-9142-e4ea2c226e42",
+            "error_message": "",
+        }
+        task = Task(**data)
+        assert task.task_type == "knowledge_chunk"
 
     def test_json_alias_to_task(self) -> None:
         data = {
