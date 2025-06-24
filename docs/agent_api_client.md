@@ -20,7 +20,6 @@ Agent API 客户端提供了与专业研究 (Pro Research) 服务的集成，支
 ```python
 class KnowledgeScope(BaseModel):
     space_ids: Optional[List[str]] = None  # 空间ID列表
-    tenant_id: str                         # 租户ID
     auth_info: str                         # 认证信息
 ```
 
