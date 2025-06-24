@@ -12,49 +12,36 @@ class TestKnowledgeScope:
         """测试有效的 KnowledgeScope 创建"""
         scope = KnowledgeScope(
             space_ids=["space1", "space2"],
-            tenant_id="test-tenant-123",
             auth_info="bearer token123",
         )
         assert scope.space_ids == ["space1", "space2"]
-        assert scope.tenant_id == "test-tenant-123"
         assert scope.auth_info == "bearer token123"
 
     def test_knowledge_scope_without_space_ids(self) -> None:
         """测试没有 space_ids 的 KnowledgeScope"""
-        scope = KnowledgeScope(tenant_id="test-tenant-123", auth_info="bearer token123")
+        scope = KnowledgeScope(auth_info="bearer token123")
         assert scope.space_ids is None
-        assert scope.tenant_id == "test-tenant-123"
         assert scope.auth_info == "bearer token123"
 
     def test_knowledge_scope_empty_space_ids(self) -> None:
         """测试空的 space_ids 列表"""
-        scope = KnowledgeScope(
-            space_ids=[], tenant_id="test-tenant-123", auth_info="bearer token123"
-        )
+        scope = KnowledgeScope(space_ids=[], auth_info="bearer token123")
         assert scope.space_ids == []
-        assert scope.tenant_id == "test-tenant-123"
 
     def test_knowledge_scope_required_fields(self) -> None:
         """测试必需字段的验证"""
-        # 缺少 tenant_id
         with pytest.raises(ValidationError):
-            KnowledgeScope(auth_info="bearer token123")
-
-        # 缺少 auth_info
-        with pytest.raises(ValidationError):
-            KnowledgeScope(tenant_id="test-tenant-123")
+            KnowledgeScope()
 
     def test_knowledge_scope_serialization(self) -> None:
         """测试序列化"""
         scope = KnowledgeScope(
             space_ids=["space1", "space2"],
-            tenant_id="test-tenant-123",
             auth_info="bearer token123",
         )
         data = scope.model_dump()
         assert data == {
             "space_ids": ["space1", "space2"],
-            "tenant_id": "test-tenant-123",
             "auth_info": "bearer token123",
         }
 
@@ -112,10 +99,8 @@ class TestProResearchRequest:
 
     def test_with_knowledge_scope(self) -> None:
         """测试包含知识范围的请求"""
-        scope1 = KnowledgeScope(
-            space_ids=["space1"], tenant_id="tenant1", auth_info="auth1"
-        )
-        scope2 = KnowledgeScope(tenant_id="tenant2", auth_info="auth2")
+        scope1 = KnowledgeScope(space_ids=["space1"], auth_info="auth1")
+        scope2 = KnowledgeScope(auth_info="auth2")
 
         request = ProResearchRequest(knowledge_scope_list=[scope1, scope2])
         assert len(request.knowledge_scope_list) == 2
@@ -134,7 +119,6 @@ class TestProResearchRequest:
         messages = [{"content": "Research about AI", "role": "user"}]
         scope = KnowledgeScope(
             space_ids=["ai-knowledge"],
-            tenant_id="research-tenant",
             auth_info="bearer abc123",
         )
         config = RetrievalConfig(type="semantic_search")
@@ -161,9 +145,7 @@ class TestProResearchRequest:
 
     def test_serialization(self) -> None:
         """测试序列化"""
-        scope = KnowledgeScope(
-            space_ids=["space1"], tenant_id="tenant1", auth_info="auth1"
-        )
+        scope = KnowledgeScope(space_ids=["space1"], auth_info="auth1")
         config = RetrievalConfig(type="test_retrieval")
 
         request = ProResearchRequest(

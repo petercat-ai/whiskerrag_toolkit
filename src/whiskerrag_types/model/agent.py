@@ -8,7 +8,6 @@ from whiskerrag_types.model.retrieval import RetrievalConfig
 
 class KnowledgeScope(BaseModel):
     space_ids: Optional[List[str]] = None
-    tenant_id: str
     auth_info: str
 
 
