@@ -82,8 +82,8 @@ class TestProResearchRequest:
         ]
         request = ProResearchRequest(messages=messages)
         assert len(request.messages) == 2
-        assert request.messages[0].content == "Hello"
-        assert request.messages[1].content == "Hi there!"
+        assert request.messages[0]["content"] == "Hello"
+        assert request.messages[1]["content"] == "Hi there!"
 
     def test_custom_model(self) -> None:
         """测试自定义模型"""
