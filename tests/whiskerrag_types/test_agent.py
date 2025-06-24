@@ -1,5 +1,4 @@
 import pytest
-from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import ValidationError
 
 from whiskerrag_types.model.agent import KnowledgeScope, ProResearchRequest
@@ -77,7 +76,10 @@ class TestProResearchRequest:
 
     def test_with_messages(self) -> None:
         """测试包含消息的请求"""
-        messages = [HumanMessage(content="Hello"), AIMessage(content="Hi there!")]
+        messages = [
+            {"content": "Hello", "role": "user"},
+            {"content": "Hi there!", "role": "assistant"},
+        ]
         request = ProResearchRequest(messages=messages)
         assert len(request.messages) == 2
         assert request.messages[0].content == "Hello"
@@ -129,7 +131,7 @@ class TestProResearchRequest:
 
     def test_complete_request(self) -> None:
         """测试完整的请求配置"""
-        messages = [HumanMessage(content="Research about AI")]
+        messages = [{"content": "Research about AI", "role": "user"}]
         scope = KnowledgeScope(
             space_ids=["ai-knowledge"],
             tenant_id="research-tenant",
