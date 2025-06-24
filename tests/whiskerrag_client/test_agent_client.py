@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
-from langchain_core.messages import HumanMessage
 
 from whiskerrag_client.agent import AgentClient
 from whiskerrag_client.http_client import HttpClient
@@ -30,7 +29,7 @@ def agent_client(http_client):
 def sample_request():
     """创建示例请求"""
     return ProResearchRequest(
-        messages=[HumanMessage(content="研究人工智能的发展历史")],
+        messages=[{"content": "研究人工智能的发展历史", "role": "user"}],
         model="test-model",
         number_of_initial_queries=3,
         max_research_loops=2,
@@ -295,7 +294,7 @@ class TestAgentClient:
         config = RetrievalConfig(type="semantic_search")
 
         request = ProResearchRequest(
-            messages=[HumanMessage(content="复杂研究请求")],
+            messages=[{"content": "复杂研究请求", "role": "user"}],
             model="advanced-model",
             number_of_initial_queries=5,
             max_research_loops=3,
