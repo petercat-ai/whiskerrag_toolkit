@@ -13,6 +13,15 @@ json_str = """
 }
 """
 
+# Test array format
+json_array_str = """
+[
+    {"id": 1, "name": "Item 1"},
+    {"id": 2, "name": "Item 2"},
+    {"id": 3, "name": "Item 3"}
+]
+"""
+
 knowledge_data = {
     "source_type": "user_input_text",
     "knowledge_type": KnowledgeTypeEnum.JSON,
@@ -64,6 +73,26 @@ class TestJSONSplitter:
         ]
 
     @pytest.mark.asyncio
+    async def test_json_array_split(self) -> None:
+        """Test JSON array format support"""
+        knowledge = Knowledge(**knowledge_data)
+        init_register()
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
+        res = await SplitterCls().parse(
+            knowledge,
+            Text(
+                content=json_array_str,
+                metadata=knowledge.metadata,
+            ),
+        )
+        # Array should be converted to dict with "data" key
+        assert len(res) > 0
+        # Verify that the result contains the array data
+        assert any("Item 1" in text.content for text in res)
+        assert any("Item 2" in text.content for text in res)
+        assert any("Item 3" in text.content for text in res)
+
+    @pytest.mark.asyncio
     async def test_json_split_error(self) -> None:
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
@@ -75,5 +104,18 @@ class TestJSONSplitter:
             )
         assert (
             str(excinfo.value)
-            == "Error processing JSON content: JSON content must be a dictionary."
+            == "Error processing JSON content: JSON content must be a dictionary or array."
         )
+
+    @pytest.mark.asyncio
+    async def test_invalid_json_error(self) -> None:
+        """Test invalid JSON format error handling"""
+        init_register()
+        SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
+        knowledge = Knowledge(**knowledge_data)
+        with pytest.raises(ValueError) as excinfo:
+            await SplitterCls().parse(
+                knowledge,
+                Text(content='{"invalid": json}', metadata={}),
+            )
+        assert "Invalid JSON content provided for splitting" in str(excinfo.value)
