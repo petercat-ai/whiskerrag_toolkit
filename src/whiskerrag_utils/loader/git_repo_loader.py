@@ -690,7 +690,7 @@ class GithubRepoLoader(BaseLoader):
             return GitFileElementType(
                 content=content,
                 path=path,
-                mode=blob.mode_str,
+                mode=oct(blob.mode),
                 url=file_url,
                 branch=self.branch_name or "main",
                 repo_name=self.repo_name,
