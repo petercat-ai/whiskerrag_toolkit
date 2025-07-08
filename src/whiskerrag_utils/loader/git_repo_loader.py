@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from langchain_text_splitters import Language
@@ -18,9 +18,11 @@ from whiskerrag_types.model.knowledge import (
 from whiskerrag_types.model.knowledge_source import GithubRepoSourceConfig
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import (
+    BaseCharSplitConfig,
     BaseCodeSplitConfig,
-    BaseSplitConfig,
+    ImageSplitConfig,
     JSONSplitConfig,
+    KnowledgeSplitConfig,
     MarkdownSplitConfig,
     PDFSplitConfig,
     TextSplitConfig,
@@ -297,14 +299,7 @@ class GithubRepoLoader(BaseLoader):
 
     def _get_split_config_for_knowledge_type(
         self, knowledge_type: KnowledgeTypeEnum
-    ) -> Union[
-        MarkdownSplitConfig,
-        JSONSplitConfig,
-        PDFSplitConfig,
-        BaseCodeSplitConfig,
-        TextSplitConfig,
-        BaseSplitConfig,
-    ]:
+    ) -> KnowledgeSplitConfig:
         """
         Generate appropriate split_config based on knowledge type
 
@@ -323,14 +318,11 @@ class GithubRepoLoader(BaseLoader):
                 chunk_size=default_chunk_size,
                 chunk_overlap=default_chunk_overlap,
                 separators=[
-                    "\n#{1,6} ",
-                    "```\n",
+                    "\n#{1,3} ",
                     "\n\\*\\*\\*+\n",
                     "\n---+\n",
                     "\n___+\n",
                     "\n\n",
-                    "\n",
-                    " ",
                     "",
                 ],
                 is_separator_regex=True,
@@ -385,6 +377,8 @@ class GithubRepoLoader(BaseLoader):
                 KnowledgeTypeEnum.SCALA: Language.SCALA,
                 KnowledgeTypeEnum.SOL: Language.SOL,
                 KnowledgeTypeEnum.LUA: Language.LUA,
+                KnowledgeTypeEnum.HTML: Language.HTML,
+                KnowledgeTypeEnum.LATEX: Language.LATEX,
             }
             return BaseCodeSplitConfig(
                 language=language_map.get(knowledge_type, Language.MARKDOWN),
@@ -399,11 +393,17 @@ class GithubRepoLoader(BaseLoader):
                 is_separator_regex=False,
                 keep_separator=False,
             )
+        elif knowledge_type == KnowledgeTypeEnum.IMAGE:
+            return ImageSplitConfig(
+                type="image",
+            )
         else:
             # For other types (HTML, RST, LATEX, etc.), use BaseSplitConfig
-            return BaseSplitConfig(
+            return BaseCharSplitConfig(
                 chunk_size=default_chunk_size,
                 chunk_overlap=default_chunk_overlap,
+                separators=["\n\n", "\n", " ", ""],
+                split_regex=None,
             )
 
     def _get_file_position_info(self, file_path: str, relative_path: str) -> dict:

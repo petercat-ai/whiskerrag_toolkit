@@ -2,6 +2,7 @@ from typing import List
 
 import boto3  # type: ignore
 from botocore.client import Config  # type: ignore
+from pydantic import HttpUrl  # type: ignore
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
 from whiskerrag_types.model.knowledge import (
@@ -84,7 +85,7 @@ class CloudStorageTextLoader(BaseLoader[Image]):
                 raise AttributeError(
                     "Invalid source config type for CloudStorageTextLoader"
                 )
-            return [Image(url=url)]
+            return [Image(url=HttpUrl(url), metadata=self.knowledge.metadata)]
 
         except Exception as e:
             raise Exception(f"Failed to load content from cloud storage: {e}")

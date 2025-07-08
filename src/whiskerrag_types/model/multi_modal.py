@@ -1,13 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
 class Image(BaseModel):
-    url: str
-    width: Optional[int] = None
-    height: Optional[int] = None
-    format: Optional[str] = None
+    url: Optional[HttpUrl] = None
+    b64_json: Optional[str] = None
+    metadata: dict
 
 
 class Text(BaseModel):

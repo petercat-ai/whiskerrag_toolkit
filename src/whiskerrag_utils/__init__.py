@@ -49,11 +49,7 @@ async def _process_parse_item(
                 tags = None
 
             return Chunk(
-                context=(
-                    parse_item.content
-                    if isinstance(parse_item, Text)
-                    else parse_item.url
-                ),
+                context=(parse_item.content if isinstance(parse_item, Text) else ""),
                 enabled=knowledge.enabled,
                 metadata=combined_metadata,
                 # Assign specific fields from metadata

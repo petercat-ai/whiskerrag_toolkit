@@ -186,4 +186,5 @@ KnowledgeSplitConfig = Union[
     GeaGraphSplitConfig,
     GithubRepoParseConfig,
     BaseCodeSplitConfig,
+    ImageSplitConfig,
 ]
