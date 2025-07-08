@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Generic, List, TypeVar
+from typing import Generic, List, TypeVar, Union
 
 from whiskerrag_types.model.knowledge import Knowledge
 from whiskerrag_types.model.multi_modal import Image, Text
 
-T = TypeVar("T", Image, Text)
+T = TypeVar("T", Image, Text, Union[Image, Text])
 
 
 class BaseLoader(ABC, Generic[T]):
