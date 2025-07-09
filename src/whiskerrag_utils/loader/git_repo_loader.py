@@ -553,12 +553,14 @@ class GithubRepoLoader(BaseLoader):
                     position_info = self._get_file_position_info(
                         file_path, relative_path
                     )
-
+                    # TODO: need to consider whether to use the embedding model of the knowledge,
+                    # for example, the embedding model of image and text may be different
+                    embedding_model_name = self.knowledge.embedding_model_name
                     knowledge = Knowledge(
                         source_type=KnowledgeSourceEnum.GITHUB_FILE,
                         knowledge_type=knowledge_type,
                         knowledge_name=f"{self.repo_name}/{relative_path}",
-                        embedding_model_name=self.knowledge.embedding_model_name,
+                        embedding_model_name=embedding_model_name,
                         source_config={
                             **self.knowledge.source_config.model_dump(),
                             "path": relative_path,

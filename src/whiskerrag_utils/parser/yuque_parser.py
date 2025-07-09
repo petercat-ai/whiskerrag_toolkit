@@ -47,7 +47,12 @@ class YuqueParser(BaseParser[Text]):
             keep_separator=False,
         )
         split_texts = splitter.split_text(content.content)
-        return [Text(content=text, metadata=content.metadata) for text in split_texts]
+        result = []
+        for idx, text in enumerate(split_texts):
+            metadata = content.metadata.copy()
+            metadata["_idx"] = idx
+            result.append(Text(content=text, metadata=metadata))
+        return result
 
     async def batch_parse(
         self,

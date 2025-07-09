@@ -4,6 +4,7 @@ import os
 from enum import Enum
 from pathlib import Path
 from typing import (
+    Any,
     Callable,
     Dict,
     Generic,
@@ -134,11 +135,14 @@ def register(
     register_type: RegisterTypeEnum,
     register_key: RegisterKeyType,
     order: int = 0,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> Callable[[RegisteredType], RegisteredType]:
     def decorator(cls: RegisteredType) -> RegisteredType:
         setattr(cls, "_is_register_item", True)
         setattr(cls, "_register_type", register_type)
         setattr(cls, "_register_key", register_key)
+        setattr(cls, "_register_order", order)
+        setattr(cls, "_register_metadata", metadata or {})
 
         expected_base: BaseRegisterClsType = None
         if register_type == RegisterTypeEnum.EMBEDDING:
@@ -267,6 +271,20 @@ def get_register(
 ) -> Type[BaseLLM]: ...
 
 
+@overload
+def get_register(
+    register_type: RegisterTypeEnum,
+    register_key: RegisterKeyType,
+) -> Union[
+    Type[BaseLoader],
+    Type[BaseEmbedding],
+    Type[BaseRetriever],
+    Type[BaseParser],
+    Type[BaseLLM],
+    None,
+]: ...
+
+
 def get_register(
     register_type: RegisterTypeEnum,
     register_key: RegisterKeyType,
@@ -314,3 +332,43 @@ def get_registry_list() -> Dict[
     ],
 ]:
     return _registry
+
+
+def get_register_metadata(
+    register_type: RegisterTypeEnum,
+    register_key: RegisterKeyType,
+) -> Optional[Dict[str, Any]]:
+    """Get metadata for a registered component"""
+    cls = get_register(register_type, register_key)
+    if cls is None:
+        return None
+    return getattr(cls, "_register_metadata", {})
+
+
+def get_register_order(
+    register_type: RegisterTypeEnum,
+    register_key: RegisterKeyType,
+) -> Optional[int]:
+    """Get registration order for a registered component"""
+    cls = get_register(register_type, register_key)
+    if cls is None:
+        return None
+    return getattr(cls, "_register_order", 0)
+
+
+def get_all_registered_with_metadata(
+    register_type: RegisterTypeEnum,
+) -> Dict[RegisterKeyType, Dict[str, Any]]:
+    """Get all registered components of a type with their metadata"""
+    registry = _registry.get(register_type)
+    if registry is None:
+        return {}
+
+    result = {}
+    for key, cls in registry._dict.items():
+        result[key] = {
+            "class": cls,
+            "metadata": getattr(cls, "_register_metadata", {}),
+            "order": getattr(cls, "_register_order", 0),
+        }
+    return result

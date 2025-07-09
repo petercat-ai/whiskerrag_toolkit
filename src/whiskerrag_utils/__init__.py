@@ -7,7 +7,15 @@ from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Image, Text
 
-from .registry import RegisterTypeEnum, get_register, init_register, register
+from .registry import (
+    RegisterTypeEnum,
+    get_all_registered_with_metadata,
+    get_register,
+    get_register_metadata,
+    get_register_order,
+    init_register,
+    register,
+)
 
 logger = logging.getLogger("whisker")
 
@@ -18,12 +26,22 @@ class DiffResult(TypedDict):
     unchanged: List[Knowledge]
 
 
-async def _process_parse_item(
+async def _embed_parse_item(
     parse_item: Union[Text, Image],
     knowledge: Knowledge,
     EmbeddingCls: type[BaseEmbedding],
     semaphore: asyncio.Semaphore,
 ) -> Optional[Chunk]:
+    """
+    Use embedding model to embed the parsed item and return a Chunk object.
+    Args:
+        parse_item: The parsed item to process.
+        knowledge: The knowledge object.
+        EmbeddingCls: The embedding class.
+        semaphore: The semaphore to use.
+    Returns:
+        A Chunk object.
+    """
     async with semaphore:
         try:
             if isinstance(parse_item, Text):
@@ -31,9 +49,9 @@ async def _process_parse_item(
                     parse_item.content, timeout=30
                 )
             elif isinstance(parse_item, Image):
-                embedding = await EmbeddingCls().embed_image(parse_item, timeout=30)
+                embedding = await EmbeddingCls().embed_image(parse_item, timeout=60 * 5)
             else:
-                print(f"[warn]: illegal split item :{parse_item}")
+                print(f"[warn]: illegal parse item :{parse_item}")
                 return None
 
             combined_metadata = {**knowledge.metadata}
@@ -154,7 +172,7 @@ async def get_chunks_by_knowledge(
 
     semaphore = asyncio.Semaphore(semaphore_num)
     tasks = [
-        _process_parse_item(parse_item, knowledge, EmbeddingCls, semaphore)
+        _embed_parse_item(parse_item, knowledge, EmbeddingCls, semaphore)
         for parse_item in parse_results
     ]
     chunks = await asyncio.gather(*tasks)
@@ -195,10 +213,12 @@ def get_diff_knowledge_by_sha(
 
 __all__ = [
     "get_register",
+    "get_register_metadata",
+    "get_register_order",
+    "get_all_registered_with_metadata",
     "register",
     "RegisterTypeEnum",
     "init_register",
-    "SplitterEnum",
     "decompose_knowledge",
     "get_chunks_by_knowledge",
     "DiffResult",
