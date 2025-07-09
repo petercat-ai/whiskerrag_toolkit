@@ -48,23 +48,21 @@ class YuqueParser(BaseParser[Text]):
             keep_separator=False,
         )
         result: ParseResult = []
-        # 首先在全文范围内提取所有图片链接
-        image_pattern = r"!\[.*?\]\((.*?)\)"
+        # extract all image urls and alt text
+        image_pattern = r"!\[(.*?)\]\((.*?)\)"
         all_image_matches = re.findall(image_pattern, content.content)
 
-        # 创建图片对象
-        for img_idx, img_url in enumerate(all_image_matches):
-            if img_url.strip():  # 确保URL不为空
+        # create image objects
+        for img_idx, (alt_text, img_url) in enumerate(all_image_matches):
+            if img_url.strip():  # ensure url is not empty
                 img_metadata = content.metadata.copy()
                 img_metadata["_img_idx"] = img_idx
-                img_metadata["_extracted_from"] = "markdown_image"
-                img_metadata["_source_content"] = content.content
-
-                # 创建 Image 对象
+                img_metadata["_img_url"] = img_url.strip()
+                img_metadata["_alt_text"] = alt_text.strip() if alt_text.strip() else ""
                 image_obj = Image(url=img_url.strip(), metadata=img_metadata)
                 result.append(image_obj)
 
-        # 然后进行文本分割
+        # split text
         split_texts = splitter.split_text(content.content)
 
         for idx, text in enumerate(split_texts):

@@ -24,21 +24,21 @@ async def test_image_extraction():
 
 **「朕已阅，甚欢，赐尔收藏」**
 
-![](https://intranetproxy.alipay.com/skylark/lark/0/2025/gif/117356539/1751270678905-c7b3686b-6429-443d-b91d-11802a20bab3.gif)
+![喜欢并收藏功能演示](https://intranetproxy.alipay.com/skylark/lark/0/2025/gif/117356539/1751270678905-c7b3686b-6429-443d-b91d-11802a20bab3.gif)
 
 ## <font style="color:rgb(13, 18, 57);">✍️</font><font style="color:rgb(13, 18, 57);"> 需求自动扩写</font>
 用户首次对话的需求描述过于简单时，自动扩写用户需求，智能补全设计意图，生成更完善的UI界面。
 
 **「读心术MAX」—— 终于有AI懂我的意思了，自动匹配一个产品经理**
 
-![](https://intranetproxy.alipay.com/skylark/lark/0/2025/gif/117356539/1751270936881-92d97d6f-f746-4258-aca0-41fa47c7b0ca.gif)
+![需求自动扩写功能演示](https://intranetproxy.alipay.com/skylark/lark/0/2025/gif/117356539/1751270936881-92d97d6f-f746-4258-aca0-41fa47c7b0ca.gif)
 
 ## <font style="color:rgb(13, 18, 57);">🎨</font><font style="color:rgb(13, 18, 57);"> 设计规范自动从设计稿中抽取</font>
 <font style="color:rgb(13, 18, 57);">用户上传了设计稿但没有填写设计规范时，智能分析上传图片，自动提取和应用设计规范，保持品牌一致性</font>
 
 **「设计师掉线检测器」—— 一键破解设计师暗藏的玄机，连Sketch都羡慕的抽取技能。 **
 
-![](https://intranetproxy.alipay.com/skylark/lark/0/2025/gif/117356539/1751271336383-17528d53-f8d3-460a-a37d-a748ce47e165.gif)
+![设计规范抽取功能演示](https://intranetproxy.alipay.com/skylark/lark/0/2025/gif/117356539/1751271336383-17528d53-f8d3-460a-a37d-a748ce47e165.gif)
 
 ## <font style="color:rgb(13, 18, 57);">自动取名</font>
 <font style="color:rgb(13, 18, 57);">在生成UI过程中，智能为UI和对话场景赋予恰当且有意义（卧虎AI 很调皮）的名称。</font>
@@ -103,6 +103,9 @@ async def test_image_extraction():
     print("提取的图片:")
     for i, img in enumerate(image_objects):
         print(f"  {i+1}. URL: {img.url}")
+        print(f"     描述: {img.metadata.get('_alt_text', '无描述')}")
+        print(f"     图片URL: {img.metadata.get('_img_url', 'N/A')}")
+        print(f"     图片索引: {img.metadata.get('_img_idx', 'N/A')}")
         print(f"     元数据: {img.metadata}")
         print()
 
