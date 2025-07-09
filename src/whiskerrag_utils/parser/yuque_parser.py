@@ -1,10 +1,11 @@
+import re
 from typing import List
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
-from whiskerrag_types.model.multi_modal import Text
+from whiskerrag_types.model.multi_modal import Image, Text
 from whiskerrag_types.model.splitter import YuqueSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
@@ -46,12 +47,31 @@ class YuqueParser(BaseParser[Text]):
             separators=separators,
             keep_separator=False,
         )
+        result: ParseResult = []
+        # 首先在全文范围内提取所有图片链接
+        image_pattern = r"!\[.*?\]\((.*?)\)"
+        all_image_matches = re.findall(image_pattern, content.content)
+
+        # 创建图片对象
+        for img_idx, img_url in enumerate(all_image_matches):
+            if img_url.strip():  # 确保URL不为空
+                img_metadata = content.metadata.copy()
+                img_metadata["_img_idx"] = img_idx
+                img_metadata["_extracted_from"] = "markdown_image"
+                img_metadata["_source_content"] = content.content
+
+                # 创建 Image 对象
+                image_obj = Image(url=img_url.strip(), metadata=img_metadata)
+                result.append(image_obj)
+
+        # 然后进行文本分割
         split_texts = splitter.split_text(content.content)
-        result = []
+
         for idx, text in enumerate(split_texts):
             metadata = content.metadata.copy()
             metadata["_idx"] = idx
             result.append(Text(content=text, metadata=metadata))
+
         return result
 
     async def batch_parse(
