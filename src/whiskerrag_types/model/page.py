@@ -1,4 +1,5 @@
-from typing import Any, Dict, Generic, List, Optional, TypeVar
+from enum import Enum
+from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 from deprecated import deprecated
 from pydantic import BaseModel, Field, model_validator
@@ -6,10 +7,20 @@ from pydantic import BaseModel, Field, model_validator
 T = TypeVar("T")
 
 
-class ConditionItem(BaseModel):
+class Operator(str, Enum):
+    AND = "and"
+    OR = "or"
+
+
+class Condition(BaseModel):
     field: str
-    operator: str  # eq, neq, gt, gte, lt, lte, like, ilike.
+    operator: str  # eq, neq, gt, gte, lt, lte, like, ilike
     value: Any
+
+
+class FilterGroup(BaseModel):
+    operator: Operator
+    conditions: List[Union[Condition, "FilterGroup"]]
 
 
 class QueryParams(BaseModel, Generic[T]):
@@ -19,26 +30,55 @@ class QueryParams(BaseModel, Generic[T]):
         default=None,
         description="list of equality conditions, each as a dict with key and value",
     )
-    conditions: Optional[List[ConditionItem]] = Field(
+    advanced_filter: Optional[FilterGroup] = Field(
         default=None,
-        description="list of or conditions, each as a dict with field, operator and value",
+        description="advanced filter with nested conditions",
     )
 
+    def _validate_fields_against_model(self, fields: set[str]) -> set[str]:
+        """validate fields against model"""
+        args = self.__class__.__pydantic_generic_metadata__["args"]
+        if not args:
+            return set()
+
+        model_type = args[0]
+        if isinstance(model_type, TypeVar):
+            return set()
+
+        model_fields = set(model_type.model_fields.keys())
+        return fields - model_fields
+
+    def _validate_filter_group(self, filter_group: FilterGroup) -> set[str]:
+        """recursively validate all fields in FilterGroup"""
+        invalid_fields = set()
+
+        for condition in filter_group.conditions:
+            if isinstance(condition, Condition):
+                invalid_fields.add(condition.field)
+            elif isinstance(condition, FilterGroup):
+                invalid_fields.update(self._validate_filter_group(condition))
+
+        return invalid_fields
+
     @model_validator(mode="after")
-    def validate_eq_conditions(self) -> "QueryParams[T]":
+    def validate_conditions(self) -> "QueryParams[T]":
+        invalid_fields = set()
+
+        # validate eq_conditions
         if self.eq_conditions:
-            args = self.__class__.__pydantic_generic_metadata__["args"]
-            if not args:
-                return self
+            invalid_fields.update(
+                self._validate_fields_against_model(set(self.eq_conditions.keys()))
+            )
 
-            model_type = args[0]
-            if isinstance(model_type, TypeVar):
-                return self
+        # validate advanced_filter
+        if self.advanced_filter:
+            filter_fields = self._validate_filter_group(self.advanced_filter)
+            invalid_fields.update(self._validate_fields_against_model(filter_fields))
 
-            model_fields = model_type.model_fields.keys()
-            invalid_keys = set(self.eq_conditions.keys()) - set(model_fields)
-            if invalid_keys:
-                raise ValueError(f"Invalid keys in eq_conditions: {invalid_keys}")
+        # if invalid fields, raise exception
+        if invalid_fields:
+            raise ValueError(f"Invalid fields found: {invalid_fields}")
+
         return self
 
 
