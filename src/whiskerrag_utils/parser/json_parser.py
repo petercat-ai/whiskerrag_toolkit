@@ -63,7 +63,12 @@ class JSONParser(BaseParser[Text]):
         split_texts = splitter.split_text(
             json_content, convert_lists=True, ensure_ascii=False
         )
-        return [Text(content=text, metadata=content.metadata) for text in split_texts]
+        result: ParseResult = []
+        for idx, text in enumerate(split_texts):
+            metadata = content.metadata.copy()
+            metadata["_idx"] = idx
+            result.append(Text(content=text, metadata=metadata))
+        return result
 
     async def batch_parse(
         self,

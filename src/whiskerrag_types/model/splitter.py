@@ -183,6 +183,7 @@ KnowledgeSplitConfig = Union[
     TextSplitConfig,
     JSONSplitConfig,
     PDFSplitConfig,
+    YuqueSplitConfig,
     GeaGraphSplitConfig,
     GithubRepoParseConfig,
     BaseCodeSplitConfig,

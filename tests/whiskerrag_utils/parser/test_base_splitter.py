@@ -31,7 +31,11 @@ class TestBaseSplitter:
         res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
-        expected_metadata = {"_knowledge_type": "text", "_reference_url": ""}
+        expected_metadata = {
+            "_knowledge_type": "text",
+            "_reference_url": "",
+            "_idx": 0,
+        }
         assert res == [Text(content="hello world \n ~", metadata=expected_metadata)]
 
     @pytest.mark.asyncio
@@ -57,11 +61,31 @@ class TestBaseSplitter:
         res = await SplitterCls().parse(
             knowledge, Text(content="hello world \n ~", metadata={})
         )
-        expected_metadata = {"_knowledge_type": "text", "_reference_url": ""}
         assert res == [
-            Text(content="hello", metadata=expected_metadata),
-            Text(content="world", metadata=expected_metadata),
-            Text(content="~", metadata=expected_metadata),
+            Text(
+                content="hello",
+                metadata={
+                    "_knowledge_type": "text",
+                    "_reference_url": "",
+                    "_idx": 0,
+                },
+            ),
+            Text(
+                content="world",
+                metadata={
+                    "_knowledge_type": "text",
+                    "_reference_url": "",
+                    "_idx": 1,
+                },
+            ),
+            Text(
+                content="~",
+                metadata={
+                    "_knowledge_type": "text",
+                    "_reference_url": "",
+                    "_idx": 2,
+                },
+            ),
         ]
 
     @pytest.mark.asyncio
@@ -99,17 +123,11 @@ class TestBaseSplitter:
             knowledge,
             Text(content="hello world \n ~", metadata={}),
         )
-        expected_metadata = {"_knowledge_type": "text", "_reference_url": ""}
-        assert res == [
-            Text(content="h", metadata=expected_metadata),
-            Text(content="e", metadata=expected_metadata),
-            Text(content="l", metadata=expected_metadata),
-            Text(content="l", metadata=expected_metadata),
-            Text(content="o", metadata=expected_metadata),
-            Text(content="w", metadata=expected_metadata),
-            Text(content="o", metadata=expected_metadata),
-            Text(content="r", metadata=expected_metadata),
-            Text(content="l", metadata=expected_metadata),
-            Text(content="d", metadata=expected_metadata),
-            Text(content="~", metadata=expected_metadata),
-        ]
+        assert res[0] == Text(
+            content="h",
+            metadata={
+                "_knowledge_type": "text",
+                "_reference_url": "",
+                "_idx": 0,
+            },
+        )

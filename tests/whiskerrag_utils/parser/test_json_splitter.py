@@ -56,19 +56,19 @@ class TestJSONSplitter:
         assert res == [
             Text(
                 content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
-                metadata={"_knowledge_type": "json", "_reference_url": ""},
+                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 0},
             ),
             Text(
                 content='{"age": 30}',
-                metadata={"_knowledge_type": "json", "_reference_url": ""},
+                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 1},
             ),
             Text(
                 content='{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
-                metadata={"_knowledge_type": "json", "_reference_url": ""},
+                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 2},
             ),
             Text(
                 content='{"is_active": true}',
-                metadata={"_knowledge_type": "json", "_reference_url": ""},
+                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 3},
             ),
         ]
 

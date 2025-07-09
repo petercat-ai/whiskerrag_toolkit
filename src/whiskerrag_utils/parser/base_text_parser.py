@@ -52,7 +52,7 @@ class BaseTextParser(BaseParser[Text]):
 
         # Create Text objects with proper metadata inheritance
         results: List[Union[Text, Image]] = []
-        for text in split_texts:
+        for idx, text in enumerate(split_texts):
             # Start with knowledge.metadata as base
             combined_metadata = {**knowledge.metadata}
 
@@ -60,9 +60,7 @@ class BaseTextParser(BaseParser[Text]):
             if content.metadata:
                 combined_metadata.update(content.metadata)
 
-            parser_metadata: dict[str, str] = {}
-
-            combined_metadata.update(parser_metadata)
+            combined_metadata["_idx"] = idx
             results.append(Text(content=text, metadata=combined_metadata))
 
         return results
