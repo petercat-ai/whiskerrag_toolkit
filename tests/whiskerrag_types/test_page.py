@@ -41,7 +41,7 @@ class TestPageParams:
             PageParams[DummyModel](
                 eq_conditions={"invalid_field": "value", "name": "John"}
             )
-        assert "Invalid keys in eq_conditions" in str(exc_info.value)
+        assert "Invalid fields found: {'invalid_field'}" in str(exc_info.value)
 
     def test_eq_conditions_with_none(self):
         params = PageParams[DummyModel](eq_conditions=None)
