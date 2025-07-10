@@ -45,8 +45,15 @@ class QueryParams(BaseModel, Generic[T]):
         if isinstance(model_type, TypeVar):
             return set()
 
-        model_fields = set(model_type.model_fields.keys())
-        return fields - model_fields
+        # Get all valid field names including aliases
+        valid_fields = set()
+        for field_name, field_info in model_type.model_fields.items():
+            valid_fields.add(field_name)
+            # Add alias if it exists
+            if field_info.alias:
+                valid_fields.add(field_info.alias)
+
+        return fields - valid_fields
 
     def _validate_filter_group(self, filter_group: FilterGroup) -> set[str]:
         """recursively validate all fields in FilterGroup"""
