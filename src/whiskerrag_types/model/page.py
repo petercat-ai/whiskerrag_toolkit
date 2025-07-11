@@ -117,10 +117,13 @@ class PageResponse(BaseModel, Generic[T]):
 
 class StatusStatisticsPageResponse(PageResponse, Generic[T]):
     """
-    please append the statistical field: pending,failed .....
+    TaskStatus
     """
 
     success: int = 0
     failed: int = 0
     cancelled: int = 0
     pending: int = 0
+    running: int = 0
+    pending_retry: int = 0
+    deleted: int = 0
