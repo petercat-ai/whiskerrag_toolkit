@@ -174,61 +174,9 @@ class TestChunk:
         # Serialize to dict
         chunk_dict = chunk.model_dump()
 
-        # Verify context has been modified to include question and answer
-        expected_context = "question: What is the capital of France?\nanswer: The capital of France is Paris."
-        assert chunk_dict["context"] == expected_context
+        assert chunk_dict["context"] == "What is the capital of France?"
 
         # Verify metadata is preserved
         assert chunk_dict["metadata"]["_knowledge_type"] == "qa"
         assert chunk_dict["metadata"]["answer"] == "The capital of France is Paris."
         assert chunk_dict["metadata"]["other_field"] == "some_value"
-
-    def test_chunk_non_qa_context_serialization(self) -> None:
-        """Test that non-QA chunks don't modify context during serialization"""
-        non_qa_data = {
-            **data,
-            "context": "This is a regular text chunk.",
-            "metadata": {
-                "_knowledge_type": "text",
-                "answer": "This answer should not be appended.",
-                "other_field": "some_value",
-            },
-        }
-
-        # Create chunk
-        chunk = Chunk(**non_qa_data)
-
-        # Serialize to dict
-        chunk_dict = chunk.model_dump()
-
-        # Verify context remains unchanged
-        assert chunk_dict["context"] == "This is a regular text chunk."
-
-        # Verify metadata is preserved
-        assert chunk_dict["metadata"]["_knowledge_type"] == "text"
-        assert chunk_dict["metadata"]["answer"] == "This answer should not be appended."
-
-    def test_chunk_qa_no_answer_serialization(self) -> None:
-        """Test that QA chunks without answer field don't modify context"""
-        qa_data_no_answer = {
-            **data,
-            "context": "What is the capital of France?",
-            "metadata": {
-                "_knowledge_type": "qa",
-                "other_field": "some_value",
-                # No answer field
-            },
-        }
-
-        # Create chunk
-        chunk = Chunk(**qa_data_no_answer)
-
-        # Serialize to dict
-        chunk_dict = chunk.model_dump()
-
-        # Verify context remains unchanged
-        assert chunk_dict["context"] == "What is the capital of France?"
-
-        # Verify metadata is preserved
-        assert chunk_dict["metadata"]["_knowledge_type"] == "qa"
-        assert "answer" not in chunk_dict["metadata"]

@@ -78,15 +78,6 @@ class Chunk(TimeStampedModel):
             return embedding_model_name.value
         return str(embedding_model_name)
 
-    @field_serializer("context")
-    def serialize_context(self, context: str) -> str:
-        """Serialize context with special handling for QA type chunks"""
-        if self.metadata and "_knowledge_type" in self.metadata:
-            knowledge_type = self.metadata["_knowledge_type"]
-            if knowledge_type == "qa" and "answer" in self.metadata:
-                return f"question: {context}\nanswer: {self.metadata['answer']}"
-        return context
-
     def update(self, **kwargs: Any) -> "Chunk":
         for key, value in kwargs.items():
             setattr(self, key, value)
