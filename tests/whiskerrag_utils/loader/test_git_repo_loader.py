@@ -21,7 +21,7 @@ from whiskerrag_utils.loader.git_repo_loader import GithubRepoLoader
 def sample_repo() -> Any:
     """create a temporary git repo for testing"""
     repo_path = tempfile.mkdtemp()
-    repo = Repo.init(repo_path)
+    repo = Repo.init(repo_path, initial_branch="main")
 
     # create test files
     md_content = "# Test Markdown\nThis is a test."
@@ -78,7 +78,7 @@ def mock_gitlab_knowledge() -> Knowledge:
         knowledge_type=KnowledgeTypeEnum.GITHUB_REPO,
         source_config=GithubRepoSourceConfig(
             repo_name="wohu/whisker",
-            url="https://code.alipay.com",
+            url="https://code.test.com",
             auth_info="git:xxxxx",
         ),
         space_id="test_space",
@@ -237,7 +237,7 @@ class TestGithubRepoLoader:
                 assert loader.repo_name == "wohu/whisker"
                 # 注意：mock测试中使用的是sample_repo，其默认分支是main
                 assert loader.branch_name == "main"
-                assert loader.base_url == "https://code.alipay.com"
+                assert loader.base_url == "https://code.test.com"
                 assert loader.repo_path == sample_repo
                 assert loader.local_repo is not None
 
@@ -287,14 +287,15 @@ class TestGithubRepoLoader:
     async def test_gitlab_repo_loader_real(self) -> None:
         """真实测试：GitLab仓库加载（可选运行）"""
         try:
+            url = "https://code.gitlab.com"
             knowledge = Knowledge(
                 knowledge_name="wohu/whisker",
                 source_type=KnowledgeSourceEnum.GITHUB_REPO,
                 knowledge_type=KnowledgeTypeEnum.GITHUB_REPO,
                 source_config=GithubRepoSourceConfig(
                     repo_name="wohu/whisker",
-                    url="https://code.alipay.com",
-                    auth_info="git:Bx-t_6mbv0aP-1vjRLX-",
+                    url=url,
+                    auth_info="git:xxxxxx",
                 ),
                 space_id="test_space",
                 embedding_model_name=EmbeddingModelEnum.OPENAI,
@@ -313,7 +314,7 @@ class TestGithubRepoLoader:
             # 验证基本信息
             assert loader.repo_name == "wohu/whisker"
             assert loader.branch_name == "master"
-            assert loader.base_url == "https://code.alipay.com"
+            assert loader.base_url == url
             assert loader.repo_path is not None
             assert loader.local_repo is not None
 

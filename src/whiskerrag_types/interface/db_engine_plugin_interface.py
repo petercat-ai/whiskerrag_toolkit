@@ -6,19 +6,15 @@ from pydantic import BaseModel
 
 from whiskerrag_types.model import (
     APIKey,
-    GlobalRule,
     Knowledge,
     PageQueryParams,
     PageResponse,
     Space,
-    SpaceRule,
     Task,
     TaskStatus,
     Tenant,
-    Wiki,
 )
 from whiskerrag_types.model.chunk import Chunk
-from whiskerrag_types.model.page import QueryParams
 from whiskerrag_types.model.retrieval import (
     RetrievalByKnowledgeRequest,
     RetrievalBySpaceRequest,
@@ -143,12 +139,6 @@ class DBPluginInterface(ABC):
     async def get_chunk_list(
         self, tenant_id: str, page_params: PageQueryParams[Chunk]
     ) -> PageResponse[Chunk]:
-        pass
-
-    @abstractmethod
-    async def get_all_chunk(
-        self, tenant_id: str, query_params: QueryParams[Chunk]
-    ) -> List[Chunk]:
         pass
 
     @abstractmethod
@@ -297,18 +287,6 @@ class DBPluginInterface(ABC):
 
     # =================== rule ===================
     @abstractmethod
-    async def create_rule(
-        self, tenant_id: str, rule: Union[GlobalRule, SpaceRule]
-    ) -> None:
-        pass
-
-    @abstractmethod
-    async def update_rule(
-        self, tenant_id: str, rule_id: str, rule: Union[GlobalRule, SpaceRule]
-    ) -> Union[GlobalRule, SpaceRule]:
-        pass
-
-    @abstractmethod
     async def get_tenant_rule(self, tenant_id: str) -> Optional[str]:
         pass
 
@@ -316,12 +294,10 @@ class DBPluginInterface(ABC):
     async def get_space_rule(self, space_id: str) -> Optional[str]:
         pass
 
-    # =================== wiki ===================
-    @abstractmethod
-    async def create_wiki(self, wiki: Wiki) -> None:
-        pass
-
     # =================== agent ===================
     @abstractmethod
     async def agent_invoke(self, params: Any) -> AsyncIterator[Any]:
         pass
+
+    # =================== dashboard ===================
+    # TODO: add dashboard related methods
