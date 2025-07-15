@@ -1,10 +1,6 @@
 import logging
 import os
-import shutil
-import subprocess
-import tempfile
-from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import urlparse
+from typing import Any, List, Optional
 
 from langchain_text_splitters import Language
 from openai import BaseModel
@@ -28,9 +24,10 @@ from whiskerrag_types.model.splitter import (
     TextSplitConfig,
 )
 from whiskerrag_utils.loader.file_pattern_manager import FilePatternManager
+from whiskerrag_utils.loader.git_repo_manager import get_repo_manager
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("whisker")
 
 
 class GitFileElementType(BaseModel):
@@ -45,153 +42,41 @@ class GitFileElementType(BaseModel):
     position: dict = {}  # VSCode position information
 
 
-def _check_git_installation() -> bool:
-    """check git installation"""
-    try:
-        subprocess.run(["git", "--version"], check=True, capture_output=True, text=True)
-        return True
-    except (subprocess.SubprocessError, FileNotFoundError):
-        return False
-
-
-def _get_temp_git_env() -> Dict[str, str]:
-    """
-    get temporary git environment configuration
-
-    Returns:
-        Dict[str, str]: git config
-    """
-    return {
-        "GIT_AUTHOR_NAME": "temp",
-        "GIT_AUTHOR_EMAIL": "temp@example.com",
-        "GIT_COMMITTER_NAME": "temp",
-        "GIT_COMMITTER_EMAIL": "temp@example.com",
-        "GIT_TERMINAL_PROMPT": "0",  # disable interactive prompt
-    }
-
-
-def _lazy_import_git() -> Tuple[Any, Any, Any]:
-    """Lazy import git modules to avoid direct dependency"""
-    try:
-        from git import Repo
-        from git.exc import GitCommandNotFound, InvalidGitRepositoryError
-
-        return Repo, GitCommandNotFound, InvalidGitRepositoryError
-    except ImportError as e:
-        raise ImportError(
-            "GitPython is required for Git repository loading. "
-            "Please install it with: pip install GitPython"
-        ) from e
-
-
 @register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_REPO)
 class GithubRepoLoader(BaseLoader):
-    repo_name: str
-    branch_name: Optional[str] = None
-    token: Optional[str] = None
-    local_repo: Optional[Any] = (
-        None  # Use Any instead of object to avoid mypy attr-defined errors
-    )
-    knowledge: Knowledge
+    """简化的Git仓库加载器，使用统一的仓库管理器"""
 
-    @property
-    def repos_dir(self) -> str:
-        """get runtime root folder path"""
-        # use system tempdir instead of current dir
-        return os.path.join(tempfile.gettempdir(), "repo_download")
-
-    def __init__(
-        self,
-        knowledge: Knowledge,
-    ):
+    def __init__(self, knowledge: Knowledge):
+        # Type annotations for instance variables
+        self.repo_path: Optional[str] = None
+        self.local_repo: Optional[Any] = None
         """
-        init GithubRepoLoader
+        初始化GithubRepoLoader
 
         Args:
-            knowledge: Knowledge instance,which include repo source config
+            knowledge: Knowledge实例，包含仓库源配置
 
         Raises:
-            ValueError: invalid repo config
+            ValueError: 无效的仓库配置
         """
         if not isinstance(knowledge.source_config, GithubRepoSourceConfig):
             raise ValueError("source_config should be GithubRepoSourceConfig")
 
         self.knowledge = knowledge
+        self.repo_manager = get_repo_manager()
+        self.source_config = knowledge.source_config
+
+        # 从配置中获取信息
         self.repo_name = knowledge.source_config.repo_name
         self.branch_name = knowledge.source_config.branch
-        self.token = knowledge.source_config.auth_info
         self.base_url = knowledge.source_config.url.rstrip("/")
 
-        os.makedirs(self.repos_dir, exist_ok=True)
-
-        self.repo_path: Optional[str] = os.path.join(
-            self.repos_dir, self.repo_name.replace("/", "_")
-        )
-
+        # 获取仓库路径和Repo对象
         try:
-            self._load_repo()
-        except Exception as e:
-            logger.error(f"Failed to load repo: {e}")
-            raise ValueError(
-                f"Failed to load repo {self.repo_name} with branch "
-                f"{self.branch_name}. Error: {str(e)}"
-            )
+            self.repo_path = self.repo_manager.get_repo_path(knowledge.source_config)
+            self.local_repo = self.repo_manager.get_repo(knowledge.source_config)
 
-    def _load_repo(self) -> None:
-        Repo, GitCommandNotFound, InvalidGitRepositoryError = _lazy_import_git()
-
-        if not _check_git_installation():
-            raise ValueError("Git is not installed in the system")
-
-        if not self.repo_path:
-            raise ValueError("Repository path not initialized")
-
-        try:
-            parsed_url = urlparse(self.base_url)
-            if not parsed_url.scheme or parsed_url.scheme != "https":
-                raise ValueError(
-                    f"Invalid URL scheme: {self.base_url}. "
-                    "Only HTTPS URLs are supported"
-                )
-
-            # 兼容 github、gitlab 及其他平台的 clone_url 构建
-            if "github.com" in self.base_url:
-                clone_url = f"{self.base_url}/{self.repo_name}.git"
-            elif "gitlab.com" in self.base_url or "gitlab" in self.base_url:
-                # 兼容 gitlab.com 及第三方 gitlab
-                url_no_scheme = self.base_url.split("//", 1)[-1]
-                clone_url = (
-                    f"https://oauth2:{self.token}@{url_no_scheme}/{self.repo_name}.git"
-                )
-            elif self.token and self.token.startswith("git:"):
-                # 兼容 第三方 token 前缀
-                url_no_scheme = self.base_url.split("//", 1)[-1]
-                clone_url = f"https://{self.token}@{url_no_scheme}/{self.repo_name}.git"
-            else:
-                clone_url = f"{self.base_url}/{self.repo_name}.git"
-
-            git_env = _get_temp_git_env()
-
-            if self.token:
-                git_env.update(
-                    {
-                        "GIT_ASKPASS": "echo",
-                        "GIT_USERNAME": "git",
-                        "GIT_PASSWORD": self.token,
-                    }
-                )
-
-            if os.path.exists(self.repo_path):
-                try:
-                    self.local_repo = Repo(self.repo_path)
-                    self._update_repo()
-                except Exception as e:
-                    logger.warning(f"Failed to update existing repo: {e}")
-                    shutil.rmtree(self.repo_path)
-                    self._clone_repo(clone_url, git_env)
-            else:
-                self._clone_repo(clone_url, git_env)
-
+            # 如果没有指定分支，获取默认分支
             if not self.branch_name and self.local_repo:
                 try:
                     self.branch_name = self.local_repo.active_branch.name
@@ -199,58 +84,13 @@ class GithubRepoLoader(BaseLoader):
                     logger.warning(f"Failed to get default branch name: {str(e)}")
                     self.branch_name = "main"
 
-            logger.info(f"Successfully loaded repository at {self.repo_path}")
-
+            logger.info(f"Loaded repo {self.repo_name} with branch {self.branch_name}")
         except Exception as e:
+            logger.error(f"Failed to load repo: {e}")
             raise ValueError(
                 f"Failed to load repo {self.repo_name} with branch "
                 f"{self.branch_name}. Error: {str(e)}"
             )
-
-    def _clone_repo(self, clone_url: str, git_env: Dict[str, str]) -> None:
-        Repo, GitCommandNotFound, InvalidGitRepositoryError = _lazy_import_git()
-
-        if not self.repo_path:
-            raise ValueError("Repository path not initialized")
-
-        try:
-            if self.branch_name:
-                self.local_repo = Repo.clone_from(
-                    url=clone_url,
-                    to_path=self.repo_path,
-                    depth=1,
-                    single_branch=True,
-                    env=git_env,
-                    branch=self.branch_name,
-                )
-            else:
-                self.local_repo = Repo.clone_from(
-                    url=clone_url,
-                    to_path=self.repo_path,
-                    depth=1,
-                    single_branch=True,
-                    env=git_env,
-                )
-        except GitCommandNotFound:
-            raise ValueError("Git command not found. Please ensure git is installed.")
-        except InvalidGitRepositoryError as e:
-            raise ValueError(f"Invalid git repository: {str(e)}")
-        except Exception as e:
-            if "Authentication failed" in str(e):
-                raise ValueError("Authentication failed. Please check your token.")
-            raise
-
-    def _update_repo(self) -> None:
-        # Ensure git is available before proceeding
-        if not _check_git_installation():
-            raise ValueError("Git is not installed in the system")
-
-        if not self.local_repo:
-            raise ValueError("Repository not initialized")
-
-        if self.branch_name:
-            self.local_repo.git.checkout(self.branch_name)
-        self.local_repo.remotes.origin.pull()
 
     @staticmethod
     def get_knowledge_type_by_ext(ext: str) -> KnowledgeTypeEnum:
@@ -301,15 +141,15 @@ class GithubRepoLoader(BaseLoader):
         self, knowledge_type: KnowledgeTypeEnum
     ) -> KnowledgeSplitConfig:
         """
-        Generate appropriate split_config based on knowledge type
+        根据知识类型生成适当的分割配置
 
         Args:
-            knowledge_type: The type of knowledge
+            knowledge_type: 知识类型
 
         Returns:
-            Appropriate split configuration for the knowledge type
+            适合该知识类型的分割配置
         """
-        # Use default chunk_size and chunk_overlap from GithubRepoParseConfig
+        # 使用默认的chunk_size和chunk_overlap
         default_chunk_size = 1500
         default_chunk_overlap = 200
 
@@ -359,7 +199,7 @@ class GithubRepoLoader(BaseLoader):
             KnowledgeTypeEnum.SOL,
             KnowledgeTypeEnum.LUA,
         ]:
-            # Map knowledge types to Language enum
+            # 映射知识类型到Language枚举
             language_map = {
                 KnowledgeTypeEnum.PYTHON: Language.PYTHON,
                 KnowledgeTypeEnum.JS: Language.JS,
@@ -398,7 +238,7 @@ class GithubRepoLoader(BaseLoader):
                 type="image",
             )
         else:
-            # For other types (HTML, RST, LATEX, etc.), use BaseSplitConfig
+            # 对于其他类型（HTML, RST, LATEX等），使用BaseSplitConfig
             return BaseCharSplitConfig(
                 chunk_size=default_chunk_size,
                 chunk_overlap=default_chunk_overlap,
@@ -408,14 +248,14 @@ class GithubRepoLoader(BaseLoader):
 
     def _get_file_position_info(self, file_path: str, relative_path: str) -> dict:
         """
-        Get position information that can be used for URL construction and remote jumping
+        获取可用于URL构建和远程跳转的位置信息
 
         Args:
-            file_path: Full path to the file
-            relative_path: Relative path from repo root
+            file_path: 文件的完整路径
+            relative_path: 相对于仓库根目录的路径
 
         Returns:
-            dict: Position information for remote repository jumping
+            dict: 用于远程仓库跳转的位置信息
         """
         try:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -446,15 +286,15 @@ class GithubRepoLoader(BaseLoader):
         end_line: Optional[int] = None,
     ) -> str:
         """
-        Generate a jump URL for external systems to create clickable links
+        生成跳转URL，供外部系统创建可点击链接
 
         Args:
-            relative_path: Relative path to the file
-            line: Optional line number to jump to
-            end_line: Optional end line for range jumping
+            relative_path: 文件的相对路径
+            line: 可选的跳转行号
+            end_line: 可选的结束行号（用于范围跳转）
 
         Returns:
-            str: Complete URL that can be used for jumping to the file/line
+            str: 可用于跳转到文件/行的完整URL
         """
         base_url = (
             f"{self.base_url}/{self.repo_name}/blob/{self.branch_name}/{relative_path}"
@@ -469,22 +309,18 @@ class GithubRepoLoader(BaseLoader):
 
     async def decompose(self) -> List[Knowledge]:
         """
-        decompose knowledge units in the repository
+        分解仓库中的知识单元
 
         Returns:
-            List[Knowledge]: knowledge list
+            List[Knowledge]: 知识列表
 
         Raises:
-            ValueError: when the repository is not properly initialized
+            ValueError: 当仓库未正确初始化时
         """
         if not self.local_repo or not self.repo_path:
             raise ValueError("Repository not properly initialized")
 
-        # Ensure git is available before proceeding with git operations
-        if not _check_git_installation():
-            raise ValueError("Git is not installed in the system")
-
-        # count the total file size of the repo
+        # 计算仓库的总文件大小
         total_size = 0
         for root, _, files in os.walk(self.repo_path):
             if ".git" in root:
@@ -496,7 +332,7 @@ class GithubRepoLoader(BaseLoader):
                 except Exception:
                     continue
 
-        # initialize file pattern manager
+        # 初始化文件模式管理器
         split_config = getattr(self.knowledge, "split_config", None)
         if split_config and getattr(split_config, "type", None) == "github_repo":
             pattern_manager = FilePatternManager(
@@ -508,7 +344,7 @@ class GithubRepoLoader(BaseLoader):
                     "Pattern configuration warnings:\n" + "\n".join(warnings)
                 )
         else:
-            # create a compatible configuration dictionary
+            # 创建兼容的配置字典
             dummy_config = {
                 "include_patterns": ["*.md", "*.mdx"],
                 "ignore_patterns": [],
@@ -545,16 +381,14 @@ class GithubRepoLoader(BaseLoader):
                         f"{self.base_url}/{self.repo_name}/blob/"
                         f"{self.branch_name}/{relative_path}"
                     )
-                    # Generate appropriate split_config for this knowledge type
+                    # 为这个知识类型生成适当的分割配置
                     knowledge_split_config = self._get_split_config_for_knowledge_type(
                         knowledge_type
                     )
-                    # Get accurate position information
+                    # 获取准确的位置信息
                     position_info = self._get_file_position_info(
                         file_path, relative_path
                     )
-                    # TODO: need to consider whether to use the embedding model of the knowledge,
-                    # for example, the embedding model of image and text may be different
                     embedding_model_name = self.knowledge.embedding_model_name
                     knowledge = Knowledge(
                         source_type=KnowledgeSourceEnum.GITHUB_FILE,
@@ -577,7 +411,7 @@ class GithubRepoLoader(BaseLoader):
                             "branch": self.branch_name,
                             "repo_name": self.repo_name,
                             "path": relative_path,
-                            # Position information for remote jumping
+                            # 用于远程跳转的位置信息
                             "position": position_info,
                         },
                     )
@@ -617,10 +451,6 @@ class GithubRepoLoader(BaseLoader):
             if not self.local_repo:
                 raise ValueError("Repository not initialized")
 
-            # Ensure git is available before accessing git objects
-            if not _check_git_installation():
-                raise ValueError("Git is not installed in the system")
-
             first_commit = next(
                 self.local_repo.iter_commits(
                     rev=self.branch_name, max_count=1, reverse=True
@@ -645,26 +475,23 @@ class GithubRepoLoader(BaseLoader):
         ]
 
     async def on_load_finished(self) -> None:
-        """clean resource"""
+        """清理资源"""
         try:
-            if self.repo_path and os.path.exists(self.repo_path):
-                shutil.rmtree(self.repo_path)
-                self.repo_path = None
-                self.local_repo = None
-                logger.info(f"Cleaned up temporary directory for {self.repo_name}")
+            # 使用仓库管理器清理资源
+            self.repo_manager.cleanup_repo(self.source_config)
+            self.repo_path = None
+            self.local_repo = None
+            logger.info(f"Cleaned up temporary directory for {self.repo_name}")
         except Exception as e:
             logger.error(f"Error cleaning up resources: {e}")
 
     async def get_file_by_path(self, path: str) -> GitFileElementType:
+        """根据路径获取文件信息"""
         if not self.local_repo:
             raise ValueError("Repository not initialized")
 
         if not self.repo_path:
             raise ValueError("Repository path not initialized")
-
-        # Ensure git is available before accessing git objects
-        if not _check_git_installation():
-            raise ValueError("Git is not installed in the system")
 
         full_path = os.path.join(self.repo_path, path)
         if not os.path.exists(full_path):
@@ -672,18 +499,18 @@ class GithubRepoLoader(BaseLoader):
 
         try:
             blob = self.local_repo.head.commit.tree[path]
-            # type check to ensure source_config is GithubRepoSourceConfig
+            # 类型检查以确保source_config是GithubRepoSourceConfig
             if not isinstance(self.knowledge.source_config, GithubRepoSourceConfig):
                 raise ValueError("Invalid source config type")
             base_url = self.knowledge.source_config.url.rstrip("/")
             file_url = f"{base_url}/{self.repo_name}/blob/{self.branch_name}/{path}"
 
-            # read file content
+            # 读取文件内容
             try:
                 with open(full_path, "r", encoding="utf-8") as f:
                     content = f.read()
             except UnicodeDecodeError:
-                # if not a text file, try binary reading and convert to base64
+                # 如果不是文本文件，尝试二进制读取并转换为base64
                 with open(full_path, "rb") as f:
                     import base64
 
