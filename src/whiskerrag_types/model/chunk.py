@@ -4,7 +4,6 @@ from uuid import UUID, uuid4
 
 import numpy as np
 from pydantic import (
-    BaseModel,
     ConfigDict,
     Field,
     field_serializer,
@@ -13,10 +12,10 @@ from pydantic import (
 )
 
 from whiskerrag_types.model.knowledge import EmbeddingModelEnum
-from whiskerrag_types.model.utils import parse_datetime
+from whiskerrag_types.model.timeStampedModel import TimeStampedModel
 
 
-class Chunk(BaseModel):
+class Chunk(TimeStampedModel):
     chunk_id: str = Field(default_factory=lambda: str(uuid4()), description="chunk id")
     space_id: str = Field(..., description="space id")
     tenant_id: str = Field(..., description="tenant id")
@@ -39,16 +38,6 @@ class Chunk(BaseModel):
     f3: Optional[str] = Field(None, description="Field 3 from knowledge.metadata._f3")
     f4: Optional[str] = Field(None, description="Field 4 from knowledge.metadata._f4")
     f5: Optional[str] = Field(None, description="Field 5 from knowledge.metadata._f5")
-    created_at: Optional[datetime] = Field(
-        default=None,
-        alias="gmt_create",
-        description="creation time",
-    )
-    updated_at: Optional[datetime] = Field(
-        default=None,
-        alias="gmt_modified",
-        description="update time",
-    )
 
     @field_validator("embedding", mode="before")
     @classmethod
@@ -89,6 +78,15 @@ class Chunk(BaseModel):
             return embedding_model_name.value
         return str(embedding_model_name)
 
+    @field_serializer("context")
+    def serialize_context(self, context: str) -> str:
+        """Serialize context with special handling for QA type chunks"""
+        if self.metadata and "_knowledge_type" in self.metadata:
+            knowledge_type = self.metadata["_knowledge_type"]
+            if knowledge_type == "qa" and "answer" in self.metadata:
+                return f"question: {context}\nanswer: {self.metadata['answer']}"
+        return context
+
     def update(self, **kwargs: Any) -> "Chunk":
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -106,37 +104,9 @@ class Chunk(BaseModel):
         for field, value in data.items():
             if isinstance(value, UUID):
                 data[field] = str(value)
-        field_mappings = {"created_at": "gmt_create", "updated_at": "gmt_modified"}
-        for field, alias_name in field_mappings.items():
-            val = data.get(field) or data.get(alias_name)
-            if val is None:
-                continue
-
-            if isinstance(val, str):
-                dt = parse_datetime(val)
-                data[field] = dt
-                data[alias_name] = dt
-            else:
-                if val and val.tzinfo is None:
-                    dt = val.replace(tzinfo=timezone.utc)
-                    data[field] = dt
-                    data[alias_name] = dt
 
         return data
-
-    @model_validator(mode="after")
-    def set_defaults(self) -> "Chunk":
-        now = datetime.now(timezone.utc)
-        if self.created_at is None:
-            self.created_at = now
-        if self.updated_at is None:
-            self.updated_at = now
-        return self
 
     model_config = ConfigDict(
         populate_by_name=True,
     )
-
-    @field_serializer("created_at", "updated_at")
-    def serialize_datetime(self, dt: datetime) -> str:
-        return dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
