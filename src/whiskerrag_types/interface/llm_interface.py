@@ -15,6 +15,8 @@ from typing import (
 
 from pydantic import BaseModel
 
+from .async_utils import run_async_safe
+
 T = TypeVar("T", bound=BaseModel)
 
 ContentType = Union[
@@ -68,28 +70,7 @@ class BaseLLM(ABC, Generic[T]):
         Returns:
             返回模型响应
         """
-        import asyncio
-
-        # 检查是否在事件循环中
-        try:
-            asyncio.get_running_loop()
-            # 如果在事件循环中，创建任务
-            import concurrent.futures
-
-            def run_in_thread() -> T:
-                new_loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(new_loop)
-                try:
-                    return new_loop.run_until_complete(self.chat(content, **kwargs))
-                finally:
-                    new_loop.close()
-
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(run_in_thread)
-                return future.result()
-        except RuntimeError:
-            # 没有运行中的事件循环，可以直接调用
-            return asyncio.run(self.chat(content, **kwargs))
+        return run_async_safe(self.chat, content, **kwargs)
 
     def stream_chat_sync(
         self, content: Union[str, List[ContentType]], **kwargs: Any
@@ -104,35 +85,14 @@ class BaseLLM(ABC, Generic[T]):
         Yields:
             流式返回模型响应块
         """
-        import asyncio
-        import concurrent.futures
 
-        def run_in_thread() -> List[T]:
-            new_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(new_loop)
-            try:
+        async def _run() -> List[T]:
+            results = []
+            async for chunk in self.stream_chat(content, **kwargs):
+                results.append(chunk)
+            return results
 
-                async def _run() -> List[T]:
-                    results = []
-                    async for chunk in self.stream_chat(content, **kwargs):
-                        results.append(chunk)
-                    return results
-
-                return new_loop.run_until_complete(_run())
-            finally:
-                new_loop.close()
-
-        # 检查是否在事件循环中
-        try:
-            asyncio.get_running_loop()
-            # 如果在事件循环中，在新线程中运行
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(run_in_thread)
-                results = future.result()
-        except RuntimeError:
-            # 没有运行中的事件循环，可以直接调用
-            results = run_in_thread()
-
+        results = run_async_safe(_run)
         for result in results:
             yield result
 
@@ -178,12 +138,26 @@ class BaseLLM(ABC, Generic[T]):
             raise ValueError("Must provide either image_path, image_data, or image_url")
 
     @classmethod
-    async def sync_health_check(cls) -> bool:
+    def sync_health_check(cls) -> bool:
         """
         同步健康检查方法，用于注册时验证
 
         Returns:
             True表示健康检查通过，False表示失败
         """
-        # 默认实现返回True，子类可以重写进行具体检查
-        return True
+        try:
+            return run_async_safe(cls.health_check)
+        except Exception as e:
+            print(f"Health check failed for {cls.__name__}: {e}")
+            return False
+
+    @classmethod
+    @abstractmethod
+    async def health_check(cls) -> bool:
+        """
+        异步健康检查方法
+
+        Returns:
+            True表示健康检查通过，False表示失败
+        """
+        pass

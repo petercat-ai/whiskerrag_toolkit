@@ -62,8 +62,8 @@ class ExampleLLM(BaseLLM[ExampleResponse]):
             )
 
     @classmethod
-    async def sync_health_check(cls) -> bool:
-        """健康检查"""
+    async def health_check(cls) -> bool:
+        """异步健康检查"""
         try:
             instance = cls()
             test_response = await instance.chat("test")
