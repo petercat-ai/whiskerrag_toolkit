@@ -6,10 +6,7 @@
 
 import asyncio
 import functools
-from typing import Any, Awaitable, Callable, TypeVar
-
-import anyio
-from anyio.from_thread import start_blocking_portal
+from typing import Any, Awaitable, Callable, Coroutine, TypeVar, cast
 
 T = TypeVar("T")
 
@@ -22,8 +19,8 @@ def run_async_safe(
 
     这个函数会：
     1. 检测当前是否已经在事件循环中
-    2. 如果在事件循环中，使用 BlockingPortal 创建新的事件循环
-    3. 如果不在事件循环中，直接使用 anyio.run
+    2. 如果在事件循环中，使用 asyncio.create_task 在当前循环中执行
+    3. 如果不在事件循环中，直接使用 asyncio.run
 
     Args:
         coro_func: 异步函数
@@ -38,7 +35,7 @@ def run_async_safe(
 
     Example:
         >>> async def async_task(x: int) -> int:
-        ...     await anyio.sleep(0.1)
+        ...     await asyncio.sleep(0.1)
         ...     return x * 2
         >>>
         >>> result = run_async_safe(async_task, 5)
@@ -47,12 +44,22 @@ def run_async_safe(
     try:
         # 检查是否已经在事件循环中
         asyncio.get_running_loop()
-        # 如果在事件循环中，使用 BlockingPortal
-        with start_blocking_portal() as portal:
-            return portal.call(coro_func, *args, **kwargs)
+        # 如果在事件循环中，需要在新线程中运行
+        import concurrent.futures
+
+        def run_in_thread() -> T:
+            # 将 Awaitable 转换为 Coroutine 以满足 asyncio.run 的类型要求
+            coro = coro_func(*args, **kwargs)
+            return asyncio.run(cast(Coroutine[Any, Any, T], coro))
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(run_in_thread)
+            return future.result()
+
     except RuntimeError:
-        # 没有运行中的事件循环，可以直接使用 anyio.run
-        return anyio.run(coro_func, *args, **kwargs)
+        # 没有运行中的事件循环，可以直接使用 asyncio.run
+        coro = coro_func(*args, **kwargs)
+        return asyncio.run(cast(Coroutine[Any, Any, T], coro))
 
 
 def async_to_sync(coro_func: Callable[..., Awaitable[T]]) -> Callable[..., T]:
@@ -70,7 +77,7 @@ def async_to_sync(coro_func: Callable[..., Awaitable[T]]) -> Callable[..., T]:
     Example:
         >>> @async_to_sync
         ... async def async_task(x: int) -> int:
-        ...     await anyio.sleep(0.1)
+        ...     await asyncio.sleep(0.1)
         ...     return x * 2
         >>>
         >>> result = async_task(5)  # 现在可以同步调用
@@ -93,7 +100,7 @@ class AsyncToSyncMixin:
     Example:
         >>> class MyClass(AsyncToSyncMixin):
         ...     async def async_method(self, x: int) -> int:
-        ...         await anyio.sleep(0.1)
+        ...         await asyncio.sleep(0.1)
         ...         return x * 2
         ...
         ...     def sync_method(self, x: int) -> int:
