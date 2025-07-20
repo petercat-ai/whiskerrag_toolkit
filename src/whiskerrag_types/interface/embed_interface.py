@@ -1,30 +1,26 @@
-import asyncio
-import threading
 from abc import ABC, abstractmethod
-from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional
 
 from whiskerrag_types.model.multi_modal import Image
+
+from .async_utils import run_async_safe
 
 
 class BaseEmbedding(ABC):
 
     @classmethod
     def sync_health_check(cls) -> bool:
-        def run_async_in_thread() -> bool:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                return loop.run_until_complete(cls.health_check())
-            finally:
-                loop.close()
+        """
+        同步健康检查方法，用于注册时验证
 
-        if threading.current_thread() is threading.main_thread():
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(run_async_in_thread)
-                return future.result()
-        else:
-            return run_async_in_thread()
+        Returns:
+            True表示健康检查通过，False表示失败
+        """
+        try:
+            return run_async_safe(cls.health_check)
+        except Exception as e:
+            print(f"Health check failed for {cls.__name__}: {e}")
+            return False
 
     @classmethod
     @abstractmethod

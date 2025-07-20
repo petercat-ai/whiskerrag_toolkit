@@ -1,5 +1,6 @@
 from typing import Optional
 
+from langchain_core.documents.base import Blob
 from pydantic import BaseModel, HttpUrl
 
 
@@ -14,4 +15,4 @@ class Text(BaseModel):
     metadata: dict
 
 
-__all__ = ["Image", "Text"]
+__all__ = ["Image", "Text", "Blob"]

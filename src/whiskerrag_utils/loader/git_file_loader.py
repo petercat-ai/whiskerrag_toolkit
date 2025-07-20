@@ -8,13 +8,13 @@ from whiskerrag_types.model import (
 )
 from whiskerrag_types.model.knowledge import KnowledgeTypeEnum
 from whiskerrag_types.model.knowledge_source import GithubRepoSourceConfig
-from whiskerrag_types.model.multi_modal import Image, Text
+from whiskerrag_types.model.multi_modal import Blob, Image, Text
 from whiskerrag_utils.loader.git_repo_manager import get_repo_manager
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 
 @register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.GITHUB_FILE)
-class GithubFileLoader(BaseLoader[Union[Text, Image]]):
+class GithubFileLoader(BaseLoader[Union[Text, Image, Blob]]):
     """
     从Git仓库加载单个文件的加载器
     """
@@ -41,7 +41,7 @@ class GithubFileLoader(BaseLoader[Union[Text, Image]]):
             **knowledge.source_config.model_dump(exclude={"path"}),
         )
 
-    async def load(self) -> List[Union[Text, Image]]:
+    async def load(self) -> List[Union[Text, Image, Blob]]:
         """
         加载指定的文件
 
