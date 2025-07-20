@@ -119,39 +119,3 @@ class AsyncToSyncMixin:
             异步方法的返回值
         """
         return run_async_safe(coro_func, *args, **kwargs)
-
-
-def create_sync_health_check(
-    async_health_check: Callable[[], Awaitable[bool]],
-) -> Callable[[], bool]:
-    """
-    为异步健康检查方法创建对应的同步版本
-
-    Args:
-        async_health_check: 异步健康检查方法
-
-    Returns:
-        同步健康检查方法
-
-    Example:
-        >>> class MyService:
-        ...     @classmethod
-        ...     async def health_check(cls) -> bool:
-        ...         await anyio.sleep(0.1)
-        ...         return True
-        ...
-        ...     sync_health_check = create_sync_health_check(health_check)
-        >>>
-        >>> result = MyService.sync_health_check()
-        >>> print(result)  # True
-    """
-
-    @functools.wraps(async_health_check)
-    def sync_health_check() -> bool:
-        try:
-            return run_async_safe(async_health_check)
-        except Exception as e:
-            print(f"Health check failed: {e}")
-            return False
-
-    return sync_health_check
