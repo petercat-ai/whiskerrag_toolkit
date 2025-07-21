@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import pytest
 
 from whiskerrag_types.interface.embed_interface import BaseEmbedding
@@ -13,13 +15,18 @@ class MockEmbedding(BaseEmbedding):
     async def health_check(cls) -> bool:
         return True  # Always pass health check for testing
 
-    async def embed_text(self, text: str, timeout: int = 30) -> list[float]:
+    async def embed_documents(
+        self, documents: List[str], timeout: Optional[int]
+    ) -> List[List[float]]:
+        return [[0.1, 0.2, 0.3, 0.4, 0.5]]
+
+    async def embed_text(self, text: str, timeout: Optional[int]) -> List[float]:
         return [0.1, 0.2, 0.3, 0.4, 0.5]
 
-    async def embed_text_query(self, text: str, timeout: int = 30) -> list[float]:
+    async def embed_text_query(self, text: str, timeout: int = 30) -> List[float]:
         return [0.1, 0.2, 0.3, 0.4, 0.5]
 
-    async def embed_image(self, image, timeout: int = 30) -> list[float]:
+    async def embed_image(self, image, timeout: int = 30) -> List[float]:
         return [0.1, 0.2, 0.3, 0.4, 0.5]
 
 
