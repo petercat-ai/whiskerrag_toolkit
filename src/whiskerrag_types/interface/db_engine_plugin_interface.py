@@ -291,7 +291,7 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_space_rule(self, space_id: str) -> Optional[str]:
+    async def get_space_rule(self, tenant_id: str, space_id: str) -> Optional[str]:
         pass
 
     # =================== agent ===================
