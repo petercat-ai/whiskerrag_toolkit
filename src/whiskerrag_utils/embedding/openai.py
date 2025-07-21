@@ -22,6 +22,13 @@ class OpenAIEmbedding(BaseEmbedding):
             print(f"OpenAIEmbedding health check failed: {e}")
             return False
 
+    async def embed_documents(
+        self, documents: List[str], timeout: Optional[int]
+    ) -> List[List[float]]:
+        embedding_client = OpenAIEmbeddings(timeout=timeout or 15)
+        embeddings = embedding_client.embed_documents(documents)
+        return embeddings
+
     async def embed_text(self, text: str, timeout: Optional[int]) -> List[float]:
         embedding_client = OpenAIEmbeddings(timeout=timeout or 15)
         embedding = embedding_client.embed_query(text)

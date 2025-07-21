@@ -28,6 +28,12 @@ class BaseEmbedding(ABC):
         pass
 
     @abstractmethod
+    async def embed_documents(
+        self, documents: List[str], timeout: Optional[int]
+    ) -> List[List[float]]:
+        pass
+
+    @abstractmethod
     async def embed_text(self, text: str, timeout: Optional[int]) -> List[float]:
         pass
 
