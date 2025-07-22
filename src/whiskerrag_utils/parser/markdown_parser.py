@@ -32,12 +32,23 @@ class MarkdownParser(BaseParser[Text]):
 
         for text_item in texts_to_process:
             split_texts = splitter.split_text(text_item.content)
-            chunks = [
-                Text(content=text, metadata=text_item.metadata.copy())
-                for text in split_texts
-            ]
+            chunks = []
+            for split_text in split_texts:
+                code_list = self._extract_code_list(split_text)
+                chunk_metadata = text_item.metadata.copy()
+                chunk_metadata["_code_list"] = code_list
+                chunks.append(Text(content=split_text, metadata=chunk_metadata))
+
             final_chunks.extend(chunks)
         return final_chunks
+
+    def _extract_code_list(self, text: str) -> List[str]:
+        code_list = []
+        # 从 markdown 中提取 code
+        code_match = re.findall(r"```(.*?)```", text, re.DOTALL)
+        for code in code_match:
+            code_list.append(code.strip())
+        return code_list
 
     def _split_by_headers(self, content: Text) -> List[Text]:
         chunks = []
