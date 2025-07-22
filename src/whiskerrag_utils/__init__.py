@@ -1,8 +1,8 @@
 import asyncio
 import logging
-from typing import List, Optional, Tuple, TypedDict, Union
+import uuid
+from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
-from whiskerrag_types.interface.embed_interface import BaseEmbedding
 from whiskerrag_types.model.chunk import Chunk
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
 from whiskerrag_types.model.multi_modal import Image, Text
@@ -26,66 +26,59 @@ class DiffResult(TypedDict):
     unchanged: List[Knowledge]
 
 
-async def _embed_parse_item(
-    parse_item: Union[Text, Image],
-    knowledge: Knowledge,
-    EmbeddingCls: type[BaseEmbedding],
-    semaphore: asyncio.Semaphore,
-) -> Optional[Chunk]:
+def _process_metadata_and_tags(
+    knowledge: Knowledge, parse_item: Union[Text, Image]
+) -> Tuple[Dict[str, Any], List[str]]:
     """
-    Use embedding model to embed the parsed item and return a Chunk object.
+    Process metadata and tags for a parse item.
     Args:
-        parse_item: The parsed item to process.
         knowledge: The knowledge object.
-        EmbeddingCls: The embedding class.
-        semaphore: The semaphore to use.
+        parse_item: The parse item (Text or Image).
+    Returns:
+        A tuple of (combined_metadata, tags).
+    """
+    combined_metadata = {**knowledge.metadata, **parse_item.metadata}
+    combined_metadata["_knowledge_type"] = knowledge.knowledge_type
+    combined_metadata["_reference_url"] = getattr(knowledge, "reference_url", "")
+    tags = [knowledge.knowledge_id]
+    return combined_metadata, tags
+
+
+def _create_chunk(
+    knowledge: Knowledge,
+    parse_item: Union[Text, Image],
+    embedding: List[float],
+    combined_metadata: Dict[str, Any],
+    tags: List[str],
+) -> Chunk:
+    """
+    Create a Chunk object from the given parameters.
+    Args:
+        knowledge: The knowledge object.
+        parse_item: The parse item (Text or Image).
+        embedding: The embedding vector.
+        combined_metadata: The combined metadata.
+        tags: The tags.
     Returns:
         A Chunk object.
     """
-    async with semaphore:
-        try:
-            if isinstance(parse_item, Text):
-                embedding = await EmbeddingCls().embed_text(
-                    parse_item.content, timeout=30
-                )
-            elif isinstance(parse_item, Image):
-                embedding = await EmbeddingCls().embed_image(parse_item, timeout=60 * 5)
-            else:
-                print(f"[warn]: illegal parse item :{parse_item}")
-                return None
-
-            combined_metadata = {**knowledge.metadata}
-            if isinstance(parse_item, Text) and parse_item.metadata:
-                combined_metadata.update(parse_item.metadata)
-
-            # Extract specific fields from metadata according to rules
-            # knowledge.metadata._tags, _f1, _f2, _f3, _f4, _f5 -> chunk.tags, chunk.f1, chunk.f2, etc.
-            tags = combined_metadata.get("_tags")
-            if isinstance(tags, str):
-                tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
-            elif not isinstance(tags, list):
-                tags = None
-
-            return Chunk(
-                context=(parse_item.content if isinstance(parse_item, Text) else ""),
-                enabled=knowledge.enabled,
-                metadata=combined_metadata,
-                # Assign specific fields from metadata
-                tags=tags,
-                f1=combined_metadata.get("_f1"),
-                f2=combined_metadata.get("_f2"),
-                f3=combined_metadata.get("_f3"),
-                f4=combined_metadata.get("_f4"),
-                f5=combined_metadata.get("_f5"),
-                embedding=embedding,
-                knowledge_id=knowledge.knowledge_id,
-                embedding_model_name=knowledge.embedding_model_name,
-                space_id=knowledge.space_id,
-                tenant_id=knowledge.tenant_id,
-            )
-        except Exception as e:
-            logger.error(f"Error processing parse item: {e}")
-            return None
+    return Chunk(
+        chunk_id=str(uuid.uuid4()),
+        space_id=knowledge.space_id,
+        tenant_id=knowledge.tenant_id,
+        knowledge_id=knowledge.knowledge_id,
+        context=parse_item.content if isinstance(parse_item, Text) else "",
+        embedding=embedding,
+        enabled=knowledge.enabled,
+        embedding_model_name=knowledge.embedding_model_name,
+        metadata=combined_metadata,
+        tags=tags,
+        f1=combined_metadata.get("_f1"),
+        f2=combined_metadata.get("_f2"),
+        f3=combined_metadata.get("_f3"),
+        f4=combined_metadata.get("_f4"),
+        f5=combined_metadata.get("_f5"),
+    )
 
 
 def _get_unique_origin_list(
@@ -170,13 +163,53 @@ async def get_chunks_by_knowledge(
             split_result = await ParserCls().parse(knowledge, content)
             parse_results.extend(split_result)
 
-    semaphore = asyncio.Semaphore(semaphore_num)
-    tasks = [
-        _embed_parse_item(parse_item, knowledge, EmbeddingCls, semaphore)
-        for parse_item in parse_results
-    ]
-    chunks = await asyncio.gather(*tasks)
-    return [chunk for chunk in chunks if chunk is not None]
+    # Classify parse_results by type
+    text_items = []
+    image_items = []
+    for parse_item in parse_results:
+        if isinstance(parse_item, Text):
+            text_items.append(parse_item)
+        elif isinstance(parse_item, Image):
+            image_items.append(parse_item)
+        else:
+            logger.warn(f"[warn]: illegal parse item: {parse_item}")
+
+    chunks = []
+
+    # Batch process Text items using embed_documents
+    if text_items:
+        try:
+            documents = [text_item.content for text_item in text_items]
+            embeddings = await EmbeddingCls().embed_documents(documents, timeout=30)
+
+            for text_item, embedding in zip(text_items, embeddings):
+                combined_metadata, tags = _process_metadata_and_tags(
+                    knowledge, text_item
+                )
+                chunk = _create_chunk(
+                    knowledge, text_item, embedding, combined_metadata, tags
+                )
+                chunks.append(chunk)
+        except Exception as e:
+            logger.error(f"Error processing text items in batch: {e}")
+
+    # Process Image items individually
+    if image_items:
+        for image_item in image_items:
+            try:
+                embedding = await EmbeddingCls().embed_image(image_item, timeout=60 * 5)
+                combined_metadata, tags = _process_metadata_and_tags(
+                    knowledge, image_item
+                )
+                chunk = _create_chunk(
+                    knowledge, image_item, embedding, combined_metadata, tags
+                )
+                chunks.append(chunk)
+            except Exception as e:
+                logger.error(f"Error processing image item: {e}")
+                continue
+
+    return chunks
 
 
 def get_diff_knowledge_by_sha(
