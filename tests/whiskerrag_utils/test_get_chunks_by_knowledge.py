@@ -39,6 +39,10 @@ class MockEmbedding:
     async def embed_text(self, text, timeout=None):
         return [0, 1]
 
+    async def embed_documents(self, documents, timeout=None):
+        # Return embeddings for each document
+        return [[0, 1] for _ in documents]
+
 
 @pytest.mark.asyncio
 async def test_get_chunks_by_knowledge_text() -> None:
