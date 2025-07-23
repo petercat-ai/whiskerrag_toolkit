@@ -85,7 +85,7 @@ class DBPluginInterface(ABC):
 
     @abstractmethod
     async def delete_knowledge(
-        self, tenant_id: str, knowledge_id_list: List[str]
+        self, tenant_id: str, knowledge_id_list: List[str], cascade: bool = False
     ) -> None:
         pass
 
