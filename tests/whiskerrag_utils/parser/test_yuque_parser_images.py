@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试 YuqueParser 的图片提取功能
+test YuqueParser 的 image extract
 """
 import asyncio
 import os
@@ -61,6 +61,7 @@ async def test_image_extraction():
     # 创建一个简单的 mock Knowledge 对象
     class MockKnowledge:
         def __init__(self):
+            self.knowledge_name = "UI设计特性文档"  # 添加知识名称
             self.split_config = YuqueSplitConfig(
                 chunk_size=1000,
                 chunk_overlap=200,
@@ -110,10 +111,51 @@ async def test_image_extraction():
         print()
 
     print("文本块预览:")
-    for i, text_obj in enumerate(text_objects[:3]):  # 只显示前3个
+    for i, text_obj in enumerate(text_objects[:5]):  # 显示前5个文本块
         print(f"  {i+1}. 长度: {len(text_obj.content)} 字符")
-        print(f"     内容预览: {text_obj.content[:100]}...")
+        print(f"     内容预览: {text_obj.content[:150]}...")
+
+        # 显示新增的上下文信息
+        metadata = text_obj.metadata
+        if "_knowledge_name" in metadata:
+            print(f"     知识名称: {metadata['_knowledge_name']}")
+        if "_headings" in metadata:
+            print(f"     标题层级: {metadata['_headings']}")
+        if "_heading_path" in metadata:
+            print(f"     标题路径: {metadata['_heading_path']}")
+
+        # 检查内容是否包含上下文标记
+        if text_obj.content.startswith("[Context:"):
+            context_end = text_obj.content.find("]\n\n")
+            if context_end != -1:
+                context_info = text_obj.content[
+                    9:context_end
+                ]  # 提取 [Context: 和 ] 之间的内容
+                print(f"     内容中的上下文: {context_info}")
+
+        print(
+            f"     其他元数据: {dict((k, v) for k, v in metadata.items() if not k.startswith('_'))}"
+        )
         print()
+
+    # 验证标题提取功能
+    print("标题提取验证:")
+    parser_instance = YuqueParser()
+    headings = parser_instance._extract_headings(markdown_content)
+    print(f"提取到的标题数量: {len(headings)}")
+    for level, title, pos in headings:
+        print(f"  级别{level}: {title} (位置: {pos})")
+    print()
+
+    # 验证层级构建功能
+    print("标题层级构建验证:")
+    hierarchy_map = parser_instance._build_heading_hierarchy(headings)
+    print(f"层级映射条目数: {len(hierarchy_map)}")
+    # 显示几个关键位置的层级信息
+    sample_positions = sorted(hierarchy_map.keys())[:5]
+    for pos in sample_positions:
+        print(f"  位置 {pos}: {hierarchy_map[pos]}")
+    print()
 
 
 if __name__ == "__main__":
