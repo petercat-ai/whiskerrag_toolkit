@@ -5,7 +5,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from whiskerrag_types.interface.parser_interface import BaseParser, ParseResult
 from whiskerrag_types.model.knowledge import Knowledge, KnowledgeTypeEnum
-from whiskerrag_types.model.multi_modal import Image, Text
+from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import YuqueSplitConfig
 from whiskerrag_utils.registry import RegisterTypeEnum, register
 
@@ -138,20 +138,6 @@ class YuqueParser(BaseParser[Text]):
             keep_separator=False,
         )
         result: ParseResult = []
-        # extract all image urls and alt text
-        image_pattern = r"!\[(.*?)\]\((.*?)\)"
-        all_image_matches = re.findall(image_pattern, content.content)
-
-        # create image objects
-        for img_idx, (alt_text, img_url) in enumerate(all_image_matches):
-            if img_url.strip():  # ensure url is not empty
-                img_metadata = content.metadata.copy()
-                img_metadata["_img_idx"] = img_idx
-                img_metadata["_img_url"] = img_url.strip()
-                img_metadata["_alt_text"] = alt_text.strip() if alt_text.strip() else ""
-                image_obj = Image(url=img_url.strip(), metadata=img_metadata)
-                result.append(image_obj)
-
         # split text
         split_texts = splitter.split_text(content.content)
 

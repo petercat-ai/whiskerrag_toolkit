@@ -90,6 +90,7 @@ def sample_repo():
     repo.index.add(["README.md"])
     repo.index.commit("init")
     yield repo_path
+    repo.close()
     shutil.rmtree(repo_path)
 
 

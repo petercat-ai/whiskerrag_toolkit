@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import YuqueSplitConfig
-from whiskerrag_utils.parser.yuque_parser import YuqueParser
+from whiskerrag_utils.parser.yuque_doc_parser import YuqueParser
 
 
 async def test_image_extraction():
