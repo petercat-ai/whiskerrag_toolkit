@@ -186,9 +186,9 @@ async def get_chunks_by_knowledge(
     # Batch process Text items using embed_documents
     if text_items:
         try:
+            logger.info(f"Processing {len(text_items)} text items in batch")
             documents = [text_item.content for text_item in text_items]
             embeddings = await EmbeddingCls().embed_documents(documents, timeout=30)
-
             for text_item, embedding in zip(text_items, embeddings):
                 combined_metadata, tags = _process_metadata_and_tags(
                     knowledge, text_item
@@ -204,7 +204,13 @@ async def get_chunks_by_knowledge(
     if image_items:
         for image_item in image_items:
             try:
+                logger.info(f"Processing image item: {image_item}")
                 embedding = await EmbeddingCls().embed_image(image_item, timeout=60 * 5)
+                if not embedding:
+                    logger.warning(
+                        f"[warn]: embed image failed, image item: {image_item}"
+                    )
+                    continue
                 combined_metadata, tags = _process_metadata_and_tags(
                     knowledge, image_item
                 )
