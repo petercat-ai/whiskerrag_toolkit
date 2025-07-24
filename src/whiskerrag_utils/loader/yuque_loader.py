@@ -1,9 +1,16 @@
 import re
-from typing import List
+from typing import Any, Dict, List, Optional, Union
 
 from whiskerrag_types.interface.loader_interface import BaseLoader
-from whiskerrag_types.model.knowledge import Knowledge, KnowledgeSourceEnum, KnowledgeTypeEnum
-from whiskerrag_types.model.knowledge_source import YuqueSourceConfig, OpenUrlSourceConfig
+from whiskerrag_types.model.knowledge import (
+    Knowledge,
+    KnowledgeSourceEnum,
+    KnowledgeTypeEnum,
+)
+from whiskerrag_types.model.knowledge_source import (
+    OpenUrlSourceConfig,
+    YuqueSourceConfig,
+)
 from whiskerrag_types.model.multi_modal import Text
 from whiskerrag_types.model.splitter import ImageSplitConfig
 from whiskerrag_utils.helper.yuque import ExtendedYuqueLoader
@@ -12,34 +19,48 @@ from whiskerrag_utils.registry import RegisterTypeEnum, register
 
 @register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.YUQUE)
 class WhiskerYuqueLoader(BaseLoader[Text]):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    _book_docs_cache: Optional[list]
+    _doc_detail_cache: Dict[Union[str, int], Any]
+    _yuque_loader: Optional[ExtendedYuqueLoader]
+
+    def __init__(self, knowledge: Knowledge) -> None:
+        super().__init__(knowledge)
         self._book_docs_cache = None
         self._doc_detail_cache = {}
         self._yuque_loader = None
 
     @property
-    def yuque_loader(self):
+    def yuque_loader(self) -> ExtendedYuqueLoader:
         if self._yuque_loader is None:
+            if not isinstance(self.knowledge.source_config, YuqueSourceConfig):
+                raise AttributeError("Invalid source config type for YuqueLoader")
+            access_token = self.knowledge.source_config.auth_info
+            api_url = self.knowledge.source_config.api_url
             self._yuque_loader = ExtendedYuqueLoader(
-                access_token=self.knowledge.source_config.auth_info,
-                api_url=self.knowledge.source_config.api_url,
+                access_token=access_token,
+                api_url=api_url,
             )
         return self._yuque_loader
 
-    def get_book_docs(self, group_login, book_slug):
+    def get_doc_detail(
+        self, group_login: str, book_slug: str, document_id: Optional[Union[str, int]]
+    ) -> Any:
+        if document_id in self._doc_detail_cache:
+            return self._doc_detail_cache[document_id]
+        if document_id is None:
+            raise ValueError("document_id is required")
+        parsed_document = self.yuque_loader.load_document_by_path(
+            group_login, book_slug, document_id
+        )
+        self._doc_detail_cache[document_id] = parsed_document
+        return parsed_document
+
+    def get_book_docs(self, group_login: str, book_slug: str) -> list:
         if self._book_docs_cache is not None:
             return self._book_docs_cache
         docs = self.yuque_loader.get_book_documents_by_path(group_login, book_slug)
         self._book_docs_cache = docs
         return docs
-
-    def get_doc_detail(self, group_login, book_slug, document_id):
-        if document_id in self._doc_detail_cache:
-            return self._doc_detail_cache[document_id]
-        parsed_document = self.yuque_loader.load_document_by_path(group_login, book_slug, document_id)
-        self._doc_detail_cache[document_id] = parsed_document
-        return parsed_document
 
     async def load(self) -> List[Text]:
         if not isinstance(self.knowledge.source_config, YuqueSourceConfig):
@@ -83,27 +104,35 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
 
         # Decompose a specific document
         if document_id:
-            doc_knowledges = await self._decompose_document( group_login, book_slug, document_id)
+            doc_knowledges = await self._decompose_document(
+                group_login, book_slug, document_id
+            )
             knowledges.extend(doc_knowledges)
         # Decompose a whole book
         else:
-            book_knowledges = await self._decompose_book( group_login, book_slug)
+            book_knowledges = await self._decompose_book(group_login, book_slug)
             knowledges.extend(book_knowledges)
 
         return knowledges
 
-    async def _decompose_book(self, group_login: str, book_slug: str) -> List[Knowledge]:
+    async def _decompose_book(
+        self, group_login: str, book_slug: str
+    ) -> List[Knowledge]:
         knowledges: List[Knowledge] = []
         try:
             docs = self.get_book_docs(group_login, book_slug)
             for doc in docs:
-                doc_knowledges = await self._decompose_document( group_login, book_slug, doc['slug'])
+                doc_knowledges = await self._decompose_document(
+                    group_login, book_slug, doc["slug"]
+                )
                 knowledges.extend(doc_knowledges)
         except Exception as e:
             raise ValueError(f"Failed to get book documents: {e}")
         return knowledges
 
-    async def _decompose_document(self, group_login: str, book_slug: str, document_id: str) -> List[Knowledge]:
+    async def _decompose_document(
+        self, group_login: str, book_slug: str, document_id: Optional[Union[str, int]]
+    ) -> List[Knowledge]:
         knowledges: List[Knowledge] = []
         try:
             parsed_document = self.get_doc_detail(group_login, book_slug, document_id)
@@ -115,11 +144,14 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
             raise ValueError(f"Failed to get document: {e}")
         return knowledges
 
-    def _create_doc_knowledge(self, parsed_document) -> Knowledge:
+    def _create_doc_knowledge(self, parsed_document: Any) -> Knowledge:
         from copy import deepcopy
+
         source_config = deepcopy(self.knowledge.source_config)
-        if hasattr(source_config, 'document_id'):
-            source_config.document_id = parsed_document.metadata.get('slug') or parsed_document.metadata.get('id')
+        if hasattr(source_config, "document_id"):
+            source_config.document_id = parsed_document.metadata.get(
+                "slug"
+            ) or parsed_document.metadata.get("id")
         return Knowledge(
             source_type=self.knowledge.source_type,
             knowledge_type=self.knowledge.knowledge_type,
@@ -127,8 +159,8 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
             embedding_model_name=self.knowledge.embedding_model_name,
             source_config=source_config,
             tenant_id=self.knowledge.tenant_id,
-            file_size=len(parsed_document.page_content.encode('utf-8')),
-            file_sha=parsed_document.metadata.get('content_updated_at'),
+            file_size=len(parsed_document.page_content.encode("utf-8")),
+            file_sha=parsed_document.metadata.get("content_updated_at"),
             space_id=self.knowledge.space_id,
             split_config=self.knowledge.split_config,
             parent_id=self.knowledge.knowledge_id,
@@ -136,7 +168,7 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
             metadata=parsed_document.metadata,
         )
 
-    def _create_image_knowledges(self, parsed_document) -> List[Knowledge]:
+    def _create_image_knowledges(self, parsed_document: Any) -> List[Knowledge]:
         image_knowledges = []
         image_pattern = r"!\[(.*?)\]\((.*?)\)"
         all_image_matches = re.findall(image_pattern, parsed_document.page_content)
