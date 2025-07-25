@@ -102,13 +102,13 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
 
         knowledges: List[Knowledge] = []
 
-        # Decompose a specific document
+        # Decompose a specific document - only extract images
         if document_id:
             doc_knowledges = await self._decompose_document(
-                group_login, book_slug, document_id
+                group_login, book_slug, document_id, include_document=False
             )
             knowledges.extend(doc_knowledges)
-        # Decompose a whole book
+        # Decompose a whole book - create sub-documents as knowledge, no images
         else:
             book_knowledges = await self._decompose_book(group_login, book_slug)
             knowledges.extend(book_knowledges)
@@ -123,7 +123,11 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
             docs = self.get_book_docs(group_login, book_slug)
             for doc in docs:
                 doc_knowledges = await self._decompose_document(
-                    group_login, book_slug, doc["slug"]
+                    group_login,
+                    book_slug,
+                    doc["slug"],
+                    include_document=True,
+                    include_images=False,
                 )
                 knowledges.extend(doc_knowledges)
         except Exception as e:
@@ -131,15 +135,26 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
         return knowledges
 
     async def _decompose_document(
-        self, group_login: str, book_slug: str, document_id: Optional[Union[str, int]]
+        self,
+        group_login: str,
+        book_slug: str,
+        document_id: Optional[Union[str, int]],
+        include_document: bool = True,
+        include_images: bool = True,
     ) -> List[Knowledge]:
         knowledges: List[Knowledge] = []
         try:
             parsed_document = self.get_doc_detail(group_login, book_slug, document_id)
-            doc_knowledge = self._create_doc_knowledge(parsed_document)
-            knowledges.append(doc_knowledge)
-            image_knowledges = self._create_image_knowledges(parsed_document)
-            knowledges.extend(image_knowledges)
+
+            # Only create document knowledge if include_document is True
+            if include_document:
+                doc_knowledge = self._create_doc_knowledge(parsed_document)
+                knowledges.append(doc_knowledge)
+
+            # Only create image knowledges if include_images is True
+            if include_images:
+                image_knowledges = self._create_image_knowledges(parsed_document)
+                knowledges.extend(image_knowledges)
         except Exception as e:
             raise ValueError(f"Failed to get document: {e}")
         return knowledges
