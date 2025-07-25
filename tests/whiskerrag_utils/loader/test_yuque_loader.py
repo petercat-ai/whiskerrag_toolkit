@@ -51,16 +51,11 @@ class TestWhiskerYuqueLoader(unittest.TestCase):
         # Run decompose
         decomposed_knowledges = asyncio.run(loader.decompose())
 
-        # Assertions
-        self.assertEqual(len(decomposed_knowledges), 2)
+        # Assertions - when decomposing a specific document, only images should be returned
+        self.assertEqual(len(decomposed_knowledges), 1)
 
-        # Check document knowledge
-        doc_knowledge = decomposed_knowledges[0]
-        self.assertEqual(doc_knowledge.knowledge_type, KnowledgeTypeEnum.YUQUEDOC)
-        self.assertIn("Test Doc", doc_knowledge.knowledge_name)
-
-        # Check image knowledge
-        img_knowledge = decomposed_knowledges[1]
+        # Check image knowledge (no document knowledge should be created)
+        img_knowledge = decomposed_knowledges[0]
         self.assertEqual(img_knowledge.knowledge_type, KnowledgeTypeEnum.IMAGE)
         self.assertIn("image_0", img_knowledge.knowledge_name)
         self.assertIsInstance(img_knowledge.source_config, OpenUrlSourceConfig)
@@ -97,20 +92,81 @@ class TestWhiskerYuqueLoader(unittest.TestCase):
         # Run decompose
         decomposed_knowledges = asyncio.run(loader.decompose())
 
-        # Assertions
-        self.assertEqual(len(decomposed_knowledges), 3)  # doc1, doc2, image_in_doc2
+        # Assertions - when decomposing a book, only documents should be returned (no images)
+        self.assertEqual(len(decomposed_knowledges), 2)  # only doc1 and doc2
+
+        # Check first document knowledge
         self.assertEqual(
             decomposed_knowledges[0].knowledge_name, "Test Yuque Doc/Doc 1"
         )
         self.assertEqual(
+            decomposed_knowledges[0].knowledge_type, KnowledgeTypeEnum.YUQUEDOC
+        )
+
+        # Check second document knowledge
+        self.assertEqual(
             decomposed_knowledges[1].knowledge_name, "Test Yuque Doc/Doc 2"
         )
         self.assertEqual(
-            decomposed_knowledges[2].knowledge_name, "Test Yuque Doc/Doc 2/image_0"
+            decomposed_knowledges[1].knowledge_type, KnowledgeTypeEnum.YUQUEDOC
         )
+
+    @patch("whiskerrag_utils.loader.yuque_loader.ExtendedYuqueLoader")
+    def test_decompose_book_then_document_images(self, MockExtendedYuqueLoader):
+        """测试先从 book 获取文档知识点，然后对文档进行 decompose 获取图片"""
+        # Mock the loader and its methods
+        mock_loader_instance = MockExtendedYuqueLoader.return_value
+        mock_loader_instance.get_book_documents_by_path.return_value = [
+            {"slug": "doc1"},
+            {"slug": "doc2"},
+        ]
+        mock_document1 = Document(
+            page_content="Doc 1 content",
+            metadata={
+                "title": "Doc 1",
+                "content_updated_at": "2023-01-01",
+                "slug": "doc1",
+            },
+        )
+        mock_document2 = Document(
+            page_content="Doc 2 content with image ![img](http://example.com/image2.png)",
+            metadata={
+                "title": "Doc 2",
+                "content_updated_at": "2023-01-02",
+                "slug": "doc2",
+            },
+        )
+        mock_loader_instance.load_document_by_path.side_effect = [
+            mock_document1,
+            mock_document2,
+            mock_document2,  # 第二次调用时返回 doc2（用于获取图片）
+        ]
+
+        # Step 1: 先从 book 获取文档知识点
+        self.knowledge.source_config.document_id = None
+        book_loader = WhiskerYuqueLoader(self.knowledge)
+        doc_knowledges = asyncio.run(book_loader.decompose())
+
+        # 验证获取到了文档知识点
+        self.assertEqual(len(doc_knowledges), 2)
+        self.assertEqual(doc_knowledges[0].knowledge_type, KnowledgeTypeEnum.YUQUEDOC)
+        self.assertEqual(doc_knowledges[1].knowledge_type, KnowledgeTypeEnum.YUQUEDOC)
+
+        # Step 2: 对其中一个包含图片的文档进行 decompose 获取图片
+        doc2_knowledge = doc_knowledges[1]  # Doc 2 包含图片
+        doc_loader = WhiskerYuqueLoader(doc2_knowledge)
+        image_knowledges = asyncio.run(doc_loader.decompose())
+
+        # 验证获取到了图片知识点
+        self.assertEqual(len(image_knowledges), 1)
+        img_knowledge = image_knowledges[0]
+        self.assertEqual(img_knowledge.knowledge_type, KnowledgeTypeEnum.IMAGE)
+        self.assertIn("image_0", img_knowledge.knowledge_name)
+        self.assertIsInstance(img_knowledge.source_config, OpenUrlSourceConfig)
         self.assertEqual(
-            decomposed_knowledges[2].knowledge_type, KnowledgeTypeEnum.IMAGE
+            img_knowledge.source_config.url, "http://example.com/image2.png"
         )
+        self.assertIsInstance(img_knowledge.split_config, ImageSplitConfig)
 
 
 if __name__ == "__main__":
