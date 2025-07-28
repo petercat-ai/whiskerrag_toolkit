@@ -49,6 +49,7 @@ class KnowledgeCreateBase(BaseModel):
     )
     file_sha: Optional[str] = Field(None, description="SHA of the file")
     file_size: Optional[int] = Field(None, description="size of the file")
+    parent_id: Optional[str] = Field(None, description="parent id of the knowledge")
 
     @field_serializer("metadata")
     def serialize_metadata(self, metadata: dict) -> Optional[dict]:
