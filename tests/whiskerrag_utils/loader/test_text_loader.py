@@ -15,7 +15,9 @@ knowledge_data = {
     "source_config": {"text": "hello world"},
     "embedding_model_name": "openai",
     "tenant_id": "38fbd78b-1869-482c-9142-e43a2c2s6e42",
-    "metadata": {},
+    "metadata": {
+        "_reference_url": "test",
+    },
 }
 
 
@@ -30,3 +32,4 @@ class TestTextLoader:
         )
         res = await LoaderCls(knowledge).load()
         assert res[0].content == "hello world"
+        assert res[0].metadata["_reference_url"] == "test"
