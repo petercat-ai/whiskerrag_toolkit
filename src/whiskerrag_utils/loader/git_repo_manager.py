@@ -38,7 +38,9 @@ class GitRepoManager:
     """manage git repo download and cache"""
 
     def __init__(self) -> None:
-        self.repos_dir = os.path.join(tempfile.gettempdir(), "repo_download")
+        self.repos_dir = os.environ.get("WHISKER_REPO_SAVE_PATH") or os.path.join(
+            tempfile.gettempdir(), "repo_download"
+        )
         self._repos_cache: Dict[str, str] = {}  # cache for downloaded repos
         os.makedirs(self.repos_dir, exist_ok=True)
 
