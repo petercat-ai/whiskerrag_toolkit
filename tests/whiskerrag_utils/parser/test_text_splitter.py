@@ -25,20 +25,23 @@ class TestTextSplitter:
             "source_config": {"text": "hello world"},
             "embedding_model_name": "openai",
             "tenant_id": "38fbd78b-1869-482c-9142-e43a2c2s6e42",
-            "metadata": {},
+            "metadata": {
+                "_reference_url": "test",
+            },
         }
 
         knowledge = Knowledge(**knowledge_data)
         init_register()
         SplitterCls = get_register(RegisterTypeEnum.PARSER, "text")
         res = await SplitterCls().parse(
-            knowledge, Text(content="hello world \n ~", metadata={})
+            knowledge,
+            Text(content="hello world \n ~", metadata={"_reference_url": "test"}),
         )
 
         assert res == [
-            Text(content="hello", metadata={}),
-            Text(content="world", metadata={}),
-            Text(content="~", metadata={}),
+            Text(content="hello", metadata={"_reference_url": "test"}),
+            Text(content="world", metadata={"_reference_url": "test"}),
+            Text(content="~", metadata={"_reference_url": "test"}),
         ]
 
     @pytest.mark.asyncio

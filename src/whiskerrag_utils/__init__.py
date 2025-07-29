@@ -39,7 +39,7 @@ def _process_metadata_and_tags(
     """
     combined_metadata = {**knowledge.metadata, **parse_item.metadata}
     combined_metadata["_knowledge_type"] = knowledge.knowledge_type
-    combined_metadata["_reference_url"] = getattr(knowledge, "reference_url", "")
+    combined_metadata["_reference_url"] = combined_metadata.get("_reference_url", "")
 
     # Extract tags from metadata
     tags = combined_metadata.get("_tags")
