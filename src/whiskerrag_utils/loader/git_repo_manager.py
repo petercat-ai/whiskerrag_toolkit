@@ -151,37 +151,64 @@ class GitRepoManager:
         repo_path: str,
         branch: Optional[str] = None,
         commit_id: Optional[str] = None,
+        initial_depth: int = 1,
+        max_fetch_tries: int = 5,
+        depth_step: int = 20,
     ) -> None:
         """
-        克隆仓库
-
-        Args:
-            clone_url: 克隆URL
-            repo_path: 本地路径
-            branch: 分支名
-            commit_id: 提交ID
+        克隆仓库，若 checkout commit 失败自动加深 depth 增量获取
         """
         Repo, GitCommandNotFound, InvalidGitRepositoryError = _lazy_import_git()
 
         try:
-            # 克隆仓库
+            # 先浅克隆最近 N 个
             if branch:
                 repo = Repo.clone_from(
                     clone_url,
                     repo_path,
                     multi_options=["--filter=blob:limit=5m"],
                     branch=branch,
+                    depth=initial_depth,
                 )
             else:
                 repo = Repo.clone_from(
                     clone_url,
                     repo_path,
                     multi_options=["--filter=blob:limit=5m"],
+                    depth=initial_depth,
                 )
 
-            # 如果指定了commit_id，切换到指定提交
+            # 如果指定了 commit_id，尝试 checkout，若失败则增量 fetch
             if commit_id:
-                repo.git.checkout(commit_id)
+                for i in range(max_fetch_tries):
+                    try:
+                        repo.git.checkout(commit_id)
+                        logger.info(
+                            f"Checked out commit {commit_id} successfully after {i+1} attempts."
+                        )
+                        break
+                    except Exception as e:
+                        err_msg = str(e)
+                        if (
+                            "did not match any file" in err_msg
+                            or "reference is not a tree" in err_msg
+                            or "unknown revision" in err_msg
+                            or "not found" in err_msg
+                            or "pathspec" in err_msg
+                        ):
+                            logger.warning(
+                                f"Commit {commit_id} not found. Deepening history (attempt {i+1}/{max_fetch_tries})..."
+                            )
+                            repo.git.fetch("origin", f"--deepen={depth_step}")
+                            if branch:
+                                repo.git.checkout(branch)
+                            continue
+                        else:
+                            raise
+                else:
+                    raise ValueError(
+                        f"Failed to fetch commit {commit_id} after {max_fetch_tries} incremental fetches."
+                    )
 
         except GitCommandNotFound:
             raise ValueError("Git command not found. Please ensure git is installed.")
