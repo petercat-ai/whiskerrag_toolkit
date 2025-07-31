@@ -560,7 +560,7 @@ class GitRepoManager:
                         try:
                             repo.git.checkout(commit_id)
                             logger.info(
-                                f"Checked out commit {commit_id} successfully after {i+1} attempts."
+                                f"Checked out commit {commit_id} successfully after {i + 1} attempts."
                             )
                             break
                         except Exception as e:
@@ -573,7 +573,7 @@ class GitRepoManager:
                                 or "pathspec" in err_msg
                             ):
                                 logger.warning(
-                                    f"Commit {commit_id} not found. Deepening history (attempt {i+1}/{max_fetch_tries})..."
+                                    f"Commit {commit_id} not found. Deepening history (attempt {i + 1}/{max_fetch_tries})..."
                                 )
                                 repo.git.fetch("origin", f"--deepen={depth_step}")
                                 if branch:
