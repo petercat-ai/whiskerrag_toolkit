@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 from typing import Tuple
@@ -10,6 +11,8 @@ from botocore.exceptions import ClientError  # type: ignore
 from whiskerrag_types.model.knowledge_source import S3SourceConfig
 
 _MAX_FILE_SIZE = 250 * 1024 * 1024
+
+logger = logging.getLogger(__name__)
 
 
 def download_from_s3_to_local(config: S3SourceConfig) -> Tuple[str, dict]:
@@ -109,3 +112,21 @@ def download_from_url_to_local(url: str) -> Tuple[str, dict]:
         if os.path.exists(temp_file):
             os.unlink(temp_file)
         raise Exception(f"Failed to download file from URL: {str(e)}")
+
+
+def log_system_info() -> None:
+    """
+    记录系统信息
+    """
+    import platform
+    import resource
+
+    logger.info(
+        f"System Info: OS={platform.system()}, Version={platform.version()}, "
+        f"Architecture={platform.architecture()}, Machine={platform.machine()}, "
+        f"Processor={platform.processor()}, Python Version={platform.python_version()}"
+    )
+    # 打印 inode 大小限制
+    logger.info(f"inode size limit: {resource.getrlimit(resource.RLIMIT_NOFILE)}")
+    # 打印内存大小
+    logger.info(f"memory size limit: {resource.getrlimit(resource.RLIMIT_AS)}")
