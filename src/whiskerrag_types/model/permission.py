@@ -14,6 +14,7 @@ class Resource(str, Enum):
     TASK = "task"
     RULE = "rule"
     PUBLIC = "public"
+    WEBHOOK = "webhook"
 
 
 class Action(str, Enum):

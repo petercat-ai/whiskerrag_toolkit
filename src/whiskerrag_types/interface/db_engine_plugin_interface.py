@@ -301,3 +301,19 @@ class DBPluginInterface(ABC):
 
     # =================== dashboard ===================
     # TODO: add dashboard related methods
+
+    # =================== webhook ===================
+    @abstractmethod
+    async def handle_webhook(
+        self,
+        tenant: Tenant,
+        # webhook type, e.g. knowledge, chunk, etc.
+        webhook_type: str,
+        # webhook source, e.g. github, yuque, slack, etc.
+        source: str,
+        # knowledge base id
+        knowledge_base_id: str,
+        # webhook payload
+        payload: Any,
+    ) -> Optional[str]:
+        pass
