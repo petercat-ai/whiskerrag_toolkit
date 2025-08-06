@@ -44,9 +44,9 @@ class TestSpace:
         # 测试无效的 space_id
         invalid_cases = [
             # 特殊字符
-            {"space_name": "test", "space_id": "test@space", "description": "test"},
+            {"space_name": "test", "space_id": "test#space", "description": "test"},
             # 超长
-            {"space_name": "test", "space_id": "a" * 65, "description": "test"},
+            {"space_name": "test", "space_id": "a" * 256, "description": "test"},
             # 空字符串
             {"space_name": "test", "space_id": "", "description": "test"},
         ]

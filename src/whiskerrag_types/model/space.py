@@ -22,8 +22,9 @@ class SpaceCreate(BaseModel):
     )
     space_id: Optional[str] = Field(
         default=None,
-        description="id of the space resource (letters, numbers, hyphens, underscores and slashes allowed, max 64 chars)",
-        pattern=r"^[a-zA-Z0-9\-_/]{1,64}$",
+        description="space id, e.g. petercat/bot-group",
+        pattern=r"^([a-zA-Z0-9-]{1,39}/)?[A-Za-z0-9_.-]{1,100}(@[A-Za-z0-9_.\-\\/]+)?$",
+        max_length=255,
     )
     description: str = Field(..., max_length=255, description="descrition of the space")
     metadata: Dict[str, Any] = Field(
