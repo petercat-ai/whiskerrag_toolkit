@@ -1,4 +1,3 @@
-import os
 from unittest.mock import patch
 
 import pytest
@@ -9,11 +8,7 @@ from whiskerrag_types.model.knowledge import (
     KnowledgeSourceEnum,
     KnowledgeTypeEnum,
 )
-from whiskerrag_types.model.knowledge_source import (
-    GithubFileSourceConfig,
-    GithubRepoSourceConfig,
-)
-from whiskerrag_types.model.splitter import GithubRepoParseConfig
+from whiskerrag_types.model.knowledge_source import GithubFileSourceConfig
 from whiskerrag_utils.loader.git_file_loader import GithubFileLoader
 
 

@@ -93,7 +93,7 @@ class GithubRepoLoader(BaseLoader):
             )
 
     @staticmethod
-    def get_knowledge_type_by_ext(ext: str) -> KnowledgeTypeEnum:
+    def get_knowledge_type_by_ext(ext: str) -> Optional[KnowledgeTypeEnum]:
         ext = ext.lower()
         ext_to_type = {
             ".md": KnowledgeTypeEnum.MARKDOWN,
@@ -320,18 +320,6 @@ class GithubRepoLoader(BaseLoader):
         if not self.local_repo or not self.repo_path:
             raise ValueError("Repository not properly initialized")
 
-        # 计算仓库的总文件大小
-        total_size = 0
-        for root, _, files in os.walk(self.repo_path):
-            if ".git" in root:
-                continue
-            for file in files:
-                file_path = os.path.join(root, file)
-                try:
-                    total_size += os.path.getsize(file_path)
-                except Exception:
-                    continue
-
         # 初始化文件模式管理器
         split_config = getattr(self.knowledge, "split_config", None)
         if split_config and getattr(split_config, "type", None) == "github_repo":
@@ -364,19 +352,19 @@ class GithubRepoLoader(BaseLoader):
                 continue
 
             for file in files:
-                file_path = os.path.join(root, file)
-                relative_path = os.path.relpath(file_path, self.repo_path)
-
-                if not pattern_manager.should_include_file(relative_path):
-                    continue
-
                 try:
+                    file_path = os.path.join(root, file)
+                    relative_path = os.path.relpath(file_path, self.repo_path)
+                    if not pattern_manager.should_include_file(relative_path):
+                        continue
                     file_size = os.path.getsize(file_path)
+                    ext = os.path.splitext(relative_path)[1].lower()
                     git_file_path = relative_path.replace("\\", "/")
                     blob = current_commit.tree / git_file_path
                     file_sha = blob.hexsha
-                    ext = os.path.splitext(relative_path)[1].lower()
                     knowledge_type = self.get_knowledge_type_by_ext(ext)
+                    if not knowledge_type:
+                        continue
                     file_url = (
                         f"{self.base_url}/{self.repo_name}/blob/"
                         f"{self.branch_name}/{relative_path}"
@@ -389,16 +377,17 @@ class GithubRepoLoader(BaseLoader):
                     position_info = self._get_file_position_info(
                         file_path, relative_path
                     )
+                    source_config = {
+                        **self.knowledge.source_config.model_dump(),
+                        "path": relative_path,
+                    }
                     embedding_model_name = self.knowledge.embedding_model_name
                     knowledge = Knowledge(
                         source_type=KnowledgeSourceEnum.GITHUB_FILE,
                         knowledge_type=knowledge_type,
                         knowledge_name=f"{self.repo_name}/{relative_path}",
                         embedding_model_name=embedding_model_name,
-                        source_config={
-                            **self.knowledge.source_config.model_dump(),
-                            "path": relative_path,
-                        },
+                        source_config=source_config,
                         tenant_id=self.knowledge.tenant_id,
                         file_size=file_size,
                         file_sha=file_sha,
@@ -411,7 +400,6 @@ class GithubRepoLoader(BaseLoader):
                             "branch": self.branch_name,
                             "repo_name": self.repo_name,
                             "path": relative_path,
-                            # 用于远程跳转的位置信息
                             "position": position_info,
                         },
                     )
@@ -484,48 +472,3 @@ class GithubRepoLoader(BaseLoader):
             logger.info(f"Cleaned up temporary directory for {self.repo_name}")
         except Exception as e:
             logger.error(f"Error cleaning up resources: {e}")
-
-    async def get_file_by_path(self, path: str) -> GitFileElementType:
-        """根据路径获取文件信息"""
-        if not self.local_repo:
-            raise ValueError("Repository not initialized")
-
-        if not self.repo_path:
-            raise ValueError("Repository path not initialized")
-
-        full_path = os.path.join(self.repo_path, path)
-        if not os.path.exists(full_path):
-            raise ValueError(f"File not found: {path}")
-
-        try:
-            blob = self.local_repo.head.commit.tree[path]
-            # 类型检查以确保source_config是GithubRepoSourceConfig
-            if not isinstance(self.knowledge.source_config, GithubRepoSourceConfig):
-                raise ValueError("Invalid source config type")
-            base_url = self.knowledge.source_config.url.rstrip("/")
-            file_url = f"{base_url}/{self.repo_name}/blob/{self.branch_name}/{path}"
-
-            # 读取文件内容
-            try:
-                with open(full_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-            except UnicodeDecodeError:
-                # 如果不是文本文件，尝试二进制读取并转换为base64
-                with open(full_path, "rb") as f:
-                    import base64
-
-                    content = base64.b64encode(f.read()).decode("utf-8")
-
-            return GitFileElementType(
-                content=content,
-                path=path,
-                mode=oct(blob.mode),
-                url=file_url,
-                branch=self.branch_name or "main",
-                repo_name=self.repo_name,
-                size=blob.size,
-                sha=blob.hexsha,
-            )
-        except Exception as e:
-            logger.error(f"Error getting file info: {e}")
-            raise ValueError(f"Failed to get file info for {path}: {str(e)}")
