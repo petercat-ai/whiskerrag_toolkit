@@ -54,10 +54,16 @@ class S3SourceConfig(BaseModel):
 
 class OpenUrlSourceConfig(BaseModel):
     url: str = Field(..., description="cloud storage url, such as oss, cos, etc.")
+    auth_info: Optional[Union[str, dict]] = Field(
+        default=None, description="authentication information"
+    )
 
 
 class OpenIdSourceConfig(BaseModel):
     id: str = Field(..., description="cloud storage file id, used for afts")
+    auth_info: Optional[Union[str, dict]] = Field(
+        default=None, description="authentication information"
+    )
 
 
 class YuqueSourceConfig(BaseModel):
