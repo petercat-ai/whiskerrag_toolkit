@@ -119,14 +119,24 @@ def log_system_info() -> None:
     记录系统信息
     """
     import platform
-    import resource
 
     logger.info(
         f"System Info: OS={platform.system()}, Version={platform.version()}, "
         f"Architecture={platform.architecture()}, Machine={platform.machine()}, "
         f"Processor={platform.processor()}, Python Version={platform.python_version()}"
     )
-    # 打印 inode 大小限制
-    logger.info(f"inode size limit: {resource.getrlimit(resource.RLIMIT_NOFILE)}")
-    # 打印内存大小
-    logger.info(f"memory size limit: {resource.getrlimit(resource.RLIMIT_AS)}")
+
+    # Windows 等平台可能没有 resource 模块，这里做兼容处理
+    try:
+        import resource  # type: ignore
+
+        # 打印 inode 大小限制
+        logger.info(
+            f"inode size limit: {resource.getrlimit(resource.RLIMIT_NOFILE)}"  # type: ignore[attr-defined]
+        )
+        # 打印内存大小
+        logger.info(
+            f"memory size limit: {resource.getrlimit(resource.RLIMIT_AS)}"  # type: ignore[attr-defined]
+        )
+    except (ImportError, AttributeError):
+        logger.info("resource module not available on this platform.")

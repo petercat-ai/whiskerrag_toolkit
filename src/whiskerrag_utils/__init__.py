@@ -121,9 +121,7 @@ async def decompose_knowledge(
     return flat if flat else knowledge_list
 
 
-async def get_chunks_by_knowledge(
-    knowledge: Knowledge, semaphore_num: int = 4
-) -> List[Chunk]:
+async def get_chunks_by_knowledge(knowledge: Knowledge) -> List[Chunk]:
     """
     Convert knowledge into vectorized chunks with controlled concurrency
     """
@@ -141,18 +139,18 @@ async def get_chunks_by_knowledge(
     )
     # If no parser, return empty list
     if ParserCls is None:
-        logger.warn(f"No parser found for type: {parse_type}")
+        logger.warning(f"No parser found for type: {parse_type}")
         return []
     # If no embedding model, return empty list
     if EmbeddingCls is None:
-        logger.warn(
+        logger.warning(
             f"[warn]: No embedding model found for name: {knowledge.embedding_model_name}"
         )
         return []
     loaded_contents = []
     if LoaderCls is None:
         # If no loader, directly parse the knowledge object itself
-        logger.warn(
+        logger.warning(
             f"No loader found for source type: {knowledge.source_type}, attempting to parse knowledge directly."
         )
         parse_results = await ParserCls().parse(knowledge, None)
@@ -160,7 +158,7 @@ async def get_chunks_by_knowledge(
         # Use loader to load contents
         loaded_contents = await LoaderCls(knowledge).load()
         if not loaded_contents:
-            logger.warn(
+            logger.warning(
                 f"Loader returned no content for source type: {knowledge.source_type}."
             )
             return []
@@ -179,7 +177,7 @@ async def get_chunks_by_knowledge(
         elif isinstance(parse_item, Image):
             image_items.append(parse_item)
         else:
-            logger.warn(f"[warn]: illegal parse item: {parse_item}")
+            logger.warning(f"[warn]: illegal parse item: {parse_item}")
 
     chunks = []
 

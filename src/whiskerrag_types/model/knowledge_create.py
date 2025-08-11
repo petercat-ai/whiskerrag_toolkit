@@ -196,18 +196,33 @@ class ImageCreate(KnowledgeCreateBase):
     knowledge_type: Literal[KnowledgeTypeEnum.IMAGE] = Field(
         KnowledgeTypeEnum.IMAGE, description="type of knowledge resource"
     )
-    source_type: Literal[KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE] = Field(
-        KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE, description="source type"
+    source_type: Literal[
+        KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE,
+        KnowledgeSourceEnum.CLOUD_STORAGE_TEXT,
+        KnowledgeSourceEnum.USER_INPUT_TEXT,
+    ] = Field(
+        KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE,
+        description="image source type, if the source is image's description, the source type is text like",
     )
-    source_config: Union[OpenUrlSourceConfig, OpenIdSourceConfig, S3SourceConfig] = (
-        Field(
-            ...,
-            description="source config of the knowledge",
-        )
+
+    source_config: Union[
+        OpenUrlSourceConfig, OpenIdSourceConfig, S3SourceConfig, TextSourceConfig
+    ] = Field(
+        ...,
+        description="source config of the knowledge",
     )
-    split_config: Union[ImageSplitConfig]
-    file_sha: str = Field(..., description="SHA of the file")
-    file_size: int = Field(..., description="Byte size of the file")
+    split_config: Union[ImageSplitConfig, TextSplitConfig] = Field(
+        ...,
+        description="split config of the knowledge",
+    )
+    file_sha: str = Field(
+        ...,
+        description="SHA of the file, if source_type is cloud_storage_text, this field is the sha of the text file",
+    )
+    file_size: int = Field(
+        ...,
+        description="Byte size of the file. if source_type is cloud_storage_text, this field is the size of the text file",
+    )
 
 
 class YuqueCreate(KnowledgeCreateBase):
@@ -219,9 +234,11 @@ class YuqueCreate(KnowledgeCreateBase):
     source_type: Literal[KnowledgeSourceEnum.YUQUE] = Field(
         KnowledgeSourceEnum.YUQUE, description="source type"
     )
-    source_config: YuqueSourceConfig = Field(
-        ...,
-        description="source config of the knowledge",
+    source_config: Union[YuqueSourceConfig, OpenUrlSourceConfig, OpenIdSourceConfig] = (
+        Field(
+            ...,
+            description="source config of the knowledge",
+        )
     )
     split_config: Union[GeaGraphSplitConfig, YuqueSplitConfig] = Field(
         ...,
