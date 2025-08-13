@@ -19,32 +19,40 @@ from whiskerrag_utils.registry import RegisterTypeEnum, register
 @register(RegisterTypeEnum.KNOWLEDGE_LOADER, KnowledgeSourceEnum.CLOUD_STORAGE_TEXT)
 class CloudStorageTextLoader(BaseLoader[Text]):
     def read_file_content(self, file_path: str) -> str:
-        """读取文件内容"""
+        """读取文件内容，兼容处理UTF-8编码，避免乱码"""
         try:
             knowledge_type = self.knowledge.knowledge_type
-            if knowledge_type in [
-                KnowledgeTypeEnum.JSON,
-                KnowledgeTypeEnum.TEXT,
-                KnowledgeTypeEnum.MARKDOWN,
-            ]:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    return f.read()
-
-            # Word文档
-            elif knowledge_type is KnowledgeTypeEnum.DOCX:
+            if knowledge_type is KnowledgeTypeEnum.DOCX:
                 raise NotImplementedError("Word document processing not implemented")
-
             # PDF文档
-            elif knowledge_type is KnowledgeTypeEnum.PDF:
+            if knowledge_type is KnowledgeTypeEnum.PDF:
                 raise NotImplementedError("PDF processing not implemented")
-
-            else:
-                raise ValueError(f"Unsupported file format: {knowledge_type}")
-
-        except UnicodeDecodeError:
-            # 如果UTF-8解码失败，尝试使用其他编码或忽略错误
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            if knowledge_type is KnowledgeTypeEnum.DOCX:
+                raise NotImplementedError("Word document processing not implemented")
+            # 首先尝试以UTF-8编码读取文件
+            with open(file_path, "r", encoding="utf-8") as f:
                 return f.read()
+        except UnicodeDecodeError:
+            # 如果UTF-8解码失败，尝试使用其他常见编码
+            try:
+                with open(file_path, "r", encoding="gb2312") as f:
+                    return f.read()
+            except UnicodeDecodeError:
+                try:
+                    with open(file_path, "r", encoding="gbk") as f:
+                        return f.read()
+                except UnicodeDecodeError:
+                    try:
+                        with open(file_path, "r", encoding="gb18030") as f:
+                            return f.read()
+                    except UnicodeDecodeError:
+                        # 如果所有编码都失败，使用UTF-8并忽略无法解码的字符
+                        with open(
+                            file_path, "r", encoding="utf-8", errors="ignore"
+                        ) as f:
+                            return f.read()
+        except Exception as e:
+            raise Exception(f"Failed to read file content: {str(e)}")
 
     async def download_from_s3(self, config: S3SourceConfig) -> Tuple[str, dict]:
         """从S3下载文件内容"""
