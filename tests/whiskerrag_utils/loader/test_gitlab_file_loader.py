@@ -7,7 +7,7 @@ from whiskerrag_utils.loader.git_file_loader import get_gitlab_file_content
 
 def test_get_gitlab_file_content_text_success():
     # 请用你实际可访问的 gitlab/alipay 实例、项目、文件
-    url = "https://code.alipay.com"
+    url = "https://xxx.com"
     repo_name = "liuzhide.lzd/repo_understand"
     branch = "master"
     path = "README.md"
@@ -32,7 +32,7 @@ def test_get_gitlab_file_content_text_success():
 
 def test_get_gitlab_file_content_image_success():
 
-    url = "https://code.alipay.com"
+    url = "https://xxxx.com"
     repo_name = "liuzhide.lzd/repo_understand"
     branch = "master"
     path = "777.jpg"
