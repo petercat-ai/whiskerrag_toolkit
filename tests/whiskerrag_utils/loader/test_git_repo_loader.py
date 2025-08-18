@@ -310,14 +310,15 @@ class TestGithubRepoLoader:
         """真实测试：GitLab仓库加载（可选运行）"""
         try:
             url = "https://code.gitlab.com"
+            repo_name = "wohu/whisker"
             knowledge = Knowledge(
-                knowledge_name="wohu/whisker",
+                knowledge_name=repo_name,
                 source_type=KnowledgeSourceEnum.GITHUB_REPO,
                 knowledge_type=KnowledgeTypeEnum.GITHUB_REPO,
                 source_config=GithubRepoSourceConfig(
-                    repo_name="wohu/whisker",
+                    repo_name=repo_name,
                     url=url,
-                    auth_info="git:xxxxxx",
+                    auth_info="git:xxxxx-xxxxxx",
                 ),
                 space_id="test_space",
                 embedding_model_name=EmbeddingModelEnum.OPENAI,
@@ -379,3 +380,50 @@ class TestGithubRepoLoader:
 
         except Exception as e:
             pytest.skip(f"GitLab仓库真实加载失败（可能是token问题）: {e}")
+
+
+import json
+import os
+import tempfile
+import time
+
+import pytest
+
+from whiskerrag_utils.loader.git_repo_manager import GitRepoManager
+
+
+@pytest.fixture
+def repo_dir(tmp_path):
+    """
+    创建一个临时目录模拟 repo_path
+    """
+    path = tmp_path / "fake_repo"
+    path.mkdir()
+    return str(path)
+
+
+def test_mark_and_check_cache_time(repo_dir):
+    mgr = GitRepoManager()
+    mgr.CACHE_TTL_HOURS = 1  # 设置 TTL 为 1 小时，便于测试
+
+    meta_path = os.path.join(repo_dir, ".whisker_meta")
+
+    # 1. 标记更新时间
+    mgr._mark_cache_updated(repo_dir)
+    assert os.path.exists(meta_path), "meta 文件应该被创建"
+
+    # 刚标记的缓存不应过期
+    assert mgr._is_cache_expired(repo_dir) is False, "刚标记的缓存应为有效状态"
+
+    # 2. 模拟时间过期
+    with open(meta_path, "r") as f:
+        meta_data = json.load(f)
+    # 回溯两小时（超出 TTL）
+    meta_data["last_update"] = time.time() - (2 * 3600)
+    with open(meta_path, "w") as f:
+        json.dump(meta_data, f)
+    assert mgr._is_cache_expired(repo_dir) is True, "修改时间为过期，应返回 True"
+
+    # 3. 删除 meta 文件
+    os.remove(meta_path)
+    assert mgr._is_cache_expired(repo_dir) is True, "meta 文件不存在，应视为过期"
