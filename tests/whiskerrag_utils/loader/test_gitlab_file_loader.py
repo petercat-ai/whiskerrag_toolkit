@@ -5,6 +5,7 @@ from whiskerrag_types.model.multi_modal import Image, Text
 from whiskerrag_utils.loader.git_file_loader import get_gitlab_file_content
 
 
+@pytest.mark.skip(reason="需要替换为实际的 token")
 def test_get_gitlab_file_content_text_success():
     # 请用你实际可访问的 gitlab/alipay 实例、项目、文件
     url = "https://xxx.com"
@@ -30,6 +31,7 @@ def test_get_gitlab_file_content_text_success():
         pytest.skip(f"获取 GitLab 文件内容失败: {e},请替换为实际的 token")
 
 
+@pytest.mark.skip(reason="需要替换为实际的 token")
 def test_get_gitlab_file_content_image_success():
 
     url = "https://xxxx.com"

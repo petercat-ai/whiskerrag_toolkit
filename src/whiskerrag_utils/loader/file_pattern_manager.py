@@ -100,6 +100,7 @@ class FilePatternManager:
         "spec/*",
         "specs/*",
         "__tests__/*",
+        "*/__tests__/*",
         "test_*.py",
         "*_test.py",
         "*_test.go",

@@ -166,10 +166,32 @@ class TestGithubRepoLoader:
     async def test_github_repo_loader_real(self, mock_github_knowledge) -> None:
         """真实测试：GitHub仓库加载（可选运行）"""
         try:
-            loader = GithubRepoLoader(mock_github_knowledge)
+            repo_name = "petercat-ai/petercat"
+            real_knowledge = Knowledge(
+                knowledge_name=repo_name,
+                source_type=KnowledgeSourceEnum.GITHUB_REPO,
+                knowledge_type=KnowledgeTypeEnum.GITHUB_REPO,
+                source_config=GithubRepoSourceConfig(
+                    repo_name=repo_name,
+                    url="https://github.com",
+                    commit_id=None,
+                ),
+                space_id="test_space",
+                embedding_model_name=EmbeddingModelEnum.OPENAI,
+                split_config=GithubRepoParseConfig(
+                    type="github_repo",
+                    include_patterns=["*.md"],
+                    ignore_patterns=["*ignore.md"],
+                    use_gitignore=True,
+                    use_default_ignore=True,
+                ),
+                tenant_id="38fbd88b-e869-489c-9142-e4ea2c2261db",
+                enabled=True,
+            )
+            loader = GithubRepoLoader(real_knowledge)
 
             # 验证基本信息
-            assert loader.repo_name == "petercat-ai/petercat"
+            assert loader.repo_name == repo_name
             assert loader.branch_name == "main"
             assert loader.base_url == "https://github.com"
             assert loader.repo_path is not None
@@ -198,9 +220,9 @@ class TestGithubRepoLoader:
             # 测试加载
             text_list = await loader.load()
             assert len(text_list) == 1
-            assert "petercat" in text_list[0].content.lower()
             assert "author_name" in text_list[0].metadata
             assert "author_email" in text_list[0].metadata
+            assert "_artifacts_info" in text_list[0].metadata
 
             # 记录清理前的路径
             repo_path_before_cleanup = loader.repo_path

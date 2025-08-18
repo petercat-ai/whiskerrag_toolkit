@@ -23,6 +23,7 @@ from whiskerrag_types.model.splitter import (
     PDFSplitConfig,
     TextSplitConfig,
 )
+from whiskerrag_utils.loader.artifacts_extract import get_all_build_artifacts
 from whiskerrag_utils.loader.file_pattern_manager import FilePatternManager
 from whiskerrag_utils.loader.git_repo_manager import get_repo_manager
 from whiskerrag_utils.registry import RegisterTypeEnum, register
@@ -435,6 +436,12 @@ class GithubRepoLoader(BaseLoader):
             f"repo: {root_name}\n" + "project tree: " + build_tree(self.repo_path)
         )
 
+        artifacts_info = []
+        try:
+            artifacts_info = get_all_build_artifacts(self.repo_path)
+        except Exception as e:
+            logger.warning(f"Error getting build artifacts: {e}")
+
         try:
             if not self.local_repo:
                 raise ValueError("Repository not initialized")
@@ -454,6 +461,7 @@ class GithubRepoLoader(BaseLoader):
             Text(
                 content=tree_str,
                 metadata={
+                    "_artifacts_info": artifacts_info,
                     **self.knowledge.metadata,
                     "repo_name": self.repo_name,
                     "author_name": author_name,
