@@ -334,7 +334,7 @@ class GitRepoManager:
                 if attempt > 0 and os.path.exists(repo_path):
                     self._safe_rmtree(repo_path)
                 logger.info(
-                    f"Cloning repository (attempt {attempt+1}/{max_retry_attempts}): {clone_url}"
+                    f"Cloning repository (attempt {attempt + 1}/{max_retry_attempts}):{clone_url}"
                 )
                 if branch:
                     repo = Repo.clone_from(
