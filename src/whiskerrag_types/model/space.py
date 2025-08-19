@@ -23,7 +23,7 @@ class SpaceCreate(BaseModel):
     space_id: Optional[str] = Field(
         default=None,
         description="space id, e.g. petercat/bot-group",
-        pattern=r"^([a-zA-Z0-9-]{1,39}/)?[A-Za-z0-9_.-]{1,100}(@[A-Za-z0-9_.\-\\/]+)?$",
+        pattern=r"^([a-zA-Z0-9-]{1,39}/)?[A-Za-z0-9_.-]{1,100}(/[A-Za-z0-9_.-]{1,100})?(@[A-Za-z0-9_.\-\\/]+)?$",
         max_length=255,
     )
     description: str = Field(..., max_length=255, description="descrition of the space")

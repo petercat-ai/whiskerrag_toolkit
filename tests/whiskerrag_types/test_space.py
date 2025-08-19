@@ -8,9 +8,10 @@ class TestSpace:
 
     def test_space_create_valid(self) -> None:
         # 测试有效的数据
+        space_id = "petercat/petercat/v1"
         valid_data = {
             "space_name": "test space",
-            "space_id": "test-space-123",
+            "space_id": space_id,
             "description": "This is a test space",
             "metadata": {"model": "gpt-3.5"},
         }
@@ -21,10 +22,10 @@ class TestSpace:
             tenant_id="38fbd88b-e869-489c-9142-e4ea2c2261db"
         )
         assert space_create.space_name == "test space"
-        assert space_create.space_id == "test-space-123"
+        assert space_create.space_id == space_id
         assert space_create.description == "This is a test space"
         assert space_create.metadata == {"model": "gpt-3.5"}
-        assert space.space_id == "test-space-123"
+        assert space.space_id == space_id
 
     def test_space_create_without_space_id(self) -> None:
         # 测试可选的 space_id
@@ -45,6 +46,8 @@ class TestSpace:
         invalid_cases = [
             # 特殊字符
             {"space_name": "test", "space_id": "test#space", "description": "test"},
+            {"space_name": "test", "space_id": "test#space@@", "description": "test"},
+            {"space_name": "test", "space_id": "//", "description": "test"},
             # 超长
             {"space_name": "test", "space_id": "a" * 256, "description": "test"},
             # 空字符串
