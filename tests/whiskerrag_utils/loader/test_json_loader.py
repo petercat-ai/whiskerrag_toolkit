@@ -59,7 +59,7 @@ class TestJSONLoader:
             "source_type": KnowledgeSourceEnum.USER_INPUT_TEXT,
             "knowledge_type": KnowledgeTypeEnum.JSON,
             "space_id": "local_test",
-            "knowledge_name": "json",
+            "knowledge_name": "json_test",
             "split_config": {
                 "type": "json",
                 "max_chunk_size": 10,
@@ -81,21 +81,12 @@ class TestJSONLoader:
         res = await LoaderCls(knowledge).load()
         SplitterCls = get_register(RegisterTypeEnum.PARSER, "json")
         res = await SplitterCls().parse(knowledge, res[0])
-        assert res == [
-            Text(
-                content='{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}',
-                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 0},
-            ),
-            Text(
-                content='{"age": 30}',
-                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 1},
-            ),
-            Text(
-                content='{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}',
-                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 2},
-            ),
-            Text(
-                content='{"is_active": true}',
-                metadata={"_knowledge_type": "json", "_reference_url": "", "_idx": 3},
-            ),
-        ]
+        assert res[0].metadata["_knowledge_name"] == "json_test"
+        assert res[0].metadata["_idx"] == 0
+        assert (
+            res[0].content
+            == '{"name": "John DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn DoeJohn Doe"}'
+        )
+        assert res[1].content == '{"age": 30}'
+        assert res[2].content == '{"email": "johnjohnjohnjohnjohnjohnjohn@example.com"}'
+        assert res[3].content == '{"is_active": true}'

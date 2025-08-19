@@ -98,5 +98,6 @@ async def test_get_chunks_by_knowledge_text() -> None:
             "key1": "value11",
             "key2": "value22",
             "_knowledge_type": "markdown",
+            "_knowledge_name": "OpenSPG/KAG/kag/examples/supplychain/builder/README.md",
             "_reference_url": "",
         }
