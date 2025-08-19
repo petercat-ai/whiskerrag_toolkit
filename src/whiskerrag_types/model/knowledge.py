@@ -162,6 +162,10 @@ class Knowledge(TimeStampedModel):
                 knowledge_type_str = str(knowledge_type)
             data["metadata"]["_knowledge_type"] = knowledge_type_str
 
+        if "knowledge_name" in data:
+            knowledge_name = data["knowledge_name"]
+            data["metadata"]["_knowledge_name"] = knowledge_name
+
         if "_reference_url" not in data.get("metadata", {}):
             data["metadata"]["_reference_url"] = ""
 

@@ -34,6 +34,7 @@ class TestBaseSplitter:
         expected_metadata = {
             "_knowledge_type": "text",
             "_reference_url": "",
+            "_knowledge_name": "local_test_5",
             "_idx": 0,
         }
         assert res == [Text(content="hello world \n ~", metadata=expected_metadata)]
@@ -66,6 +67,7 @@ class TestBaseSplitter:
                 content="hello",
                 metadata={
                     "_knowledge_type": "text",
+                    "_knowledge_name": "local_test_5",
                     "_reference_url": "",
                     "_idx": 0,
                 },
@@ -74,6 +76,7 @@ class TestBaseSplitter:
                 content="world",
                 metadata={
                     "_knowledge_type": "text",
+                    "_knowledge_name": "local_test_5",
                     "_reference_url": "",
                     "_idx": 1,
                 },
@@ -82,6 +85,7 @@ class TestBaseSplitter:
                 content="~",
                 metadata={
                     "_knowledge_type": "text",
+                    "_knowledge_name": "local_test_5",
                     "_reference_url": "",
                     "_idx": 2,
                 },
@@ -128,6 +132,7 @@ class TestBaseSplitter:
             metadata={
                 "_knowledge_type": "text",
                 "_reference_url": "",
+                "_knowledge_name": "local_test_5",
                 "_idx": 0,
             },
         )
