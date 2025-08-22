@@ -325,10 +325,10 @@ class GitRepoManager:
         max_retry_attempts: int = 3,
         retry_delay: float = 2.0,
     ) -> None:
-        import time
-
         Repo, GitCommandNotFound, InvalidGitRepositoryError = _lazy_import_git()
         last_exception = None
+        import subprocess
+
         for attempt in range(max_retry_attempts):
             try:
                 if attempt > 0 and os.path.exists(repo_path):
@@ -351,6 +351,23 @@ class GitRepoManager:
                         multi_options=["--filter=blob:limit=5m"],
                         depth=initial_depth,
                     )
+
+                # 放开 git 安全校验
+                try:
+                    subprocess.run(
+                        [
+                            "git",
+                            "config",
+                            "--global",
+                            "--add",
+                            "safe.directory",
+                            repo_path,
+                        ],
+                        check=False,
+                    )
+                except Exception as se:
+                    logger.warning(f"Could not set safe.directory for git: {se}")
+
                 if commit_id:
                     for i in range(max_fetch_tries):
                         try:
@@ -380,6 +397,7 @@ class GitRepoManager:
                 if attempt < max_retry_attempts - 1:
                     time.sleep(retry_delay)
                     retry_delay *= 2
+
         if last_exception:
             raise ValueError(
                 f"Failed to clone after {max_retry_attempts} attempts: {last_exception}"
