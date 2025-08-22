@@ -110,3 +110,4 @@ class TestKnowledge:
         assert knowledge["split_config"]["separators"] == ["\n\n", "##"]
         assert knowledge["split_config"]["is_separator_regex"] == False
         assert knowledge["updated_at"] is not None
+        assert knowledge["metadata"]["_knowledge_name"] == "Test Knowledge"
