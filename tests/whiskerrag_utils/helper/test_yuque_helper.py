@@ -7,6 +7,7 @@ from whiskerrag_utils.helper.yuque import ExtendedYuqueLoader
 from whiskerrag_utils.parser.yuque_doc_parser import YuqueParser
 
 
+@pytest.mark.skip(reason="need to use true token")
 async def test_parse_document_with_full_fields() -> None:
     try:
         loader = ExtendedYuqueLoader(

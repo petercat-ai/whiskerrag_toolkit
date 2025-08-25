@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import List
 from unittest.mock import MagicMock, patch
@@ -102,7 +103,9 @@ async def test_cloud_storage_text_loader() -> None:
 async def test_cloud_storage_text_loader_invalid_url() -> None:
     """测试无效URL的情况"""
     # Arrange
-    invalid_url = "https://invalid-url-that-does-not-exist.com/file.txt"
+    invalid_url = (
+        f"https://a-real-invalid-url-that-does-not-exist-{time.time()}.com/file.txt"
+    )
     knowledge_data = {
         "space_id": "test_space",
         "knowledge_type": KnowledgeTypeEnum.JSON,
