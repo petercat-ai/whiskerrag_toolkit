@@ -57,6 +57,8 @@ from .splitter import (
     TextSplitConfig,
     YuqueSplitConfig,
 )
+from .tag import Tag, TagCreate
+from .tagging import Tagging, TaggingCreate, TagObjectType
 from .task import Task, TaskRestartRequest, TaskStatus
 from .tenant import Tenant
 from .wiki import Wiki
@@ -122,4 +124,9 @@ __all__ = [
     "KNOWLEDGE_CREATE_2_KNOWLEDGE_STRATEGY_MAP",
     "KnowledgeScope",
     "ProResearchRequest",
+    "Tag",
+    "TagCreate",
+    "Tagging",
+    "TagObjectType",
+    "TaggingCreate",
 ]

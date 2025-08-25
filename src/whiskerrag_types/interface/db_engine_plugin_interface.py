@@ -21,6 +21,8 @@ from whiskerrag_types.model.retrieval import (
     RetrievalChunk,
     RetrievalRequest,
 )
+from whiskerrag_types.model.tag import Tag, TagCreate
+from whiskerrag_types.model.tagging import Tagging, TaggingCreate
 
 from .settings_interface import SettingsInterface
 
@@ -297,6 +299,48 @@ class DBPluginInterface(ABC):
     # =================== agent ===================
     @abstractmethod
     async def agent_invoke(self, params: Any) -> AsyncIterator[Any]:
+        pass
+
+    # =================== tag ===================
+    @abstractmethod
+    async def add_tag_list(self, tag_list: List[TagCreate]) -> List[Tag]:
+        pass
+
+    @abstractmethod
+    async def get_tag_list(
+        self, tenant_id: str, page_params: PageQueryParams[Tag]
+    ) -> PageResponse[Tag]:
+        pass
+
+    @abstractmethod
+    async def delete_tag_by_id(self, tenant_id: str, tag_id: str) -> Union[Tag, None]:
+        pass
+
+    @abstractmethod
+    async def update_tag(self, tag: Tag) -> None:
+        pass
+
+    @abstractmethod
+    async def get_tag_by_id(self, tenant_id: str, tag_id: str) -> Union[Tag, None]:
+        pass
+
+    # =================== tagging ===================
+    @abstractmethod
+    async def add_tagging_list(
+        self, tagging_list: List[TaggingCreate]
+    ) -> List[Tagging]:
+        pass
+
+    @abstractmethod
+    async def get_tagging_list(
+        self, tenant_id: str, page_params: PageQueryParams[Tagging]
+    ) -> PageResponse[Tagging]:
+        pass
+
+    @abstractmethod
+    async def delete_tagging_by_id(
+        self, tenant_id: str, tagging_id: str
+    ) -> Union[Tag, None]:
         pass
 
     # =================== dashboard ===================

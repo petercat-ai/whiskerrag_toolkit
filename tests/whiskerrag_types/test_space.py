@@ -90,7 +90,6 @@ class TestSpace:
             "description": "this is a test",
         }
         space_create = SpaceCreate(**data)
-        print("[]", space_create.model_dump())
         assert space_create.space_name == "test_space"
         assert space_create.description == "this is a test"
         assert space_create.metadata == {}

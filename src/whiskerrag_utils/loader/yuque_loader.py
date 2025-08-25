@@ -42,6 +42,58 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
             )
         return self._yuque_loader
 
+    def _create_doc_knowledge(self, parsed_document: Any) -> Knowledge:
+        from copy import deepcopy
+
+        source_config = deepcopy(self.knowledge.source_config)
+        if hasattr(source_config, "document_id"):
+            source_config.document_id = parsed_document.metadata.get(
+                "slug"
+            ) or parsed_document.metadata.get("id")
+        return Knowledge(
+            source_type=self.knowledge.source_type,
+            knowledge_type=self.knowledge.knowledge_type,
+            knowledge_name=f"{self.knowledge.knowledge_name}/{parsed_document.metadata.get('title', '')}",
+            embedding_model_name=self.knowledge.embedding_model_name,
+            source_config=source_config,
+            tenant_id=self.knowledge.tenant_id,
+            file_size=len(parsed_document.page_content.encode("utf-8")),
+            file_sha=parsed_document.metadata.get("content_updated_at"),
+            space_id=self.knowledge.space_id,
+            split_config=self.knowledge.split_config,
+            parent_id=self.knowledge.knowledge_id,
+            enabled=True,
+            metadata=parsed_document.metadata,
+        )
+
+    def _create_image_knowledges(self, parsed_document: Any) -> List[Knowledge]:
+        image_knowledges = []
+        image_pattern = r"!\[(.*?)\]\((.*?)\)"
+        all_image_matches = re.findall(image_pattern, parsed_document.page_content)
+
+        for img_idx, (alt_text, img_url) in enumerate(all_image_matches):
+            if img_url.strip():
+                img_metadata = parsed_document.metadata.copy()
+                img_metadata["_img_idx"] = img_idx
+                img_metadata["_img_url"] = img_url.strip()
+                img_metadata["_alt_text"] = alt_text.strip() if alt_text.strip() else ""
+
+                image_knowledge = Knowledge(
+                    source_type=KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE,
+                    knowledge_type=KnowledgeTypeEnum.IMAGE,
+                    knowledge_name=f"{self.knowledge.knowledge_name}/{parsed_document.metadata.get('title', '')}/image_{img_idx}",
+                    embedding_model_name=self.knowledge.embedding_model_name,
+                    source_config=OpenUrlSourceConfig(url=img_url.strip()),
+                    tenant_id=self.knowledge.tenant_id,
+                    space_id=self.knowledge.space_id,
+                    split_config=ImageSplitConfig(),
+                    parent_id=self.knowledge.knowledge_id,
+                    enabled=True,
+                    metadata=img_metadata,
+                )
+                image_knowledges.append(image_knowledge)
+        return image_knowledges
+
     def get_doc_detail(
         self, group_login: str, book_slug: str, document_id: Optional[Union[str, int]]
     ) -> Any:
@@ -100,20 +152,20 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
         if not book_slug:
             raise ValueError("book_slug is needed for WhiskerYuqueLoader")
 
-        knowledges: List[Knowledge] = []
+        knowledge_list: List[Knowledge] = []
 
         # Decompose a specific document - only extract images
         if document_id:
-            doc_knowledges = await self._decompose_document(
+            doc_knowledge_list = await self._decompose_document(
                 group_login, book_slug, document_id, include_document=False
             )
-            knowledges.extend(doc_knowledges)
+            knowledge_list.extend(doc_knowledge_list)
         # Decompose a whole book - create sub-documents as knowledge, no images
         else:
             book_knowledges = await self._decompose_book(group_login, book_slug)
-            knowledges.extend(book_knowledges)
+            knowledge_list.extend(book_knowledges)
 
-        return knowledges
+        return knowledge_list
 
     async def _decompose_book(
         self, group_login: str, book_slug: str
@@ -158,58 +210,6 @@ class WhiskerYuqueLoader(BaseLoader[Text]):
         except Exception as e:
             raise ValueError(f"Failed to get document: {e}")
         return knowledges
-
-    def _create_doc_knowledge(self, parsed_document: Any) -> Knowledge:
-        from copy import deepcopy
-
-        source_config = deepcopy(self.knowledge.source_config)
-        if hasattr(source_config, "document_id"):
-            source_config.document_id = parsed_document.metadata.get(
-                "slug"
-            ) or parsed_document.metadata.get("id")
-        return Knowledge(
-            source_type=self.knowledge.source_type,
-            knowledge_type=self.knowledge.knowledge_type,
-            knowledge_name=f"{self.knowledge.knowledge_name}/{parsed_document.metadata.get('title', '')}",
-            embedding_model_name=self.knowledge.embedding_model_name,
-            source_config=source_config,
-            tenant_id=self.knowledge.tenant_id,
-            file_size=len(parsed_document.page_content.encode("utf-8")),
-            file_sha=parsed_document.metadata.get("content_updated_at"),
-            space_id=self.knowledge.space_id,
-            split_config=self.knowledge.split_config,
-            parent_id=self.knowledge.knowledge_id,
-            enabled=True,
-            metadata=parsed_document.metadata,
-        )
-
-    def _create_image_knowledges(self, parsed_document: Any) -> List[Knowledge]:
-        image_knowledges = []
-        image_pattern = r"!\[(.*?)\]\((.*?)\)"
-        all_image_matches = re.findall(image_pattern, parsed_document.page_content)
-
-        for img_idx, (alt_text, img_url) in enumerate(all_image_matches):
-            if img_url.strip():
-                img_metadata = parsed_document.metadata.copy()
-                img_metadata["_img_idx"] = img_idx
-                img_metadata["_img_url"] = img_url.strip()
-                img_metadata["_alt_text"] = alt_text.strip() if alt_text.strip() else ""
-
-                image_knowledge = Knowledge(
-                    source_type=KnowledgeSourceEnum.CLOUD_STORAGE_IMAGE,
-                    knowledge_type=KnowledgeTypeEnum.IMAGE,
-                    knowledge_name=f"{self.knowledge.knowledge_name}/{parsed_document.metadata.get('title', '')}/image_{img_idx}",
-                    embedding_model_name=self.knowledge.embedding_model_name,
-                    source_config=OpenUrlSourceConfig(url=img_url.strip()),
-                    tenant_id=self.knowledge.tenant_id,
-                    space_id=self.knowledge.space_id,
-                    split_config=ImageSplitConfig(),
-                    parent_id=self.knowledge.knowledge_id,
-                    enabled=True,
-                    metadata=img_metadata,
-                )
-                image_knowledges.append(image_knowledge)
-        return image_knowledges
 
     async def on_load_finished(self) -> None:
         pass
