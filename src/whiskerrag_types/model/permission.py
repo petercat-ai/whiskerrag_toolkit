@@ -16,6 +16,8 @@ class Resource(str, Enum):
     PUBLIC = "public"
     WEBHOOK = "webhook"
     TAG = "tag"
+    TAGGING = "tagging"
+    ARTIFACT = "artifact"
 
 
 class Action(str, Enum):
