@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from whiskerrag_types.model.timeStampedModel import TimeStampedModel
 
@@ -23,7 +23,7 @@ class SpaceCreate(BaseModel):
     space_id: Optional[str] = Field(
         default=None,
         description="space id, e.g. petercat/bot-group",
-        pattern=r"^([a-zA-Z0-9-]{1,39}/)?[A-Za-z0-9_.-]{1,100}(/[A-Za-z0-9_.-]{1,100})?(@[A-Za-z0-9_.\-\\/]+)?$",
+        pattern=r"^[A-Za-z0-9._@/-]{1,255}$",
         max_length=255,
     )
     description: str = Field(..., max_length=255, description="descrition of the space")
@@ -31,6 +31,19 @@ class SpaceCreate(BaseModel):
         default={},
         description="metadata of the space resource",
     )
+
+    @field_validator("space_id")
+    @classmethod
+    def check_forbidden_sequences(cls, v: str) -> str:
+        if v is None:
+            return v
+        # 禁止连续 ..
+        if ".." in v:
+            raise ValueError("space_id cannot contain consecutive dots '..'")
+        # 禁止连续 //
+        if "//" in v:
+            raise ValueError("space_id cannot contain consecutive slashes '//'")
+        return v
 
 
 class Space(SpaceCreate, TimeStampedModel):
