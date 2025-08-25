@@ -303,7 +303,9 @@ class DBPluginInterface(ABC):
 
     # =================== tag ===================
     @abstractmethod
-    async def add_tag_list(self, tag_list: List[TagCreate]) -> List[Tag]:
+    async def add_tag_list(
+        self, tenant_id: str, tag_list: List[TagCreate]
+    ) -> List[Tag]:
         pass
 
     @abstractmethod
@@ -313,21 +315,27 @@ class DBPluginInterface(ABC):
         pass
 
     @abstractmethod
+    async def get_tag_by_id(self, tenant_id: str, tag_id: str) -> Union[Tag, None]:
+        pass
+
+    @abstractmethod
     async def delete_tag_by_id(self, tenant_id: str, tag_id: str) -> Union[Tag, None]:
         pass
 
     @abstractmethod
-    async def update_tag(self, tag: Tag) -> None:
-        pass
-
-    @abstractmethod
-    async def get_tag_by_id(self, tenant_id: str, tag_id: str) -> Union[Tag, None]:
+    async def update_tag_name_description(
+        self,
+        tenant_id: str,
+        tag_id: str,
+        name: Optional[str],
+        description: Optional[str],
+    ) -> Tag:
         pass
 
     # =================== tagging ===================
     @abstractmethod
     async def add_tagging_list(
-        self, tagging_list: List[TaggingCreate]
+        self, tenant_id: str, tagging_list: List[TaggingCreate]
     ) -> List[Tagging]:
         pass
 
@@ -340,7 +348,7 @@ class DBPluginInterface(ABC):
     @abstractmethod
     async def delete_tagging_by_id(
         self, tenant_id: str, tagging_id: str
-    ) -> Union[Tag, None]:
+    ) -> Union[Tagging, None]:
         pass
 
     # =================== dashboard ===================
