@@ -63,6 +63,9 @@ class Tagging(TimeStampedModel):
     )
     tenant_id: str = Field(..., max_length=64, description="所属租户ID")
     tag_id: str = Field(..., description="标签ID（FK -> tag.tag_id，UUID字符串）")
+    tag_name: str = Field(
+        ..., max_length=64, description="标签名称（在 object_type 内唯一）"
+    )
     object_id: str = Field(
         ..., max_length=255, description="被打标签对象ID（如 space_id）"
     )
