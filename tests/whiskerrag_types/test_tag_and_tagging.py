@@ -55,6 +55,7 @@ def test_tagging_uuid_and_update_method():
         tag_id=str(UUID(int=1)),  # mock UUID
         object_id="obj1",
         object_type=TagObjectType.SPACE,
+        tag_name="tag1",
     )
     # 检查 UUID 格式
     UUID(tagging.tagging_id, version=4)
@@ -64,6 +65,7 @@ def test_tagging_uuid_and_update_method():
 
     assert tagging.object_id == "obj2"
     assert tagging.updated_at > old_updated
+    assert tagging.tag_name == "tag1"
 
 
 def test_tag_and_tagging_cross_check():
@@ -77,8 +79,10 @@ def test_tag_and_tagging_cross_check():
         tag_id=tag.tag_id,
         object_id="space_001",
         object_type=tag.object_type,
+        tag_name=tag.name,
     )
 
     assert tagging.tag_id == tag.tag_id
     assert tagging.tenant_id == tag.tenant_id
     assert tagging.object_type == tag.object_type
+    assert tagging.tag_name == tag.name
