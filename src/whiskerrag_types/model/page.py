@@ -23,6 +23,46 @@ class FilterGroup(BaseModel):
     conditions: List[Union[Condition, "FilterGroup"]]
 
 
+# 允许 FilterGroup 递归引用
+FilterGroup.model_rebuild()
+
+
+# 标签筛选允许的字段白名单
+TAGGING_ALLOWED_FIELDS = {"tag_name", "tag_id"}
+
+
+class TagFilter(BaseModel):
+    """
+    针对 Tagging 表的过滤条件。
+    注意：object_id / object_type 不作为用户输入过滤字段。
+    """
+
+    advanced_filter: Optional[FilterGroup] = Field(
+        default=None, description="标签过滤条件，只允许 tag_name 和 tag_id"
+    )
+
+    @model_validator(mode="after")
+    def validate_tag_fields(self) -> "TagFilter":
+        if self.advanced_filter:
+            invalid_fields = self._validate_tag_filter_group(self.advanced_filter)
+            if invalid_fields:
+                raise ValueError(
+                    f"Invalid tag_filter fields: {invalid_fields}; "
+                    f"only {TAGGING_ALLOWED_FIELDS} are supported"
+                )
+        return self
+
+    def _validate_tag_filter_group(self, filter_group: FilterGroup) -> set[str]:
+        invalid = set()
+        for condition in filter_group.conditions:
+            if isinstance(condition, Condition):
+                if condition.field not in TAGGING_ALLOWED_FIELDS:
+                    invalid.add(condition.field)
+            elif isinstance(condition, FilterGroup):
+                invalid.update(self._validate_tag_filter_group(condition))
+        return invalid
+
+
 class QueryParams(BaseModel, Generic[T]):
     order_by: Optional[str] = Field(default=None, description="order by field")
     order_direction: Optional[str] = Field(default="asc", description="asc or desc")
@@ -33,6 +73,10 @@ class QueryParams(BaseModel, Generic[T]):
     advanced_filter: Optional[FilterGroup] = Field(
         default=None,
         description="advanced filter with nested conditions",
+    )
+    # 标签过滤
+    tag_filter: Optional[TagFilter] = Field(
+        default=None, description="标签过滤条件 tag_name 和 tag_id"
     )
 
     def _validate_fields_against_model(self, fields: set[str]) -> set[str]:
