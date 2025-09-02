@@ -172,7 +172,7 @@ class TestPageParams:
                     Condition(field="not_allowed_field", operator="eq", value="x")
                 ],
             )
-        assert "only {'tag_name', 'tag_id'} are supported" in str(exc_info.value)
+        assert "Invalid tag_filter fields" in str(exc_info.value)
 
     def test_tag_filter_nested_groups(self):
         """标签过滤器：嵌套组的校验"""
