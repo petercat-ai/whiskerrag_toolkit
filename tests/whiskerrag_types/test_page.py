@@ -142,3 +142,77 @@ class TestPageParams:
         with pytest.raises(ValueError) as exc_info:
             PageQueryParams[DummyModel](eq_conditions={"invalid_field": "value"})
         assert "Invalid fields found: {'invalid_field'}" in str(exc_info.value)
+
+    def test_tag_filter_valid(self):
+        """标签过滤器：合法字段"""
+        from whiskerrag_types.model.page import Condition, Operator, TagFilter
+
+        # 直接使用允许的字段
+        tf = TagFilter(
+            operator=Operator.AND,
+            conditions=[
+                Condition(field="tag_name", operator="eq", value="科技"),
+                Condition(field="tag_id", operator="neq", value="123"),
+            ],
+        )
+        assert isinstance(tf, TagFilter)
+        assert tf.conditions[0].field == "tag_name"
+        assert tf.conditions[1].field == "tag_id"
+
+    def test_tag_filter_invalid_field(self):
+        """标签过滤器：非法字段应报错"""
+        import pytest
+
+        from whiskerrag_types.model.page import Condition, Operator, TagFilter
+
+        with pytest.raises(ValueError) as exc_info:
+            TagFilter(
+                operator=Operator.AND,
+                conditions=[
+                    Condition(field="not_allowed_field", operator="eq", value="x")
+                ],
+            )
+        assert "only {'tag_name', 'tag_id'} are supported" in str(exc_info.value)
+
+    def test_tag_filter_nested_groups(self):
+        """标签过滤器：嵌套组的校验"""
+        import pytest
+
+        from whiskerrag_types.model.page import (
+            Condition,
+            FilterGroup,
+            Operator,
+            TagFilter,
+        )
+
+        nested = FilterGroup(
+            operator=Operator.OR,
+            conditions=[
+                Condition(field="tag_name", operator="eq", value="科技"),
+                Condition(field="invalid_field", operator="eq", value="bad"),
+            ],
+        )
+
+        with pytest.raises(ValueError) as exc_info:
+            TagFilter(operator=Operator.AND, conditions=[nested])
+        assert "invalid_field" in str(exc_info.value)
+
+    def test_query_params_with_tag_filter(self):
+        """QueryParams 支持 TagFilter 并进行校验"""
+        from whiskerrag_types.model.page import (
+            Condition,
+            Operator,
+            QueryParams,
+            TagFilter,
+        )
+
+        tf = TagFilter(
+            operator=Operator.AND,
+            conditions=[
+                Condition(field="tag_name", operator="eq", value="科技"),
+            ],
+        )
+        # 使用 DummyModel 作为泛型参数
+        params = QueryParams[DummyModel](tag_filter=tf)
+        assert isinstance(params.tag_filter, TagFilter)
+        assert params.tag_filter.conditions[0].field == "tag_name"

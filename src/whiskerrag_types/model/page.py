@@ -31,25 +31,19 @@ FilterGroup.model_rebuild()
 TAGGING_ALLOWED_FIELDS = {"tag_name", "tag_id"}
 
 
-class TagFilter(BaseModel):
+class TagFilter(FilterGroup):
     """
-    针对 Tagging 表的过滤条件。
-    注意：object_id / object_type 不作为用户输入过滤字段。
+    针对 Tagging 表的过滤条件（只允许使用 tag_name / tag_id 作为字段）
     """
-
-    advanced_filter: Optional[FilterGroup] = Field(
-        default=None, description="标签过滤条件，只允许 tag_name 和 tag_id"
-    )
 
     @model_validator(mode="after")
     def validate_tag_fields(self) -> "TagFilter":
-        if self.advanced_filter:
-            invalid_fields = self._validate_tag_filter_group(self.advanced_filter)
-            if invalid_fields:
-                raise ValueError(
-                    f"Invalid tag_filter fields: {invalid_fields}; "
-                    f"only {TAGGING_ALLOWED_FIELDS} are supported"
-                )
+        invalid_fields = self._validate_tag_filter_group(self)
+        if invalid_fields:
+            raise ValueError(
+                f"Invalid tag_filter fields: {invalid_fields}; "
+                f"only {TAGGING_ALLOWED_FIELDS} are supported"
+            )
         return self
 
     def _validate_tag_filter_group(self, filter_group: FilterGroup) -> set[str]:
